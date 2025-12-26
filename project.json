@@ -1,0 +1,17 @@
+{
+  "name": "outvestments",
+  "type": "web",
+  "created": "2025-12-26",
+  "peacock": "#8e44ad",
+  "deployment": {
+    "vm": "stark",
+    "port": 3154,
+    "status": "development"
+  },
+  "services": [],
+  "github": {
+    "user": "mjurisolo",
+    "repo": "outvestments",
+    "visibility": "private"
+  }
+}

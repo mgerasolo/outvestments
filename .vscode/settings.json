@@ -1,0 +1,33 @@
+{
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#b07cc6",
+        "activityBar.background": "#b07cc6",
+        "activityBar.foreground": "#e7e7e7",
+        "activityBar.inactiveForeground": "#e7e7e799",
+        "activityBarBadge.background": "#c619ae",
+        "activityBarBadge.foreground": "#e7e7e7",
+        "commandCenter.border": "#e7e7e799",
+        "sash.hoverBorder": "#b07cc6",
+        "statusBar.background": "#8e44ad",
+        "statusBar.foreground": "#e7e7e7",
+        "statusBarItem.hoverBackground": "#b07cc6",
+        "statusBarItem.remoteBackground": "#8e44ad",
+        "statusBarItem.remoteForeground": "#e7e7e7",
+        "titleBar.activeBackground": "#8e44ad",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.inactiveBackground": "#8e44ad99",
+        "titleBar.inactiveForeground": "#e7e7e799",
+        "sideBar.background": "#150a1a",
+        "sideBarSectionHeader.background": "#8e44ad30",
+        "sideBarSectionHeader.border": "#8e44ad",
+        "sideBarStickyScroll.background": "#8e44ad15",
+        "sideBarTitle.foreground": "#b07cc6",
+        "sideBarActivityBarTop.border": "#8e44ad",
+        "panelTitle.activeBorder": "#b07cc6",
+        "tab.activeBorderTop": "#b07cc6",
+        "tab.hoverBorder": "#8e44ad",
+        "editorGroupHeader.tabsBorder": "#8e44ad50"
+    },
+    "peacock.remoteColor": "#8e44ad",
+    "claudeCodeChat.permissions.yoloMode": true
+}
