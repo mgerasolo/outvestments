@@ -198,44 +198,46 @@ export default async function TargetDetailPage({
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {targetAims.map((aim) => (
-              <Card key={aim.id} className="hover:border-primary/50 transition-colors">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-xl font-bold">
-                      {aim.symbol}
-                    </CardTitle>
-                    <Badge variant="outline">
-                      {new Date(aim.targetDate).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Realistic Target
-                      </p>
-                      <p className="text-lg font-semibold text-gain">
-                        ${Number(aim.targetPriceRealistic).toFixed(2)}
-                      </p>
+              <Link key={aim.id} href={`/targets/${id}/aims/${aim.id}`}>
+                <Card className="hover:border-primary/50 transition-colors cursor-pointer h-full">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-xl font-bold">
+                        {aim.symbol}
+                      </CardTitle>
+                      <Badge variant="outline">
+                        {new Date(aim.targetDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </Badge>
                     </div>
-                    {aim.targetPriceReach && (
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm text-muted-foreground">
-                          Reach Target
+                          Realistic Target
                         </p>
-                        <p className="text-lg font-semibold text-gold">
-                          ${Number(aim.targetPriceReach).toFixed(2)}
+                        <p className="text-lg font-semibold text-gain">
+                          ${Number(aim.targetPriceRealistic).toFixed(2)}
                         </p>
                       </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                      {aim.targetPriceReach && (
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Reach Target
+                          </p>
+                          <p className="text-lg font-semibold text-gold">
+                            ${Number(aim.targetPriceReach).toFixed(2)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         )}

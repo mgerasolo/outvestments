@@ -1089,6 +1089,7 @@ See [messaging-and-positioning.md](messaging-and-positioning.md) for:
 | 1.5-draft | 2025-12-27 | Matt/Claude | Resolved open questions      |
 | 1.6-draft | 2025-12-27 | Matt/Claude | Roundtable #2 resolutions    |
 | 1.7-draft | 2025-12-27 | Matt/Claude | Target/Aim/Shot terminology  |
+| 1.8-draft | 2025-12-27 | Matt/Claude | Messaging & educational philosophy |
 
 **v1.1 Changes:** Options data model, scoring edge cases, colorblind mode, user roles, orphaned positions, Alpaca optional
 
@@ -1103,6 +1104,8 @@ See [messaging-and-positioning.md](messaging-and-positioning.md) for:
 **v1.6 Changes:** Roundtable #2 resolutions. Lot splitting ID scheme (numeric + parent FK, dot notation display). Two-tier scoring (Career Score vs Game Score, player/game analogy). Price fallback changed to last price. Dividends as non-reinvestable cash balance. Theory independence from shots. Historical data is sacred principle. Corporate action job frequency: daily. Rollover as convenience feature.
 
 **v1.7 Changes:** Major terminology restructure - renamed "Theory" to "Target", added new "Aim" layer between Target and Shot. Target = thesis/theme level prediction. Aim = specific ticker + price + date prediction. Shot = trade/order. Added Trigger types (Market/Limit), Shot states (Pending/Armed/Fired/Active/Closed), Pace metric (%/month), three-tier scoring. Added NPC Opponent terminology for benchmark comparisons (vs future PvP). Updated data model with new Aims entity.
+
+**v1.8 Changes:** Added Six Messaging Pillars to Executive Summary. New Section 15: Educational Philosophy & Behavioral Design covering core educational goals, behavioral interventions for cognitive biases, learning moments, and progressive disclosure. Created companion document messaging-and-positioning.md with full messaging strategy, copy examples, and integration points.
 
 ---
 
