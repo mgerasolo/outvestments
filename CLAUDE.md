@@ -15,14 +15,16 @@
 | Setting | Value |
 |---------|-------|
 | Target VM | stark |
-| Reserved Port | 3154 |
-| Status | Development |
+| Port | 3155 |
+| Status | Deployed |
+| URL | https://outvestments.dev.nextlevelfoundry.com |
+| Direct | http://10.0.0.31:3155 |
+| Portainer Stack | outvestments (ID: 13) |
 
-**When ready to deploy:**
-1. Create stack in Portainer
-2. Configure Traefik routing
-3. Add to inventory.md
-4. Register in CoreControl
+**Deployment Notes:**
+- Stack deployed via Portainer API
+- Traefik routing configured in `/opt/traefik/config/stark.yml` on Helicarrier
+- Database migrations run via drizzle-kit push
 
 ## Platform Services
 
