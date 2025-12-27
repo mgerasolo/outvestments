@@ -22,10 +22,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    # Development: expose on localhost
-    # Production: comment this out, app connects via service name
-    ports:
-      - "5432:5432"
+    networks:
+      - outvestments-internal
 
   # Next.js Application
   app:
@@ -41,7 +39,8 @@ services:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://outvestments:${POSTGRES_PASSWORD:-outvestments_dev}@postgres:5432/outvestments
       - AUTH_SECRET=${AUTH_SECRET}
-      - AUTH_URL=${AUTH_URL:-http://10.0.0.31:3154}
+      - AUTH_URL=https://outvestments.dev.nextlevelfoundry.com
+      - AUTH_TRUST_HOST=true
       - AUTHENTIK_ISSUER=${AUTHENTIK_ISSUER}
       - AUTHENTIK_CLIENT_ID=${AUTHENTIK_CLIENT_ID}
       - AUTHENTIK_CLIENT_SECRET=${AUTHENTIK_CLIENT_SECRET}
@@ -50,12 +49,33 @@ services:
       - ALPACA_API_SECRET=${ALPACA_API_SECRET}
       - ALPACA_BASE_URL=${ALPACA_BASE_URL:-https://paper-api.alpaca.markets}
       - TZ=America/New_York
-    ports:
-      # Production: bind to stark's IP
-      - "10.0.0.31:3154:3000"
+    networks:
+      - outvestments-internal
+      - traefik-public
     labels:
+      # NLF Labels
       - "com.nextlevelfoundry.stack=outvestments"
       - "com.nextlevelfoundry.host=stark"
+      # Traefik Configuration
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-public"
+      # HTTP Router
+      - "traefik.http.routers.outvestments.rule=Host(`outvestments.dev.nextlevelfoundry.com`)"
+      - "traefik.http.routers.outvestments.entrypoints=websecure"
+      - "traefik.http.routers.outvestments.tls=true"
+      - "traefik.http.routers.outvestments.tls.certresolver=letsencrypt"
+      # Service
+      - "traefik.http.services.outvestments.loadbalancer.server.port=3000"
+      # HTTP to HTTPS redirect
+      - "traefik.http.routers.outvestments-http.rule=Host(`outvestments.dev.nextlevelfoundry.com`)"
+      - "traefik.http.routers.outvestments-http.entrypoints=web"
+      - "traefik.http.routers.outvestments-http.middlewares=https-redirect@file"
+
+networks:
+  outvestments-internal:
+    driver: bridge
+  traefik-public:
+    external: true
 
 volumes:
   outvestments_postgres_data:
