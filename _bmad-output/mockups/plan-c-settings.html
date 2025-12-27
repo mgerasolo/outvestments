@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Outvestments - Settings (Plan C)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen">
+
+  <div class="flex">
+
+    <!-- Sidebar -->
+    <aside class="w-64 min-h-screen bg-white border-r border-gray-200 flex flex-col">
+      <div class="p-6 border-b border-gray-200">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke-width="2"/>
+              <circle cx="12" cy="12" r="6" stroke-width="2"/>
+              <circle cx="12" cy="12" r="2" fill="currentColor"/>
+            </svg>
+          </div>
+          <span class="text-xl font-bold text-gray-900">Outvestments</span>
+        </div>
+      </div>
+
+      <nav class="flex-1 p-4">
+        <ul class="space-y-1">
+          <li>
+            <a href="plan-c-dashboard.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"/>
+              </svg>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="plan-c-scoreboard.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z"/>
+              </svg>
+              <span>Scoreboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="plan-c-history.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span>History</span>
+            </a>
+          </li>
+          <li>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-blue-50 text-blue-700 font-medium">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <span>Settings</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="p-4 border-t border-gray-200">
+        <div class="flex items-center gap-3 px-4 py-3">
+          <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center">
+            <span class="text-white font-bold">M</span>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-medium text-gray-900">Matt G</p>
+            <p class="text-xs text-gray-500">Pro Shooter</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+
+      <div class="max-w-3xl">
+
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">Settings</h1>
+        <p class="text-gray-500 mb-8">Manage your account and preferences</p>
+
+        <!-- Profile Section -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-6">Profile</h2>
+
+          <div class="flex items-center gap-6 mb-6">
+            <div class="w-20 h-20 rounded-full bg-emerald-500 flex items-center justify-center text-2xl font-bold text-white">
+              M
+            </div>
+            <div class="flex-1">
+              <label class="text-sm text-gray-600 block mb-2">Display Name</label>
+              <input type="text" value="Matt G" class="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm text-gray-600 block mb-2">Email</label>
+              <input type="email" value="matt@example.com" class="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+            </div>
+            <div>
+              <label class="text-sm text-gray-600 block mb-2">Rank</label>
+              <div class="border border-emerald-200 bg-emerald-50 rounded-lg px-4 py-3 text-emerald-700 font-medium">
+                Pro Shooter
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NPC Opponent -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-6">Default NPC Opponent</h2>
+
+          <div class="grid grid-cols-3 gap-4">
+            <label class="relative cursor-pointer">
+              <input type="radio" name="npc" class="peer sr-only" checked />
+              <div class="p-4 border-2 border-blue-500 bg-blue-50 rounded-xl text-center transition-all">
+                <div class="text-xl font-bold text-blue-600 mb-1">SPY</div>
+                <div class="text-xs text-gray-500">S&P 500</div>
+              </div>
+            </label>
+            <label class="relative cursor-pointer">
+              <input type="radio" name="npc" class="peer sr-only" />
+              <div class="p-4 border-2 border-gray-200 rounded-xl text-center hover:border-gray-300 peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all">
+                <div class="text-xl font-bold text-gray-600 mb-1">QQQ</div>
+                <div class="text-xs text-gray-500">NASDAQ 100</div>
+              </div>
+            </label>
+            <label class="relative cursor-pointer">
+              <input type="radio" name="npc" class="peer sr-only" />
+              <div class="p-4 border-2 border-gray-200 rounded-xl text-center hover:border-gray-300 peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all">
+                <div class="text-xl font-bold text-gray-600 mb-1">DIA</div>
+                <div class="text-xs text-gray-500">Dow Jones</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-6">Notifications</h2>
+
+          <div class="space-y-4">
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+              <div>
+                <p class="font-medium text-gray-900">Target Hit Alerts</p>
+                <p class="text-sm text-gray-500">Notify when aims reach price targets</p>
+              </div>
+              <button class="w-12 h-7 rounded-full bg-blue-500 relative">
+                <div class="absolute right-1 top-1 w-5 h-5 bg-white rounded-full shadow"></div>
+              </button>
+            </div>
+
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+              <div>
+                <p class="font-medium text-gray-900">Daily Summary</p>
+                <p class="text-sm text-gray-500">Morning P&L report</p>
+              </div>
+              <button class="w-12 h-7 rounded-full bg-blue-500 relative">
+                <div class="absolute right-1 top-1 w-5 h-5 bg-white rounded-full shadow"></div>
+              </button>
+            </div>
+
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+              <div>
+                <p class="font-medium text-gray-900">NPC Updates</p>
+                <p class="text-sm text-gray-500">Benchmark comparison alerts</p>
+              </div>
+              <button class="w-12 h-7 rounded-full bg-gray-300 relative">
+                <div class="absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow"></div>
+              </button>
+            </div>
+
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+              <div>
+                <p class="font-medium text-gray-900">Shot Confirmations</p>
+                <p class="text-sm text-gray-500">Trade execution alerts</p>
+              </div>
+              <button class="w-12 h-7 rounded-full bg-blue-500 relative">
+                <div class="absolute right-1 top-1 w-5 h-5 bg-white rounded-full shadow"></div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Brokerage -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-6">Brokerage Connection</h2>
+
+          <div class="flex items-center gap-4 p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+            <div class="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <p class="font-medium text-gray-900">Alpaca Trading</p>
+              <p class="text-sm text-emerald-600">Connected • Paper Trading</p>
+            </div>
+            <button class="px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg text-sm hover:bg-red-50 transition-colors">
+              Disconnect
+            </button>
+          </div>
+        </div>
+
+        <!-- Save Button -->
+        <button class="w-full py-4 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors">
+          Save Changes
+        </button>
+
+      </div>
+
+    </main>
+
+  </div>
+
+</body>
+</html>

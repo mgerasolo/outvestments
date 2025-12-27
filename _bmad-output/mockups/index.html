@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Outvestments - Design Comparison</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+
+    .card-hover {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-8px);
+    }
+
+    /* Plan A Preview Styles */
+    .preview-a {
+      background: linear-gradient(180deg, #030712 0%, #0f172a 100%);
+    }
+    .preview-a .glow {
+      text-shadow: 0 0 10px #10b981, 0 0 20px #10b981;
+    }
+
+    /* Plan B Preview Styles */
+    .preview-b {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    }
+
+    /* Plan C Preview Styles */
+    .preview-c {
+      background: #f8fafc;
+    }
+
+    /* Animated gradient background */
+    .gradient-bg {
+      background: linear-gradient(-45deg, #1e1b4b, #312e81, #1e3a5f, #0f172a);
+      background-size: 400% 400%;
+      animation: gradient 15s ease infinite;
+    }
+
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+
+  <div class="max-w-7xl mx-auto px-6 py-12">
+
+    <!-- Header -->
+    <div class="text-center mb-16">
+      <div class="inline-flex items-center gap-3 mb-6">
+        <div class="w-14 h-14 bg-white/10 backdrop-blur rounded-xl flex items-center justify-center">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" stroke-width="2"/>
+            <circle cx="12" cy="12" r="6" stroke-width="2"/>
+            <circle cx="12" cy="12" r="2" fill="currentColor"/>
+          </svg>
+        </div>
+      </div>
+      <h1 class="text-5xl font-bold mb-4">Outvestments</h1>
+      <p class="text-xl text-white/60 max-w-2xl mx-auto">
+        Compare three design approaches for your trading thesis tracker.
+        Same powerful features, different visual experiences.
+      </p>
+    </div>
+
+    <!-- Plan Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+
+      <!-- Plan A Card -->
+      <div class="card-hover">
+        <a href="plan-a-dashboard.html" class="block">
+          <div class="bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/10 hover:border-blue-500/50 transition-colors">
+
+            <!-- Preview Window -->
+            <div class="preview-a p-6 h-64 relative overflow-hidden">
+              <!-- Mini Dashboard Preview -->
+              <div class="absolute inset-4 border border-green-500/30 rounded-lg">
+                <!-- Floating nav orb -->
+                <div class="absolute top-2 left-2 w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full"></div>
+
+                <!-- Stats row -->
+                <div class="absolute top-14 left-3 right-3 flex gap-2">
+                  <div class="flex-1 bg-black/50 border border-green-500/30 rounded p-2">
+                    <div class="text-[8px] text-gray-500">VALUE</div>
+                    <div class="text-xs font-bold text-green-400 glow" style="font-family: 'Orbitron', monospace;">$45.2K</div>
+                  </div>
+                  <div class="flex-1 bg-black/50 border border-green-500/30 rounded p-2">
+                    <div class="text-[8px] text-gray-500">VS NPC</div>
+                    <div class="text-xs font-bold text-green-400 glow" style="font-family: 'Orbitron', monospace;">+8.4%</div>
+                  </div>
+                </div>
+
+                <!-- VS Battle preview -->
+                <div class="absolute bottom-3 left-3 right-3 bg-black/50 border border-blue-500/30 rounded p-2">
+                  <div class="flex items-center justify-between">
+                    <div class="text-[8px] text-blue-400">YOU</div>
+                    <div class="text-[10px] font-bold text-yellow-400">VS</div>
+                    <div class="text-[8px] text-red-400">S&P</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Scanline effect -->
+              <div class="absolute inset-0 bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,0,0,0.1)_2px,rgba(0,0,0,0.1)_4px)] pointer-events-none"></div>
+            </div>
+
+            <!-- Card Content -->
+            <div class="p-6">
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-3 py-1 bg-purple-500/20 text-purple-300 text-xs font-medium rounded-full">
+                  Plan A
+                </span>
+                <span class="text-xs text-white/40">Full Gaming</span>
+              </div>
+              <h3 class="text-xl font-bold mb-2">FPS Arena</h3>
+              <p class="text-white/60 text-sm mb-4">
+                Full first-person shooter aesthetic. LED fonts, neon glows, scanlines, and Street Fighter-style VS battles.
+              </p>
+              <ul class="space-y-2 text-sm text-white/50">
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  Floating nav orb
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  LED scoreboard fonts
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  VS face-off comparisons
+                </li>
+              </ul>
+            </div>
+
+            <!-- Launch Button -->
+            <div class="px-6 pb-6">
+              <div class="w-full py-3 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg text-center font-semibold hover:from-purple-600 hover:to-blue-600 transition-all">
+                Launch Plan A
+              </div>
+            </div>
+
+          </div>
+        </a>
+      </div>
+
+      <!-- Plan B Card -->
+      <div class="card-hover">
+        <a href="plan-b-dashboard.html" class="block">
+          <div class="bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/10 hover:border-blue-500/50 transition-colors">
+
+            <!-- Preview Window -->
+            <div class="preview-b p-6 h-64 relative overflow-hidden">
+              <!-- Mini Dashboard Preview -->
+              <div class="absolute inset-4 flex gap-2">
+                <!-- Sidebar -->
+                <div class="w-12 bg-slate-900/80 border border-slate-700/50 rounded-lg p-2">
+                  <div class="w-8 h-8 bg-blue-500 rounded-lg mb-3"></div>
+                  <div class="space-y-2">
+                    <div class="w-6 h-6 bg-slate-700 rounded mx-auto"></div>
+                    <div class="w-6 h-6 bg-slate-700 rounded mx-auto"></div>
+                    <div class="w-6 h-6 bg-slate-700 rounded mx-auto"></div>
+                  </div>
+                </div>
+
+                <!-- Main content -->
+                <div class="flex-1 space-y-2">
+                  <!-- Stats -->
+                  <div class="flex gap-2">
+                    <div class="flex-1 bg-slate-800/50 border border-slate-700/50 rounded p-2">
+                      <div class="text-[8px] text-slate-500">VALUE</div>
+                      <div class="text-xs font-bold text-white">$45.2K</div>
+                    </div>
+                    <div class="flex-1 bg-slate-800/50 border border-slate-700/50 rounded p-2">
+                      <div class="text-[8px] text-slate-500">WIN RATE</div>
+                      <div class="text-xs font-bold text-emerald-400">73%</div>
+                    </div>
+                  </div>
+                  <!-- Chart area -->
+                  <div class="flex-1 bg-slate-800/50 border border-slate-700/50 rounded p-2">
+                    <div class="flex items-end h-16 gap-1">
+                      <div class="flex-1 bg-blue-500/50 rounded-t" style="height: 40%"></div>
+                      <div class="flex-1 bg-blue-500/50 rounded-t" style="height: 55%"></div>
+                      <div class="flex-1 bg-blue-500/50 rounded-t" style="height: 45%"></div>
+                      <div class="flex-1 bg-emerald-500/50 rounded-t" style="height: 70%"></div>
+                      <div class="flex-1 bg-emerald-500/50 rounded-t" style="height: 85%"></div>
+                    </div>
+                  </div>
+                  <!-- Table preview -->
+                  <div class="bg-slate-800/50 border border-slate-700/50 rounded p-2">
+                    <div class="space-y-1">
+                      <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-green-500/30 rounded"></div>
+                        <div class="flex-1 h-2 bg-slate-700 rounded"></div>
+                        <div class="text-[8px] text-emerald-400">+13%</div>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-blue-500/30 rounded"></div>
+                        <div class="flex-1 h-2 bg-slate-700 rounded"></div>
+                        <div class="text-[8px] text-emerald-400">+4%</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Content -->
+            <div class="p-6">
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs font-medium rounded-full">
+                  Plan B
+                </span>
+                <span class="text-xs text-white/40">Gaming Lite</span>
+              </div>
+              <h3 class="text-xl font-bold mb-2">Command Center</h3>
+              <p class="text-white/60 text-sm mb-4">
+                Dark theme with subtle gaming elements. Professional sidebar navigation with gradient accents and soft glows.
+              </p>
+              <ul class="space-y-2 text-sm text-white/50">
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  Traditional sidebar
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  Gradient cards
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  Subtle glow effects
+                </li>
+              </ul>
+            </div>
+
+            <!-- Launch Button -->
+            <div class="px-6 pb-6">
+              <div class="w-full py-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg text-center font-semibold hover:from-blue-600 hover:to-cyan-600 transition-all">
+                Launch Plan B
+              </div>
+            </div>
+
+          </div>
+        </a>
+      </div>
+
+      <!-- Plan C Card -->
+      <div class="card-hover">
+        <a href="plan-c-dashboard.html" class="block">
+          <div class="bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/10 hover:border-blue-500/50 transition-colors">
+
+            <!-- Preview Window -->
+            <div class="preview-c p-6 h-64 relative overflow-hidden">
+              <!-- Mini Dashboard Preview -->
+              <div class="absolute inset-4 flex gap-2">
+                <!-- Sidebar -->
+                <div class="w-12 bg-white border border-gray-200 rounded-lg p-2 shadow-sm">
+                  <div class="w-8 h-8 bg-blue-500 rounded-lg mb-3"></div>
+                  <div class="space-y-2">
+                    <div class="w-6 h-6 bg-gray-100 rounded mx-auto"></div>
+                    <div class="w-6 h-6 bg-gray-100 rounded mx-auto"></div>
+                    <div class="w-6 h-6 bg-gray-100 rounded mx-auto"></div>
+                  </div>
+                </div>
+
+                <!-- Main content -->
+                <div class="flex-1 space-y-2">
+                  <!-- Stats -->
+                  <div class="flex gap-2">
+                    <div class="flex-1 bg-white border border-gray-200 rounded p-2 shadow-sm">
+                      <div class="text-[8px] text-gray-500">VALUE</div>
+                      <div class="text-xs font-bold text-gray-900">$45.2K</div>
+                    </div>
+                    <div class="flex-1 bg-white border border-gray-200 rounded p-2 shadow-sm">
+                      <div class="text-[8px] text-gray-500">TODAY</div>
+                      <div class="text-xs font-bold text-emerald-600">+$1.2K</div>
+                    </div>
+                  </div>
+                  <!-- Chart area -->
+                  <div class="flex-1 bg-white border border-gray-200 rounded p-2 shadow-sm">
+                    <div class="flex items-end h-16 gap-1">
+                      <div class="flex-1 bg-blue-100 rounded-t" style="height: 45%"></div>
+                      <div class="flex-1 bg-blue-100 rounded-t" style="height: 50%"></div>
+                      <div class="flex-1 bg-blue-100 rounded-t" style="height: 55%"></div>
+                      <div class="flex-1 bg-blue-200 rounded-t" style="height: 65%"></div>
+                      <div class="flex-1 bg-blue-300 rounded-t" style="height: 80%"></div>
+                    </div>
+                  </div>
+                  <!-- Table preview -->
+                  <div class="bg-white border border-gray-200 rounded p-2 shadow-sm">
+                    <div class="space-y-1">
+                      <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-green-100 rounded"></div>
+                        <div class="flex-1 h-2 bg-gray-100 rounded"></div>
+                        <div class="text-[8px] text-emerald-600">+13%</div>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 bg-blue-100 rounded"></div>
+                        <div class="flex-1 h-2 bg-gray-100 rounded"></div>
+                        <div class="text-[8px] text-emerald-600">+4%</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Content -->
+            <div class="p-6">
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-xs font-medium rounded-full">
+                  Plan C
+                </span>
+                <span class="text-xs text-white/40">Conservative</span>
+              </div>
+              <h3 class="text-xl font-bold mb-2">Clean Fintech</h3>
+              <p class="text-white/60 text-sm mb-4">
+                Traditional fintech aesthetic. Light mode, clean cards, professional typography, and minimal animations.
+              </p>
+              <ul class="space-y-2 text-sm text-white/50">
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  Light mode design
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  Clean card layouts
+                </li>
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  Professional feel
+                </li>
+              </ul>
+            </div>
+
+            <!-- Launch Button -->
+            <div class="px-6 pb-6">
+              <div class="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg text-center font-semibold hover:from-emerald-600 hover:to-teal-600 transition-all">
+                Launch Plan C
+              </div>
+            </div>
+
+          </div>
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Screen Navigation -->
+    <div class="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-6 mb-8">
+      <h2 class="text-xl font-bold mb-6">All Screens</h2>
+      <div class="grid grid-cols-3 gap-6">
+
+        <!-- Plan A Screens -->
+        <div>
+          <h3 class="text-purple-300 font-semibold mb-3 flex items-center gap-2">
+            <span class="w-2 h-2 bg-purple-400 rounded-full"></span>
+            Plan A: FPS Arena
+          </h3>
+          <ul class="space-y-2">
+            <li><a href="plan-a-dashboard.html" class="text-white/60 hover:text-white transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"/></svg>
+              Dashboard
+            </a></li>
+            <li><a href="plan-a-scoreboard.html" class="text-white/60 hover:text-white transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z"/></svg>
+              Scoreboard
+            </a></li>
+            <li><a href="plan-a-history.html" class="text-white/60 hover:text-white transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              History
+            </a></li>
+            <li><a href="plan-a-settings.html" class="text-white/60 hover:text-white transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/></svg>
+              Settings
+            </a></li>
+          </ul>
+        </div>
+
+        <!-- Plan B Screens -->
+        <div>
+          <h3 class="text-blue-300 font-semibold mb-3 flex items-center gap-2">
+            <span class="w-2 h-2 bg-blue-400 rounded-full"></span>
+            Plan B: Command Center
+          </h3>
+          <ul class="space-y-2">
+            <li><a href="plan-b-dashboard.html" class="text-white/60 hover:text-white transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"/></svg>
+              Dashboard
+            </a></li>
+            <li><a href="plan-b-scoreboard.html" class="text-white/60 hover:text-white transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z"/></svg>
+              Scoreboard
+            </a></li>
+            <li><a href="plan-b-history.html" class="text-white/60 hover:text-white transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              History
+            </a></li>
+            <li><a href="plan-b-settings.html" class="text-white/60 hover:text-white transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/></svg>
+              Settings
+            </a></li>
+          </ul>
+        </div>
+
+        <!-- Plan C Screens -->
+        <div>
+          <h3 class="text-emerald-300 font-semibold mb-3 flex items-center gap-2">
+            <span class="w-2 h-2 bg-emerald-400 rounded-full"></span>
+            Plan C: Clean Fintech
+          </h3>
+          <ul class="space-y-2">
+            <li><a href="plan-c-dashboard.html" class="text-white/60 hover:text-white transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"/></svg>
+              Dashboard
+            </a></li>
+            <li><a href="plan-c-scoreboard.html" class="text-white/60 hover:text-white transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z"/></svg>
+              Scoreboard
+            </a></li>
+            <li><a href="plan-c-history.html" class="text-white/60 hover:text-white transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              History
+            </a></li>
+            <li><a href="plan-c-settings.html" class="text-white/60 hover:text-white transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/></svg>
+              Settings
+            </a></li>
+            <li><a href="plan-c-set-target.html" class="text-white/60 hover:text-white transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><circle cx="12" cy="12" r="6" stroke-width="2"/></svg>
+              Set Target
+            </a></li>
+            <li><a href="plan-c-take-aim.html" class="text-white/60 hover:text-white transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/></svg>
+              Take Aim
+            </a></li>
+            <li><a href="plan-c-pull-trigger.html" class="text-white/60 hover:text-white transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              Pull Trigger
+            </a></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Comparison Table -->
+    <div class="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
+      <div class="p-6 border-b border-white/10">
+        <h2 class="text-xl font-bold">Quick Comparison</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="text-left text-sm text-white/50 border-b border-white/10">
+              <th class="px-6 py-4">Feature</th>
+              <th class="px-6 py-4 text-center">Plan A</th>
+              <th class="px-6 py-4 text-center">Plan B</th>
+              <th class="px-6 py-4 text-center">Plan C</th>
+            </tr>
+          </thead>
+          <tbody class="text-sm">
+            <tr class="border-b border-white/5">
+              <td class="px-6 py-4 text-white/80">Theme</td>
+              <td class="px-6 py-4 text-center text-purple-300">Dark Arena</td>
+              <td class="px-6 py-4 text-center text-blue-300">Dark Pro</td>
+              <td class="px-6 py-4 text-center text-emerald-300">Light Clean</td>
+            </tr>
+            <tr class="border-b border-white/5">
+              <td class="px-6 py-4 text-white/80">Navigation</td>
+              <td class="px-6 py-4 text-center text-white/60">Floating Orb</td>
+              <td class="px-6 py-4 text-center text-white/60">Sidebar</td>
+              <td class="px-6 py-4 text-center text-white/60">Sidebar</td>
+            </tr>
+            <tr class="border-b border-white/5">
+              <td class="px-6 py-4 text-white/80">Typography</td>
+              <td class="px-6 py-4 text-center text-white/60">LED / Orbitron</td>
+              <td class="px-6 py-4 text-center text-white/60">Inter Bold</td>
+              <td class="px-6 py-4 text-center text-white/60">Inter Regular</td>
+            </tr>
+            <tr class="border-b border-white/5">
+              <td class="px-6 py-4 text-white/80">Effects</td>
+              <td class="px-6 py-4 text-center text-white/60">Neon Glows, Scanlines</td>
+              <td class="px-6 py-4 text-center text-white/60">Subtle Glows</td>
+              <td class="px-6 py-4 text-center text-white/60">Minimal</td>
+            </tr>
+            <tr class="border-b border-white/5">
+              <td class="px-6 py-4 text-white/80">NPC Comparison</td>
+              <td class="px-6 py-4 text-center text-white/60">VS Face-off</td>
+              <td class="px-6 py-4 text-center text-white/60">Badge Style</td>
+              <td class="px-6 py-4 text-center text-white/60">Simple Text</td>
+            </tr>
+            <tr>
+              <td class="px-6 py-4 text-white/80">Target Audience</td>
+              <td class="px-6 py-4 text-center text-white/60">Gaming Enthusiasts</td>
+              <td class="px-6 py-4 text-center text-white/60">Modern Traders</td>
+              <td class="px-6 py-4 text-center text-white/60">Traditional Users</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center mt-12 text-white/40 text-sm">
+      <p>All plans use the same shooting metaphor: Target &rarr; Aim &rarr; Shot &rarr; Trigger</p>
+      <p class="mt-2">Only the visual aesthetic differs</p>
+    </div>
+
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,61 @@
+# Docker Compose for Outvestments
+# Follows Standards-v2/shared/Containers/compose-conventions.md
+#
+# Development: docker compose up -d
+# Production:  Deploy as Portainer stack on stark (10.0.0.31:3154)
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: outvestments-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=outvestments
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-outvestments_dev}
+      - POSTGRES_DB=outvestments
+      - TZ=America/New_York
+    volumes:
+      - outvestments_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U outvestments"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Development: expose on localhost
+    # Production: comment this out, app connects via service name
+    ports:
+      - "5432:5432"
+
+  # Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: outvestments
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://outvestments:${POSTGRES_PASSWORD:-outvestments_dev}@postgres:5432/outvestments
+      - AUTH_SECRET=${AUTH_SECRET}
+      - AUTH_URL=${AUTH_URL:-http://10.0.0.31:3154}
+      - AUTHENTIK_ISSUER=${AUTHENTIK_ISSUER}
+      - AUTHENTIK_CLIENT_ID=${AUTHENTIK_CLIENT_ID}
+      - AUTHENTIK_CLIENT_SECRET=${AUTHENTIK_CLIENT_SECRET}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - ALPACA_API_KEY=${ALPACA_API_KEY}
+      - ALPACA_API_SECRET=${ALPACA_API_SECRET}
+      - ALPACA_BASE_URL=${ALPACA_BASE_URL:-https://paper-api.alpaca.markets}
+      - TZ=America/New_York
+    ports:
+      # Production: bind to stark's IP
+      - "10.0.0.31:3154:3000"
+    labels:
+      - "com.nextlevelfoundry.stack=outvestments"
+      - "com.nextlevelfoundry.host=stark"
+
+volumes:
+  outvestments_postgres_data:

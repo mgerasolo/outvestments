@@ -1,0 +1,28 @@
+# Docker Compose for Local Development
+# Usage: docker compose -f docker-compose.dev.yml up -d postgres
+#
+# This only runs PostgreSQL for local development.
+# The Next.js app runs via `npm run dev` for hot reloading.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: outvestments-postgres-dev
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=outvestments
+      - POSTGRES_PASSWORD=outvestments_dev
+      - POSTGRES_DB=outvestments
+      - TZ=America/New_York
+    volumes:
+      - outvestments_postgres_dev:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U outvestments"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  outvestments_postgres_dev:

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Outvestments - Scoreboard (Plan A)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; background: #030712; }
+    .led-font { font-family: 'Orbitron', monospace; }
+    .glow-green { text-shadow: 0 0 10px #10b981, 0 0 20px #10b981, 0 0 30px #10b981; }
+    .glow-red { text-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444; }
+    .glow-blue { text-shadow: 0 0 10px #3b82f6, 0 0 20px #3b82f6; }
+    .glow-yellow { text-shadow: 0 0 10px #eab308, 0 0 20px #eab308, 0 0 30px #eab308; }
+    .scanlines {
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px);
+    }
+    .nav-orb {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+      box-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
+    }
+    .vs-divider {
+      background: linear-gradient(180deg, transparent 0%, #eab308 50%, transparent 100%);
+    }
+    .player-glow {
+      box-shadow: 0 0 40px rgba(59, 130, 246, 0.4);
+    }
+    .npc-glow {
+      box-shadow: 0 0 40px rgba(239, 68, 68, 0.4);
+    }
+    .rank-badge {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+    }
+  </style>
+</head>
+<body class="min-h-screen text-white">
+
+  <!-- Scanline Overlay -->
+  <div class="fixed inset-0 scanlines pointer-events-none z-50"></div>
+
+  <!-- Floating Nav Orb -->
+  <div class="fixed top-6 left-6 z-40">
+    <a href="plan-a-dashboard.html" class="nav-orb w-14 h-14 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+      <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </a>
+  </div>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-6 py-8 pt-24">
+
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="led-font text-4xl font-bold glow-yellow mb-2">SCOREBOARD</h1>
+      <p class="text-gray-500">Your battle stats</p>
+    </div>
+
+    <!-- VS Battle Card -->
+    <div class="bg-gray-900/80 rounded-2xl p-8 mb-8 border border-yellow-500/30">
+      <div class="grid grid-cols-3 gap-8 items-center">
+
+        <!-- Player Side -->
+        <div class="text-center player-glow rounded-2xl p-6 bg-blue-500/10 border border-blue-500/30">
+          <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-3xl font-bold">
+            M
+          </div>
+          <h3 class="led-font text-xl font-bold text-blue-400 glow-blue mb-1">MATT G</h3>
+          <p class="text-xs text-gray-500 mb-4">PRO SHOOTER</p>
+
+          <div class="led-font text-5xl font-black text-emerald-400 glow-green">
+            +18.4%
+          </div>
+          <p class="text-sm text-gray-500 mt-2">YTD Return</p>
+        </div>
+
+        <!-- VS Divider -->
+        <div class="text-center">
+          <div class="vs-divider w-1 h-32 mx-auto mb-4"></div>
+          <div class="led-font text-4xl font-black text-yellow-400 glow-yellow">VS</div>
+          <div class="vs-divider w-1 h-32 mx-auto mt-4"></div>
+        </div>
+
+        <!-- NPC Side -->
+        <div class="text-center npc-glow rounded-2xl p-6 bg-red-500/10 border border-red-500/30">
+          <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center">
+            <span class="led-font text-2xl font-bold">SPY</span>
+          </div>
+          <h3 class="led-font text-xl font-bold text-red-400 glow-red mb-1">S&P 500</h3>
+          <p class="text-xs text-gray-500 mb-4">NPC OPPONENT</p>
+
+          <div class="led-font text-5xl font-black text-emerald-400 glow-green">
+            +10.2%
+          </div>
+          <p class="text-sm text-gray-500 mt-2">YTD Return</p>
+        </div>
+
+      </div>
+
+      <!-- Battle Result -->
+      <div class="mt-8 text-center p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/30">
+        <p class="text-sm text-gray-400 mb-1">BATTLE STATUS</p>
+        <p class="led-font text-2xl font-bold text-emerald-400 glow-green">YOU ARE WINNING BY +8.2%</p>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-4 gap-4 mb-8">
+
+      <div class="bg-gray-900/80 rounded-xl p-5 border border-blue-500/20 text-center">
+        <p class="text-xs text-gray-500 mb-2">WIN RATE</p>
+        <p class="led-font text-3xl font-bold text-emerald-400 glow-green">73%</p>
+        <p class="text-xs text-gray-600 mt-1">11 of 15</p>
+      </div>
+
+      <div class="bg-gray-900/80 rounded-xl p-5 border border-blue-500/20 text-center">
+        <p class="text-xs text-gray-500 mb-2">PPD SCORE</p>
+        <p class="led-font text-3xl font-bold text-blue-400 glow-blue">0.42%</p>
+        <p class="text-xs text-gray-600 mt-1">per day</p>
+      </div>
+
+      <div class="bg-gray-900/80 rounded-xl p-5 border border-blue-500/20 text-center">
+        <p class="text-xs text-gray-500 mb-2">BEST SHOT</p>
+        <p class="led-font text-3xl font-bold text-emerald-400 glow-green">+34%</p>
+        <p class="text-xs text-gray-600 mt-1">NVDA</p>
+      </div>
+
+      <div class="bg-gray-900/80 rounded-xl p-5 border border-blue-500/20 text-center">
+        <p class="text-xs text-gray-500 mb-2">WORST SHOT</p>
+        <p class="led-font text-3xl font-bold text-red-400 glow-red">-12%</p>
+        <p class="text-xs text-gray-600 mt-1">TSLA</p>
+      </div>
+
+    </div>
+
+    <!-- Leaderboard -->
+    <div class="bg-gray-900/80 rounded-2xl overflow-hidden border border-yellow-500/20">
+      <div class="p-6 border-b border-gray-800 flex items-center justify-between">
+        <h2 class="led-font text-xl font-bold text-yellow-400 glow-yellow">SHOT LEADERBOARD</h2>
+        <div class="flex gap-2">
+          <button class="px-3 py-1.5 bg-yellow-500/20 text-yellow-400 rounded-lg text-xs led-font">ALL TIME</button>
+          <button class="px-3 py-1.5 text-gray-500 hover:bg-gray-800 rounded-lg text-xs led-font">THIS YEAR</button>
+          <button class="px-3 py-1.5 text-gray-500 hover:bg-gray-800 rounded-lg text-xs led-font">THIS MONTH</button>
+        </div>
+      </div>
+
+      <table class="w-full">
+        <thead>
+          <tr class="text-left text-xs text-gray-500 border-b border-gray-800">
+            <th class="px-6 py-4 led-font">RANK</th>
+            <th class="px-6 py-4 led-font">SHOT</th>
+            <th class="px-6 py-4 led-font">TARGET</th>
+            <th class="px-6 py-4 led-font">RETURN</th>
+            <th class="px-6 py-4 led-font">PPD</th>
+            <th class="px-6 py-4 led-font">STATUS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b border-gray-800/50 bg-yellow-500/5">
+            <td class="px-6 py-4">
+              <div class="rank-badge w-8 h-8 rounded-full flex items-center justify-center text-black font-bold">1</div>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                  <span class="text-xs font-bold text-green-400">NVDA</span>
+                </div>
+                <span class="font-medium">NVIDIA</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-gray-400">AI Infrastructure</td>
+            <td class="px-6 py-4 led-font text-emerald-400 glow-green font-bold">+34.2%</td>
+            <td class="px-6 py-4 led-font text-blue-400">0.85%</td>
+            <td class="px-6 py-4">
+              <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-xs">HIT</span>
+            </td>
+          </tr>
+          <tr class="border-b border-gray-800/50">
+            <td class="px-6 py-4">
+              <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-white font-bold">2</div>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                  <span class="text-xs font-bold text-purple-400">AMD</span>
+                </div>
+                <span class="font-medium">AMD</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-gray-400">AI Infrastructure</td>
+            <td class="px-6 py-4 led-font text-emerald-400 font-bold">+28.5%</td>
+            <td class="px-6 py-4 led-font text-blue-400">0.71%</td>
+            <td class="px-6 py-4">
+              <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-xs">HIT</span>
+            </td>
+          </tr>
+          <tr class="border-b border-gray-800/50">
+            <td class="px-6 py-4">
+              <div class="w-8 h-8 rounded-full bg-amber-700 flex items-center justify-center text-white font-bold">3</div>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                  <span class="text-xs font-bold text-blue-400">MSFT</span>
+                </div>
+                <span class="font-medium">Microsoft</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-gray-400">AI Infrastructure</td>
+            <td class="px-6 py-4 led-font text-emerald-400 font-bold">+22.1%</td>
+            <td class="px-6 py-4 led-font text-blue-400">0.55%</td>
+            <td class="px-6 py-4">
+              <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-xs">HIT</span>
+            </td>
+          </tr>
+          <tr class="border-b border-gray-800/50">
+            <td class="px-6 py-4">
+              <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-gray-400 font-bold">4</div>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                  <span class="text-xs font-bold text-yellow-400">GOOGL</span>
+                </div>
+                <span class="font-medium">Alphabet</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-gray-400">AI Infrastructure</td>
+            <td class="px-6 py-4 led-font text-emerald-400 font-bold">+18.3%</td>
+            <td class="px-6 py-4 led-font text-blue-400">0.46%</td>
+            <td class="px-6 py-4">
+              <span class="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs">ACTIVE</span>
+            </td>
+          </tr>
+          <tr class="border-b border-gray-800/50">
+            <td class="px-6 py-4">
+              <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-gray-400 font-bold">5</div>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
+                  <span class="text-xs font-bold text-red-400">TSLA</span>
+                </div>
+                <span class="font-medium">Tesla</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-gray-400">EV Revolution</td>
+            <td class="px-6 py-4 led-font text-red-400 glow-red font-bold">-12.4%</td>
+            <td class="px-6 py-4 led-font text-red-400">-0.31%</td>
+            <td class="px-6 py-4">
+              <span class="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-xs">MISS</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+</body>
+</html>

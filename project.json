@@ -8,7 +8,11 @@
     "port": 3154,
     "status": "development"
   },
-  "services": [],
+  "services": [
+    "logging",
+    "monitoring",
+    "auth"
+  ],
   "github": {
     "user": "mjurisolo",
     "repo": "outvestments",

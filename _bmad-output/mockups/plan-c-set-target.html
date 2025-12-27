@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Outvestments - Set Your Target</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen">
+
+  <!-- Top Bar -->
+  <header class="bg-white border-b border-gray-200">
+    <div class="max-w-3xl mx-auto px-4 py-4">
+      <a href="plan-c-dashboard.html" class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Back to Dashboard
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-3xl mx-auto px-4 py-8">
+
+    <!-- Page Header -->
+    <div class="text-center mb-8">
+      <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" stroke-width="2"/>
+          <circle cx="12" cy="12" r="6" stroke-width="2"/>
+          <circle cx="12" cy="12" r="2" fill="currentColor"/>
+        </svg>
+      </div>
+      <h1 class="text-2xl font-bold text-gray-900">Set Your Eyes on the Target</h1>
+      <p class="text-gray-500 mt-2">What's your prediction? Describe your target.</p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+
+      <!-- Target Name -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Target Name</label>
+        <input
+          type="text"
+          value="AI infrastructure will outperform in 2025"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900"
+          placeholder="Give your target a clear, memorable name..."
+        />
+      </div>
+
+      <!-- Notes -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Notes
+          <span class="text-gray-400 font-normal">(optional)</span>
+        </label>
+        <textarea
+          rows="3"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 resize-none"
+          placeholder="Add context about your prediction..."
+        >Data center buildout and AI chip demand will drive infrastructure companies to outperform the broader market through 2025.</textarea>
+      </div>
+
+      <!-- Category -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-3">Category</label>
+        <div class="flex flex-wrap gap-3">
+          <label class="relative cursor-pointer">
+            <input type="radio" name="category" class="peer sr-only" />
+            <div class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-700 hover:border-gray-400 transition-colors">
+              Stock-specific
+            </div>
+          </label>
+          <label class="relative cursor-pointer">
+            <input type="radio" name="category" class="peer sr-only" />
+            <div class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-700 hover:border-gray-400 transition-colors">
+              Sector
+            </div>
+          </label>
+          <label class="relative cursor-pointer">
+            <input type="radio" name="category" class="peer sr-only" checked />
+            <div class="px-4 py-2 border border-blue-500 bg-blue-50 rounded-lg text-sm text-blue-700 transition-colors">
+              Theme
+            </div>
+          </label>
+          <label class="relative cursor-pointer">
+            <input type="radio" name="category" class="peer sr-only" />
+            <div class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-700 hover:border-gray-400 transition-colors">
+              Market
+            </div>
+          </label>
+          <label class="relative cursor-pointer">
+            <input type="radio" name="category" class="peer sr-only" />
+            <div class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-700 hover:border-gray-400 transition-colors">
+              Event
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Catalyst -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-3">Catalyst</label>
+        <div class="flex flex-wrap gap-3">
+          <label class="relative cursor-pointer">
+            <input type="radio" name="catalyst" class="peer sr-only" />
+            <div class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-700 hover:border-gray-400 transition-colors">
+              Macro
+            </div>
+          </label>
+          <label class="relative cursor-pointer">
+            <input type="radio" name="catalyst" class="peer sr-only" checked />
+            <div class="px-4 py-2 border border-blue-500 bg-blue-50 rounded-lg text-sm text-blue-700 transition-colors">
+              Industry
+            </div>
+          </label>
+          <label class="relative cursor-pointer">
+            <input type="radio" name="catalyst" class="peer sr-only" />
+            <div class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-700 hover:border-gray-400 transition-colors">
+              Company
+            </div>
+          </label>
+          <label class="relative cursor-pointer">
+            <input type="radio" name="catalyst" class="peer sr-only" />
+            <div class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-700 hover:border-gray-400 transition-colors">
+              Other
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Tags -->
+      <div class="mb-8">
+        <label class="block text-sm font-medium text-gray-700 mb-3">Tags</label>
+        <div class="flex flex-wrap gap-2">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg text-sm text-gray-700">
+            AI
+            <button class="text-gray-400 hover:text-gray-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </span>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg text-sm text-gray-700">
+            Infrastructure
+            <button class="text-gray-400 hover:text-gray-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </span>
+          <button class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Add tag
+          </button>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <a href="plan-c-take-aim.html" class="block w-full py-4 bg-blue-500 text-white text-center rounded-lg font-semibold hover:bg-blue-600 transition-colors">
+        Lock In Target
+      </a>
+
+    </div>
+
+  </main>
+
+</body>
+</html>

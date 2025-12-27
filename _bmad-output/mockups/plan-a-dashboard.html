@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Outvestments - Plan A Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .led-font { font-family: 'Orbitron', monospace; }
+    .glow-green { text-shadow: 0 0 10px #10b981, 0 0 20px #10b981, 0 0 30px #10b981; }
+    .glow-red { text-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444; }
+    .glow-blue { text-shadow: 0 0 10px #3b82f6, 0 0 20px #3b82f6; }
+    .card-glow { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255,255,255,0.1); }
+    .card-glow-green { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255,255,255,0.1); }
+    .neon-border { border: 1px solid rgba(59, 130, 246, 0.5); }
+    .scanline { background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px); }
+  </style>
+</head>
+<body class="bg-gray-950 text-white min-h-screen">
+  <div class="flex h-screen">
+
+    <!-- Floating Nav Orb (minimized) -->
+    <div class="fixed bottom-8 left-8 z-50">
+      <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/50 cursor-pointer hover:scale-110 transition-transform">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" stroke-width="2"/>
+          <circle cx="12" cy="12" r="6" stroke-width="2"/>
+          <circle cx="12" cy="12" r="2" fill="currentColor"/>
+        </svg>
+      </div>
+      <!-- Expanded menu items would fly out from here -->
+      <div class="absolute bottom-20 left-0 space-y-3">
+        <div class="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center border border-blue-500/50 shadow-lg cursor-pointer hover:bg-gray-700 transition-colors">
+          <span class="text-xs text-blue-400">🎯</span>
+        </div>
+        <div class="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center border border-gray-700 shadow-lg cursor-pointer hover:bg-gray-700 transition-colors">
+          <span class="text-xs">⚡</span>
+        </div>
+        <div class="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center border border-gray-700 shadow-lg cursor-pointer hover:bg-gray-700 transition-colors">
+          <span class="text-xs">📊</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-auto p-8">
+
+      <!-- Scoreboard Header -->
+      <header class="mb-8">
+        <div class="bg-gray-900 rounded-2xl p-6 neon-border card-glow">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-blue-400 text-sm uppercase tracking-widest mb-1">Shooter</p>
+              <h1 class="led-font text-3xl font-bold text-white">MATT</h1>
+            </div>
+            <div class="text-center">
+              <p class="text-gray-500 text-xs uppercase tracking-widest mb-1">Session</p>
+              <p class="led-font text-xl text-gray-300">DEC 27, 2025</p>
+            </div>
+            <div class="text-right">
+              <p class="text-gray-500 text-xs uppercase tracking-widest mb-1">Status</p>
+              <p class="led-font text-xl text-emerald-400 glow-green">● LIVE</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- LED Scoreboard KPIs -->
+      <section class="mb-8">
+        <div class="grid grid-cols-3 gap-6">
+          <!-- Total Value -->
+          <div class="bg-gray-900 rounded-xl p-6 neon-border relative overflow-hidden">
+            <div class="scanline absolute inset-0 pointer-events-none"></div>
+            <p class="text-gray-500 text-xs uppercase tracking-widest mb-3">Portfolio Value</p>
+            <p class="led-font text-4xl font-bold text-white glow-blue">$97,420</p>
+            <p class="text-gray-500 text-sm mt-2">All positions</p>
+          </div>
+
+          <!-- Today's P&L -->
+          <div class="bg-gray-900 rounded-xl p-6 neon-border card-glow-green relative overflow-hidden">
+            <div class="scanline absolute inset-0 pointer-events-none"></div>
+            <p class="text-gray-500 text-xs uppercase tracking-widest mb-3">Today's P&L</p>
+            <p class="led-font text-4xl font-bold text-emerald-400 glow-green">+$1,240</p>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="px-2 py-1 bg-emerald-500/20 text-emerald-400 text-xs rounded led-font">+1.29%</span>
+              <span class="text-gray-500 text-sm">▲ UP</span>
+            </div>
+          </div>
+
+          <!-- vs NPC -->
+          <div class="bg-gray-900 rounded-xl p-6 neon-border card-glow-green relative overflow-hidden">
+            <div class="scanline absolute inset-0 pointer-events-none"></div>
+            <p class="text-gray-500 text-xs uppercase tracking-widest mb-3">vs NPC (S&P 500)</p>
+            <p class="led-font text-4xl font-bold text-emerald-400 glow-green">+4.2%</p>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="px-2 py-1 bg-emerald-500/20 text-emerald-400 text-xs rounded led-font">WINNING</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Performance Chart -->
+      <section class="mb-8">
+        <div class="bg-gray-900 rounded-xl p-6 neon-border">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="led-font text-lg font-bold text-white uppercase tracking-wider">Performance Tracker</h2>
+            <div class="flex gap-1">
+              <button class="px-3 py-1.5 text-xs rounded bg-gray-800 text-gray-400 hover:bg-gray-700 led-font">1W</button>
+              <button class="px-3 py-1.5 text-xs rounded bg-blue-600 text-white led-font shadow-lg shadow-blue-500/30">1M</button>
+              <button class="px-3 py-1.5 text-xs rounded bg-gray-800 text-gray-400 hover:bg-gray-700 led-font">3M</button>
+              <button class="px-3 py-1.5 text-xs rounded bg-gray-800 text-gray-400 hover:bg-gray-700 led-font">YTD</button>
+              <button class="px-3 py-1.5 text-xs rounded bg-gray-800 text-gray-400 hover:bg-gray-700 led-font">ALL</button>
+            </div>
+          </div>
+          <!-- Chart Area -->
+          <div class="h-48 relative">
+            <svg class="w-full h-full" viewBox="0 0 800 200" preserveAspectRatio="none">
+              <!-- Grid lines -->
+              <line x1="0" y1="50" x2="800" y2="50" stroke="#1f2937" stroke-width="1"/>
+              <line x1="0" y1="100" x2="800" y2="100" stroke="#1f2937" stroke-width="1"/>
+              <line x1="0" y1="150" x2="800" y2="150" stroke="#1f2937" stroke-width="1"/>
+
+              <!-- Your line (glowing blue) -->
+              <path d="M 0 180 Q 100 170, 200 140 T 400 80 T 600 50 T 800 20"
+                    fill="none" stroke="#3b82f6" stroke-width="3" filter="url(#glow)"/>
+
+              <!-- NPC line (dim) -->
+              <path d="M 0 180 Q 100 175, 200 160 T 400 120 T 600 90 T 800 70"
+                    fill="none" stroke="#6b7280" stroke-width="2" stroke-dasharray="8,4"/>
+
+              <defs>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+            </svg>
+          </div>
+          <div class="flex items-center justify-center gap-8 mt-4 pt-4 border-t border-gray-800">
+            <div class="flex items-center gap-2">
+              <div class="w-4 h-1 bg-blue-500 rounded shadow-lg shadow-blue-500/50"></div>
+              <span class="text-sm text-gray-400 led-font">YOU</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-4 h-1 bg-gray-500 rounded"></div>
+              <span class="text-sm text-gray-500 led-font">NPC</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Active Targets - Street Fighter Style -->
+      <section class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="led-font text-lg font-bold text-white uppercase tracking-wider">Active Targets</h2>
+          <button class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors led-font text-sm shadow-lg shadow-blue-500/30">
+            <span>+</span> NEW TARGET
+          </button>
+        </div>
+
+        <!-- Target Card with VS Layout -->
+        <div class="bg-gray-900 rounded-xl overflow-hidden neon-border">
+          <div class="p-4 border-b border-gray-800">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="led-font text-lg font-bold text-white">AI INFRASTRUCTURE BOOM</h3>
+                <p class="text-gray-500 text-sm">3 aims • $5,000 deployed • Dec 15</p>
+              </div>
+              <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 text-xs rounded led-font">ON TRACK</span>
+            </div>
+          </div>
+
+          <!-- VS Face-off -->
+          <div class="p-6 bg-gradient-to-r from-blue-900/20 via-gray-900 to-red-900/20">
+            <div class="grid grid-cols-3 gap-4 items-center">
+              <!-- You -->
+              <div class="text-center">
+                <p class="text-blue-400 text-xs uppercase tracking-widest mb-2">YOU</p>
+                <p class="led-font text-3xl font-bold text-emerald-400 glow-green">+24.8%</p>
+                <p class="text-gray-400 text-sm mt-1">+$1,240</p>
+              </div>
+
+              <!-- VS -->
+              <div class="text-center">
+                <div class="w-16 h-16 mx-auto bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg shadow-orange-500/50">
+                  <span class="led-font text-xl font-black text-black">VS</span>
+                </div>
+              </div>
+
+              <!-- NPC -->
+              <div class="text-center">
+                <p class="text-red-400 text-xs uppercase tracking-widest mb-2">NPC (S&P)</p>
+                <p class="led-font text-3xl font-bold text-gray-400">+17.8%</p>
+                <p class="text-gray-500 text-sm mt-1">+$890</p>
+              </div>
+            </div>
+
+            <!-- Alpha callout -->
+            <div class="mt-4 pt-4 border-t border-gray-800 text-center">
+              <p class="text-gray-500 text-xs uppercase tracking-widest">ALPHA GENERATED</p>
+              <p class="led-font text-2xl font-bold text-blue-400 glow-blue mt-1">+7.0% (+$350)</p>
+            </div>
+          </div>
+
+          <!-- Pace Bar -->
+          <div class="p-4 bg-gray-950">
+            <div class="flex items-center justify-between text-sm mb-2">
+              <span class="text-red-400 led-font">😤 START</span>
+              <span class="text-gray-400">67% to target</span>
+              <span class="text-emerald-400 led-font">🎯 TARGET</span>
+            </div>
+            <div class="h-3 bg-gray-800 rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-blue-600 to-emerald-500 rounded-full shadow-lg shadow-emerald-500/30" style="width: 67%"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Active Shots - Leaderboard Style -->
+      <section>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="led-font text-lg font-bold text-white uppercase tracking-wider">Active Shots</h2>
+          <a href="#" class="text-blue-400 hover:text-blue-300 text-sm led-font">VIEW ALL →</a>
+        </div>
+
+        <div class="bg-gray-900 rounded-xl overflow-hidden neon-border">
+          <table class="w-full">
+            <thead class="bg-gray-950">
+              <tr>
+                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider led-font">Ticker</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider led-font">Return</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider led-font">vs NPC</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider led-font">PPD</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider led-font">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800">
+              <tr class="hover:bg-gray-800/50 transition-colors">
+                <td class="px-6 py-4">
+                  <span class="led-font text-lg font-bold text-white">NVDA</span>
+                </td>
+                <td class="px-6 py-4 led-font text-emerald-400 glow-green font-bold">+15.2%</td>
+                <td class="px-6 py-4 led-font text-emerald-400 font-medium">+6.5%</td>
+                <td class="px-6 py-4 led-font text-blue-400">0.42%</td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-xs led-font">
+                    ● ON TRACK
+                  </span>
+                </td>
+              </tr>
+              <tr class="hover:bg-gray-800/50 transition-colors">
+                <td class="px-6 py-4">
+                  <span class="led-font text-lg font-bold text-white">AMD</span>
+                </td>
+                <td class="px-6 py-4 led-font text-emerald-400 font-bold">+8.4%</td>
+                <td class="px-6 py-4 led-font text-red-400 font-medium">-3.7%</td>
+                <td class="px-6 py-4 led-font text-blue-400">0.19%</td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-amber-500/20 text-amber-400 rounded text-xs led-font">
+                    ● BEHIND
+                  </span>
+                </td>
+              </tr>
+              <tr class="hover:bg-gray-800/50 transition-colors">
+                <td class="px-6 py-4">
+                  <span class="led-font text-lg font-bold text-white">MSFT</span>
+                </td>
+                <td class="px-6 py-4 led-font text-emerald-400 font-bold">+12.1%</td>
+                <td class="px-6 py-4 led-font text-emerald-400 font-medium">+3.4%</td>
+                <td class="px-6 py-4 led-font text-blue-400">0.28%</td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-xs led-font">
+                    ● ON TRACK
+                  </span>
+                </td>
+              </tr>
+              <tr class="hover:bg-gray-800/50 transition-colors">
+                <td class="px-6 py-4">
+                  <span class="led-font text-lg font-bold text-white">GOOGL</span>
+                </td>
+                <td class="px-6 py-4 led-font text-emerald-400 font-bold">+6.8%</td>
+                <td class="px-6 py-4 led-font text-red-400 font-medium">-2.1%</td>
+                <td class="px-6 py-4 led-font text-blue-400">0.15%</td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-amber-500/20 text-amber-400 rounded text-xs led-font">
+                    ● BEHIND
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+</body>
+</html>

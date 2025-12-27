@@ -1,0 +1,116 @@
+# Workflow Status Template
+
+# This tracks progress through BMM methodology Analysis, Planning, and Solutioning phases.
+# Implementation phase is tracked separately in sprint-status.yaml
+
+# STATUS DEFINITIONS:
+# ==================
+# Initial Status (before completion):
+#   - required: Must be completed to progress
+#   - optional: Can be completed but not required
+#   - recommended: Strongly suggested but not required
+#   - conditional: Required only if certain conditions met (e.g., if_has_ui)
+#
+# Completion Status:
+#   - {file-path}: File created/found (e.g., "docs/product-brief.md")
+#   - skipped: Optional/conditional workflow that was skipped
+
+generated: "2025-12-26"
+project: "outvestments"
+project_type: "greenfield"
+selected_track: "bmad-method"
+field_type: "greenfield"
+workflow_path: "method-greenfield.yaml"
+
+workflow_status:
+  # Phase 0: Discovery (Optional)
+  - phase: 0
+    name: "Discovery (Optional)"
+    workflows:
+      - id: "brainstorm-project"
+        name: "Brainstorm - Paper Trading Platforms"
+        status: "optional"
+        agent: "analyst"
+        command: "/bmad:bmm:workflows:brainstorm-project"
+        note: "Focus: Paper trading platform options (Alpaca, alternatives)"
+
+      - id: "research"
+        name: "Research - Gamified Trading Platforms"
+        status: "optional"
+        agent: "analyst"
+        command: "/bmad:bmm:workflows:research"
+        note: "Competitive analysis: platforms with theory/catalyst/tracking"
+
+      - id: "product-brief"
+        name: "Product Brief"
+        status: "_bmad-output/planning-artifacts/product-brief-outvestments-2025-12-26.md"
+        agent: "analyst"
+        command: "/bmad:bmm:workflows:product-brief"
+        note: "Completed 2025-12-26"
+
+  # Phase 1: Planning (Required)
+  - phase: 1
+    name: "Planning"
+    workflows:
+      - id: "prd"
+        name: "Product Requirements Document"
+        status: "_bmad-output/planning-artifacts/prd-outvestments-2025-12-27.md"
+        agent: "pm"
+        command: "/bmad:bmm:workflows:prd"
+        note: "Completed 2025-12-27 - v1.6 approved"
+
+      - id: "create-ux-design"
+        name: "UX Design"
+        status: "conditional"
+        agent: "ux-designer"
+        command: "/bmad:bmm:workflows:create-ux-design"
+        note: "Determined after PRD - likely needed for web platform"
+
+  # Phase 2: Solutioning (Required)
+  - phase: 2
+    name: "Solutioning"
+    workflows:
+      - id: "create-architecture"
+        name: "Create Architecture"
+        status: "_bmad-output/planning-artifacts/architecture.md"
+        agent: "architect"
+        command: "/bmad:bmm:workflows:create-architecture"
+        note: "Completed 2025-12-27 - All 8 steps complete"
+
+      - id: "create-epics-and-stories"
+        name: "Create Epics and Stories"
+        status: "required"
+        agent: "pm"
+        command: "/bmad:bmm:workflows:create-epics-and-stories"
+        note: "Break down PRD into implementable work"
+
+      - id: "test-design"
+        name: "Test Design"
+        status: "recommended"
+        agent: "tea"
+        command: "/bmad:bmm:workflows:test-design"
+        output: "System-level testability review"
+
+      - id: "validate-architecture"
+        name: "Validate Architecture"
+        status: "optional"
+        agent: "architect"
+        command: "/bmad:bmm:workflows:validate-architecture"
+
+      - id: "implementation-readiness"
+        name: "Implementation Readiness"
+        status: "required"
+        agent: "architect"
+        command: "/bmad:bmm:workflows:implementation-readiness"
+        note: "Final validation before implementation"
+
+  # Phase 3: Implementation (Required)
+  - phase: 3
+    name: "Implementation"
+    workflows:
+      - id: "sprint-planning"
+        name: "Sprint Planning"
+        status: "required"
+        agent: "sm"
+        command: "/bmad:bmm:workflows:sprint-planning"
+        note: "Creates sprint-status.yaml for story tracking"
