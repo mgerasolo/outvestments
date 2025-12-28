@@ -19,11 +19,15 @@ import {
   type ScoreRefreshJobData,
   type EodSnapshotJobData,
   type CacheCleanupJobData,
+  type PriceAlertJobData,
+  type PhantomTrackJobData,
 } from './types';
 import {
   scoreRefreshHandler,
   eodSnapshotHandler,
   cacheCleanupHandler,
+  priceAlertHandler,
+  phantomTrackHandler,
 } from './handlers';
 
 /**
@@ -71,7 +75,47 @@ const jobRegistrations: JobRegistration[] = [
       ...DEFAULT_QUEUE_OPTIONS,
     },
   },
+  {
+    name: JOB_NAMES.PRICE_ALERT,
+    handler: priceAlertHandler as (job: Job<unknown>) => Promise<unknown>,
+    schedule: JOB_SCHEDULES.PRICE_ALERT,
+    options: {
+      tz: 'America/New_York',
+      ...DEFAULT_QUEUE_OPTIONS,
+    },
+  },
+  {
+    name: JOB_NAMES.PHANTOM_TRACK,
+    handler: phantomTrackHandler as (job: Job<unknown>) => Promise<unknown>,
+    schedule: JOB_SCHEDULES.PHANTOM_TRACK,
+    options: {
+      tz: 'America/New_York',
+      ...DEFAULT_QUEUE_OPTIONS,
+    },
+  },
 ];
+
+/**
+ * Creates all required queues in pg-boss.
+ * Must be called before registering handlers or scheduling jobs.
+ *
+ * @param boss - The pg-boss instance
+ */
+async function createQueues(boss: PgBoss): Promise<void> {
+  for (const registration of jobRegistrations) {
+    try {
+      await boss.createQueue(registration.name);
+      console.log(`[scheduler] Created queue: ${registration.name}`);
+    } catch (error) {
+      // Queue might already exist - that's fine
+      if (error instanceof Error && error.message.includes('already exists')) {
+        console.log(`[scheduler] Queue already exists: ${registration.name}`);
+      } else {
+        throw error;
+      }
+    }
+  }
+}
 
 /**
  * Registers all job handlers with pg-boss.
@@ -124,6 +168,10 @@ export async function initializeScheduler(): Promise<PgBoss> {
 
   const boss = await startBoss();
 
+  // Create queues first (required in pg-boss v12+)
+  await createQueues(boss);
+
+  // Then register handlers and schedule jobs
   await registerHandlers(boss);
   await scheduleRecurringJobs(boss);
 
@@ -206,6 +254,50 @@ export async function enqueueCacheCleanup(
     DEFAULT_QUEUE_OPTIONS
   );
   console.log(`[scheduler] Enqueued ${JOB_NAMES.CACHE_CLEANUP} job: ${jobId}`);
+  return jobId;
+}
+
+/**
+ * Manually enqueues a price alert check job.
+ *
+ * @param data - Optional job data
+ * @returns Promise resolving to the job ID
+ */
+export async function enqueuePriceAlert(
+  data: PriceAlertJobData = {}
+): Promise<string | null> {
+  const boss = getBoss();
+  const jobId = await boss.send(
+    JOB_NAMES.PRICE_ALERT,
+    {
+      ...data,
+      createdAt: new Date().toISOString(),
+    },
+    DEFAULT_QUEUE_OPTIONS
+  );
+  console.log(`[scheduler] Enqueued ${JOB_NAMES.PRICE_ALERT} job: ${jobId}`);
+  return jobId;
+}
+
+/**
+ * Manually enqueues a phantom position tracking job.
+ *
+ * @param data - Optional job data
+ * @returns Promise resolving to the job ID
+ */
+export async function enqueuePhantomTrack(
+  data: PhantomTrackJobData = {}
+): Promise<string | null> {
+  const boss = getBoss();
+  const jobId = await boss.send(
+    JOB_NAMES.PHANTOM_TRACK,
+    {
+      ...data,
+      createdAt: new Date().toISOString(),
+    },
+    DEFAULT_QUEUE_OPTIONS
+  );
+  console.log(`[scheduler] Enqueued ${JOB_NAMES.PHANTOM_TRACK} job: ${jobId}`);
   return jobId;
 }
 

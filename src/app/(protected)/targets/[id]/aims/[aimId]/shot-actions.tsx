@@ -21,7 +21,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { updateShotState, deleteShot } from "@/app/actions/shots";
+import { updateShotState, deleteShot, fireShot, syncShotOrderStatus, cancelAlpacaOrder } from "@/app/actions/shots";
+import { PartialCloseDialog } from "@/components/trading/partial-close-dialog";
 import type { Shot, ShotState } from "@/lib/db/schema";
 
 interface ShotActionsProps {
@@ -106,30 +107,8 @@ const STATE_TRANSITIONS: StateTransition[] = [
     ),
     color: "text-green-600",
   },
-  {
-    from: "active",
-    to: "closed",
-    label: "Close Position",
-    description: "Mark this position as closed",
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="h-4 w-4 mr-2"
-      >
-        <circle cx="12" cy="12" r="10" />
-        <line x1="15" x2="9" y1="9" y2="15" />
-        <line x1="9" x2="15" y1="9" y2="15" />
-      </svg>
-    ),
-    color: "text-gray-600",
-    requiresConfirmation: true,
-  },
+  // Note: Close Position for active shots is handled via PartialCloseDialog
+  // to support partial closes with quantity selection
 ];
 
 export function ShotActions({ shot, symbol }: ShotActionsProps) {
@@ -137,6 +116,7 @@ export function ShotActions({ shot, symbol }: ShotActionsProps) {
   const [isPending, startTransition] = useTransition();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showPartialCloseDialog, setShowPartialCloseDialog] = useState(false);
   const [pendingTransition, setPendingTransition] =
     useState<StateTransition | null>(null);
 
@@ -155,6 +135,19 @@ export function ShotActions({ shot, symbol }: ShotActionsProps) {
 
   const executeTransition = (newState: ShotState) => {
     startTransition(async () => {
+      // Use fireShot for armed→fired transition (executes actual trade)
+      if (newState === "fired" && shot.state === "armed") {
+        const result = await fireShot(shot.id);
+        if (result.success) {
+          toast.success(`Trade submitted! Order ID: ${result.orderId?.slice(0, 8)}...`);
+          router.refresh();
+        } else {
+          toast.error(result.error || "Failed to submit trade");
+        }
+        return;
+      }
+
+      // Use standard state transition for other cases
       const result = await updateShotState(shot.id, newState);
       if (result.success) {
         toast.success(`Shot ${newState}`);
@@ -185,6 +178,34 @@ export function ShotActions({ shot, symbol }: ShotActionsProps) {
         router.refresh();
       } else {
         toast.error(result.error || "Failed to cancel shot");
+      }
+    });
+  };
+
+  const handleSyncStatus = () => {
+    startTransition(async () => {
+      const result = await syncShotOrderStatus(shot.id);
+      if (result.success) {
+        toast.success(
+          result.shot?.state === "active"
+            ? "Order filled! Position is now active."
+            : `Status synced: ${result.shot?.alpacaStatus || "updated"}`
+        );
+        router.refresh();
+      } else {
+        toast.error(result.error || "Failed to sync order status");
+      }
+    });
+  };
+
+  const handleCancelOrder = () => {
+    startTransition(async () => {
+      const result = await cancelAlpacaOrder(shot.id);
+      if (result.success) {
+        toast.success("Order cancelled successfully");
+        router.refresh();
+      } else {
+        toast.error(result.error || "Failed to cancel order");
       }
     });
   };
@@ -233,7 +254,86 @@ export function ShotActions({ shot, symbol }: ShotActionsProps) {
             </DropdownMenuItem>
           ))}
 
-          {availableTransitions.length > 0 && (canDelete || canCancel) && (
+          {/* Sync status for fired shots */}
+          {shot.state === "fired" && shot.alpacaOrderId && (
+            <DropdownMenuItem onClick={handleSyncStatus} className="text-blue-600">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4 mr-2"
+              >
+                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
+              </svg>
+              <div className="flex flex-col">
+                <span>Sync Order Status</span>
+                <span className="text-xs text-muted-foreground font-normal">
+                  Check if order is filled
+                </span>
+              </div>
+            </DropdownMenuItem>
+          )}
+
+          {/* Cancel order for fired shots */}
+          {shot.state === "fired" && shot.alpacaOrderId && (
+            <DropdownMenuItem onClick={handleCancelOrder} className="text-red-600">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4 mr-2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" x2="9" y1="9" y2="15" />
+                <line x1="9" x2="15" y1="9" y2="15" />
+              </svg>
+              <div className="flex flex-col">
+                <span>Cancel Order</span>
+                <span className="text-xs text-muted-foreground font-normal">
+                  Cancel pending Alpaca order
+                </span>
+              </div>
+            </DropdownMenuItem>
+          )}
+
+          {/* Close position for active shots - opens partial close dialog */}
+          {shot.state === "active" && (
+            <DropdownMenuItem
+              onClick={() => setShowPartialCloseDialog(true)}
+              className="text-orange-600"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4 mr-2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" x2="9" y1="9" y2="15" />
+                <line x1="9" x2="15" y1="9" y2="15" />
+              </svg>
+              <div className="flex flex-col">
+                <span>Close Position</span>
+                <span className="text-xs text-muted-foreground font-normal">
+                  Close all or partial shares
+                </span>
+              </div>
+            </DropdownMenuItem>
+          )}
+
+          {(availableTransitions.length > 0 || shot.state === "active") && (canDelete || canCancel) && (
             <DropdownMenuSeparator />
           )}
 
@@ -297,6 +397,27 @@ export function ShotActions({ shot, symbol }: ShotActionsProps) {
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
               <span className="text-muted-foreground">Position Closed</span>
+            </DropdownMenuItem>
+          )}
+
+          {shot.state === "partially_closed" && (
+            <DropdownMenuItem disabled>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4 mr-2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 6v6l4 2" />
+              </svg>
+              <span className="text-muted-foreground">
+                Partially Closed ({shot.closedQuantity} shares)
+              </span>
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
@@ -363,6 +484,14 @@ export function ShotActions({ shot, symbol }: ShotActionsProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Partial Close Dialog */}
+      <PartialCloseDialog
+        open={showPartialCloseDialog}
+        onOpenChange={setShowPartialCloseDialog}
+        shot={shot}
+        symbol={symbol}
+      />
     </>
   );
 }

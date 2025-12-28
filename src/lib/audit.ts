@@ -152,6 +152,8 @@ export const AuditActions = {
   SHOT_ACTIVE: "shot.active",
   SHOT_CLOSED: "shot.closed",
   SHOT_CANCELLED: "shot.cancelled",
+  SHOT_PARTIAL_CLOSED: "shot.partial_closed",
+  SHOT_SPLIT: "shot.split",
 
   // Alpaca actions
   ALPACA_CREDENTIALS_SAVED: "alpaca.credentials.saved",

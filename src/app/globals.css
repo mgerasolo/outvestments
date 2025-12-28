@@ -183,3 +183,255 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ============================================
+   ARENA THEME STYLES
+   Game-like scoreboard and LED display effects
+   ============================================ */
+
+/* Arena Color Variables */
+:root {
+  --arena-scoreboard-bg: oklch(0.1 0.02 260);
+  --arena-segment-bg: oklch(0.05 0.01 260);
+  --arena-led-yellow: #ffcc00;
+  --arena-led-green: #00ff88;
+  --arena-led-red: #ff4444;
+  --arena-led-white: #ffffff;
+  --arena-border: oklch(0.25 0.03 260);
+  --arena-glow-yellow: rgba(255, 204, 0, 0.5);
+  --arena-glow-green: rgba(0, 255, 136, 0.5);
+  --arena-glow-red: rgba(255, 68, 68, 0.5);
+}
+
+/* LED Panel Base - Dark scoreboard look */
+.led-panel {
+  background: linear-gradient(180deg, oklch(0.12 0.02 260) 0%, oklch(0.08 0.015 260) 100%);
+  border: 3px solid oklch(0.25 0.03 260);
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.6),
+    0 0 30px rgba(0, 0, 0, 0.4),
+    0 4px 0 oklch(0.15 0.02 260);
+}
+
+/* LED Dot Matrix Texture Overlay */
+.led-dots {
+  background-image:
+    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.2) 25%, transparent 25%);
+  background-size: 3px 3px;
+}
+
+/* Segment Display - Recessed number areas */
+.segment-display {
+  background: oklch(0.06 0.01 260);
+  border: 2px solid oklch(0.18 0.02 260);
+  padding: 0.75rem 1.25rem;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8);
+  border-radius: 0.375rem;
+}
+
+/* Jumbotron - Main scoreboard container */
+.jumbotron {
+  background: linear-gradient(180deg, oklch(0.18 0.025 260) 0%, oklch(0.12 0.02 260) 50%, oklch(0.08 0.015 260) 100%);
+  border: 5px solid oklch(0.3 0.04 260);
+  border-radius: 0.75rem;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -6px 24px rgba(0, 0, 0, 0.6),
+    0 12px 48px rgba(0, 0, 0, 0.5);
+}
+
+/* LED Text Glow Effects */
+.led-glow-yellow {
+  color: var(--arena-led-yellow);
+  text-shadow:
+    0 0 4px var(--arena-led-yellow),
+    0 0 8px var(--arena-led-yellow),
+    0 0 16px var(--arena-led-yellow),
+    0 0 32px var(--arena-glow-yellow);
+}
+
+.led-glow-green {
+  color: var(--arena-led-green);
+  text-shadow:
+    0 0 4px var(--arena-led-green),
+    0 0 8px var(--arena-led-green),
+    0 0 16px var(--arena-led-green),
+    0 0 32px var(--arena-glow-green);
+}
+
+.led-glow-red {
+  color: var(--arena-led-red);
+  text-shadow:
+    0 0 4px var(--arena-led-red),
+    0 0 8px var(--arena-led-red),
+    0 0 16px var(--arena-led-red),
+    0 0 32px var(--arena-glow-red);
+}
+
+.led-glow-white {
+  color: var(--arena-led-white);
+  text-shadow:
+    0 0 3px var(--arena-led-white),
+    0 0 6px var(--arena-led-white),
+    0 0 12px rgba(255, 255, 255, 0.4);
+}
+
+/* Display Font - Bold, condensed for scoreboards */
+.display-font {
+  font-family: var(--font-oswald), 'Bebas Neue', 'Arial Narrow', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* Score Font - For large numbers */
+.score-font {
+  font-family: var(--font-oswald), 'Roboto Condensed', sans-serif;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* LED Flicker Animation - Subtle realism */
+@keyframes ledFlicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.85; }
+  94% { opacity: 1; }
+}
+.led-flicker { animation: ledFlicker 4s infinite; }
+
+/* Score Flash Animation - Value changes */
+@keyframes scoreFlash {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); filter: brightness(1.2); }
+}
+.score-flash { animation: scoreFlash 0.4s ease-out; }
+
+/* Ticker Tape Animation */
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-scroll { animation: ticker 35s linear infinite; }
+
+/* Running Lights Animation - Marquee effect */
+@keyframes runningLights {
+  0% { background-position: 0 0; }
+  100% { background-position: 40px 0; }
+}
+.running-lights {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--arena-led-yellow) 0px,
+    var(--arena-led-yellow) 4px,
+    transparent 4px,
+    transparent 20px
+  );
+  animation: runningLights 0.6s linear infinite;
+}
+
+/* Fire Glow Animation - Win streaks */
+@keyframes fireGlow {
+  0%, 100% { text-shadow: 0 0 10px #ff6600, 0 0 20px #ff3300, 0 0 30px #ff0000; }
+  50% { text-shadow: 0 0 20px #ff9900, 0 0 40px #ff6600, 0 0 60px #ff3300; }
+}
+.fire-glow { animation: fireGlow 0.6s ease-in-out infinite; }
+
+/* Pulse Animation - Live indicators */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 4px currentColor, 0 0 8px currentColor; }
+  50% { box-shadow: 0 0 8px currentColor, 0 0 16px currentColor, 0 0 24px currentColor; }
+}
+.pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+
+/* VS Badge Styling */
+.vs-badge {
+  background: linear-gradient(135deg, var(--arena-led-yellow) 0%, #ff9500 100%);
+  color: oklch(0.1 0 0);
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(255, 149, 0, 0.4);
+}
+
+/* Team Panel Styling */
+.team-panel-home {
+  background: linear-gradient(180deg, oklch(0.25 0.08 220) 0%, oklch(0.18 0.06 220) 100%);
+  border: 2px solid oklch(0.45 0.12 220);
+}
+
+.team-panel-away {
+  background: linear-gradient(180deg, oklch(0.25 0.08 25) 0%, oklch(0.18 0.06 25) 100%);
+  border: 2px solid oklch(0.45 0.12 25);
+}
+
+/* Achievement Badge */
+.achievement-badge {
+  background: linear-gradient(135deg, var(--gold) 0%, oklch(0.65 0.12 75) 100%);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.achievement-locked {
+  background: oklch(0.25 0.02 260);
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+
+/* Action Button Styling */
+.arena-btn-primary {
+  background: linear-gradient(180deg, oklch(0.55 0.18 145) 0%, oklch(0.45 0.16 145) 100%);
+  border: 2px solid oklch(0.6 0.2 145);
+  box-shadow: 0 4px 0 oklch(0.35 0.14 145), 0 6px 20px rgba(0, 180, 100, 0.3);
+  transition: all 0.1s;
+}
+.arena-btn-primary:hover {
+  transform: translateY(1px);
+  box-shadow: 0 3px 0 oklch(0.35 0.14 145), 0 4px 16px rgba(0, 180, 100, 0.4);
+}
+.arena-btn-primary:active {
+  transform: translateY(4px);
+  box-shadow: none;
+}
+
+.arena-btn-secondary {
+  background: linear-gradient(180deg, oklch(0.7 0.15 85) 0%, oklch(0.6 0.14 75) 100%);
+  border: 2px solid oklch(0.75 0.17 85);
+  box-shadow: 0 4px 0 oklch(0.5 0.12 75), 0 6px 20px rgba(255, 180, 0, 0.3);
+  color: oklch(0.1 0 0);
+  transition: all 0.1s;
+}
+.arena-btn-secondary:hover {
+  transform: translateY(1px);
+  box-shadow: 0 3px 0 oklch(0.5 0.12 75), 0 4px 16px rgba(255, 180, 0, 0.4);
+}
+.arena-btn-secondary:active {
+  transform: translateY(4px);
+  box-shadow: none;
+}
+
+/* Corner Decorations for Jumbotron */
+.corner-decoration {
+  position: absolute;
+  width: 2rem;
+  height: 2rem;
+  border-color: var(--arena-led-yellow);
+}
+.corner-tl { top: 0.5rem; left: 0.5rem; border-top-width: 3px; border-left-width: 3px; }
+.corner-tr { top: 0.5rem; right: 0.5rem; border-top-width: 3px; border-right-width: 3px; }
+.corner-bl { bottom: 0.5rem; left: 0.5rem; border-bottom-width: 3px; border-left-width: 3px; }
+.corner-br { bottom: 0.5rem; right: 0.5rem; border-bottom-width: 3px; border-right-width: 3px; }
+
+/* Landing Page Floating Particle Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); opacity: 0.6; }
+  50% { transform: translateY(-20px); opacity: 1; }
+}
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.4; }
+  50% { transform: translateY(-30px) translateX(10px); opacity: 0.8; }
+}
+@keyframes float-delayed {
+  0%, 100% { transform: translateY(0px); opacity: 0.5; }
+  50% { transform: translateY(-15px); opacity: 0.9; }
+}
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-float-slow { animation: float-slow 8s ease-in-out infinite; }
+.animate-float-delayed { animation: float-delayed 7s ease-in-out infinite 2s; }

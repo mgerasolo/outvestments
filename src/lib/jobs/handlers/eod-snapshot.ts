@@ -13,11 +13,16 @@ import type {
   JobResult,
   JobHandler,
 } from '@/lib/jobs/types';
+import { db } from '@/lib/db';
+import { users, alpacaCredentials, portfolioSnapshots } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
+import crypto from 'crypto';
+
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '';
+const ALPACA_BASE_URL = process.env.ALPACA_BASE_URL || 'https://paper-api.alpaca.markets';
 
 /**
  * Gets the current trading date in YYYY-MM-DD format.
- *
- * @returns The trading date string
  */
 function getTradingDate(): string {
   const now = new Date();
@@ -25,16 +30,59 @@ function getTradingDate(): string {
 }
 
 /**
+ * Decrypt Alpaca credentials for a user
+ */
+function decryptCredentials(encrypted: { encryptedKey: string; encryptedSecret: string; iv: string }) {
+  if (!ENCRYPTION_KEY) {
+    throw new Error('ENCRYPTION_KEY not configured');
+  }
+
+  const key = Buffer.from(ENCRYPTION_KEY, 'base64');
+  const iv = Buffer.from(encrypted.iv, 'hex');
+
+  const decipherKey = crypto.createDecipheriv('aes-256-cbc', key, iv);
+  let apiKey = decipherKey.update(encrypted.encryptedKey, 'hex', 'utf8');
+  apiKey += decipherKey.final('utf8');
+
+  const decipherSecret = crypto.createDecipheriv('aes-256-cbc', key, iv);
+  let apiSecret = decipherSecret.update(encrypted.encryptedSecret, 'hex', 'utf8');
+  apiSecret += decipherSecret.final('utf8');
+
+  return { apiKey, apiSecret };
+}
+
+/**
+ * Fetch portfolio from Alpaca for a user
+ */
+async function fetchAlpacaPortfolio(apiKey: string, apiSecret: string) {
+  const headers = {
+    'APCA-API-KEY-ID': apiKey,
+    'APCA-API-SECRET-KEY': apiSecret,
+  };
+
+  // Fetch account and positions in parallel
+  const [accountRes, positionsRes] = await Promise.all([
+    fetch(`${ALPACA_BASE_URL}/v2/account`, { headers }),
+    fetch(`${ALPACA_BASE_URL}/v2/positions`, { headers }),
+  ]);
+
+  if (!accountRes.ok) {
+    throw new Error(`Alpaca account fetch failed: ${accountRes.status}`);
+  }
+
+  const account = await accountRes.json();
+  const positions = positionsRes.ok ? await positionsRes.json() : [];
+
+  return { account, positions };
+}
+
+/**
  * Handles the eod-snapshot job.
  *
  * This job:
- * 1. Captures current portfolio valuations
- * 2. Records position states and P&L
- * 3. Stores daily performance metrics
- * 4. Creates historical snapshot for analytics
- *
- * @param job - The pg-boss job instance with EOD snapshot data
- * @returns Promise resolving to the job result
+ * 1. Fetches all users with Alpaca credentials
+ * 2. For each user, fetches their current portfolio state
+ * 3. Stores a snapshot in the database
  */
 export const handler: JobHandler<EodSnapshotJobData> = async (
   job: Job<EodSnapshotJobData>
@@ -42,7 +90,6 @@ export const handler: JobHandler<EodSnapshotJobData> = async (
   const startTime = Date.now();
   const {
     tradingDate = getTradingDate(),
-    portfolioIds,
     correlationId,
   } = job.data ?? {};
 
@@ -50,46 +97,80 @@ export const handler: JobHandler<EodSnapshotJobData> = async (
     jobId: job.id,
     correlationId,
     tradingDate,
-    portfolioIds: portfolioIds?.length ?? 'all',
   });
 
   try {
-    // TODO: Implement actual EOD snapshot logic
-    // 1. Verify market is closed (skip if market still open)
-    // const marketStatus = await checkMarketStatus();
-    // if (marketStatus.isOpen) {
-    //   console.warn('[eod-snapshot] Market still open, deferring snapshot');
-    //   return { success: false, message: 'Market still open' };
-    // }
+    // 1. Fetch all users with Alpaca credentials
+    const usersWithCredentials = await db
+      .select({
+        userId: users.id,
+        encryptedKey: alpacaCredentials.encryptedKey,
+        encryptedSecret: alpacaCredentials.encryptedSecret,
+        iv: alpacaCredentials.iv,
+      })
+      .from(users)
+      .innerJoin(alpacaCredentials, eq(users.id, alpacaCredentials.userId));
 
-    // 2. Fetch all portfolios (or specific ones)
-    // const portfolios = portfolioIds?.length
-    //   ? await db.portfolios.findMany({ where: { id: { in: portfolioIds } } })
-    //   : await db.portfolios.findMany();
+    console.log(`[eod-snapshot] Found ${usersWithCredentials.length} users with Alpaca credentials`);
 
-    // 3. For each portfolio, capture snapshot
-    // const snapshots = await Promise.all(
-    //   portfolios.map(async (portfolio) => {
-    //     const positions = await db.positions.findMany({
-    //       where: { portfolioId: portfolio.id, status: 'open' },
-    //     });
-    //     const valuation = calculatePortfolioValue(positions);
-    //     return {
-    //       portfolioId: portfolio.id,
-    //       tradingDate,
-    //       positions: positions.map(serializePosition),
-    //       totalValue: valuation.total,
-    //       dayChange: valuation.dayChange,
-    //       dayChangePercent: valuation.dayChangePercent,
-    //     };
-    //   })
-    // );
+    let processedCount = 0;
+    let errorCount = 0;
 
-    // 4. Store snapshots in database
-    // await db.portfolioSnapshots.createMany({ data: snapshots });
+    // 2. For each user, fetch portfolio and create snapshot
+    for (const userCreds of usersWithCredentials) {
+      try {
+        // Decrypt credentials
+        const { apiKey, apiSecret } = decryptCredentials({
+          encryptedKey: userCreds.encryptedKey,
+          encryptedSecret: userCreds.encryptedSecret,
+          iv: userCreds.iv,
+        });
 
-    // Placeholder: Simulated processing
-    const processedCount = portfolioIds?.length ?? 0;
+        // Fetch portfolio from Alpaca
+        const { account, positions } = await fetchAlpacaPortfolio(apiKey, apiSecret);
+
+        // Create snapshot
+        const portfolioValue = parseFloat(account.portfolio_value || '0');
+        const cash = parseFloat(account.cash || '0');
+        const buyingPower = parseFloat(account.buying_power || '0');
+        const lastEquity = parseFloat(account.last_equity || '0');
+        const dayPL = portfolioValue - lastEquity;
+        const dayPLPercent = lastEquity > 0 ? (dayPL / lastEquity) * 100 : 0;
+
+        const positionsSnapshot = positions.map((p: Record<string, string>) => ({
+          symbol: p.symbol,
+          qty: p.qty,
+          marketValue: p.market_value,
+          avgEntryPrice: p.avg_entry_price,
+          currentPrice: p.current_price,
+          unrealizedPL: p.unrealized_pl,
+          unrealizedPLPercent: p.unrealized_plpc,
+        }));
+
+        // Insert snapshot
+        await db.insert(portfolioSnapshots).values({
+          userId: userCreds.userId,
+          tradingDate: new Date(`${tradingDate}T16:30:00-05:00`), // 4:30 PM ET
+          portfolioValue: portfolioValue.toFixed(2),
+          cash: cash.toFixed(2),
+          buyingPower: buyingPower.toFixed(2),
+          dayPL: dayPL.toFixed(2),
+          dayPLPercent: dayPLPercent.toFixed(4),
+          positionsSnapshot,
+        });
+
+        processedCount++;
+        console.log(`[eod-snapshot] Created snapshot for user ${userCreds.userId}`, {
+          portfolioValue,
+          positions: positions.length,
+        });
+
+      } catch (userError) {
+        errorCount++;
+        console.error(`[eod-snapshot] Failed for user ${userCreds.userId}:`, userError);
+        // Continue with other users
+      }
+    }
 
     const durationMs = Date.now() - startTime;
 
@@ -98,16 +179,18 @@ export const handler: JobHandler<EodSnapshotJobData> = async (
       correlationId,
       tradingDate,
       processedCount,
+      errorCount,
       durationMs,
     });
 
     return {
       success: true,
-      message: `Created EOD snapshot for ${processedCount} portfolios on ${tradingDate}`,
+      message: `Created EOD snapshots for ${processedCount} users on ${tradingDate}`,
       processedCount,
       durationMs,
       metadata: {
         tradingDate,
+        errorCount,
       },
     };
   } catch (error) {
@@ -123,7 +206,6 @@ export const handler: JobHandler<EodSnapshotJobData> = async (
       durationMs,
     });
 
-    // Re-throw to trigger pg-boss retry mechanism
     throw error;
   }
 };

@@ -3,278 +3,657 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Outvestments - History (Plan A)</title>
+  <title>OUTVESTMENTS // GAME LOG</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; background: #030712; }
-    .led-font { font-family: 'Orbitron', monospace; }
-    .glow-green { text-shadow: 0 0 10px #10b981, 0 0 20px #10b981, 0 0 30px #10b981; }
-    .glow-red { text-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444; }
-    .glow-blue { text-shadow: 0 0 10px #3b82f6, 0 0 20px #3b82f6; }
-    .glow-purple { text-shadow: 0 0 10px #a855f7, 0 0 20px #a855f7; }
-    .scanlines {
-      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px);
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;700&display=swap');
+
+    :root {
+      --grass-dark: #1a4d1a;
+      --grass-light: #2d7a2d;
+      --grass-bright: #3d9a3d;
+      --scoreboard-bg: #111111;
+      --led-yellow: #ffcc00;
+      --led-green: #00ff00;
+      --led-red: #ff3333;
+      --led-white: #ffffff;
+      --stadium-gold: #d4af37;
     }
-    .nav-orb {
-      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
-      box-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
+
+    body {
+      font-family: 'Roboto Condensed', sans-serif;
+      background: var(--grass-dark);
+      overflow-x: hidden;
     }
+
+    .display-font { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.05em; }
+    .score-font { font-family: 'Oswald', sans-serif; }
+
+    /* Grass field background */
+    .grass-field {
+      background:
+        repeating-linear-gradient(
+          90deg,
+          var(--grass-dark) 0px,
+          var(--grass-dark) 80px,
+          var(--grass-light) 80px,
+          var(--grass-light) 160px
+        );
+    }
+
+    /* Field lines */
+    .field-lines::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 49.5%, rgba(255,255,255,0.1) 49.5%, rgba(255,255,255,0.1) 50.5%, transparent 50.5%),
+        repeating-linear-gradient(0deg, transparent 0%, transparent 9.5%, rgba(255,255,255,0.05) 9.5%, rgba(255,255,255,0.05) 10%);
+      pointer-events: none;
+    }
+
+    /* Stadium lights effect */
+    .stadium-lights::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 600px 400px at 0% 0%, rgba(255,255,200,0.15) 0%, transparent 70%),
+        radial-gradient(ellipse 600px 400px at 100% 0%, rgba(255,255,200,0.15) 0%, transparent 70%),
+        radial-gradient(ellipse 800px 500px at 50% -10%, rgba(255,255,255,0.1) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* LED Scoreboard panel */
+    .led-panel {
+      background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
+      border: 4px solid #333;
+      box-shadow:
+        inset 0 0 20px rgba(0,0,0,0.8),
+        0 0 30px rgba(0,0,0,0.5),
+        0 5px 0 #222;
+    }
+
+    /* LED dot matrix effect */
+    .led-dots {
+      background-image:
+        radial-gradient(circle at 50% 50%, rgba(0,0,0,0.3) 30%, transparent 30%);
+      background-size: 4px 4px;
+    }
+
+    /* LED text glow */
+    .led-glow-yellow {
+      color: var(--led-yellow);
+      text-shadow:
+        0 0 5px var(--led-yellow),
+        0 0 10px var(--led-yellow),
+        0 0 20px var(--led-yellow),
+        0 0 40px rgba(255,204,0,0.5);
+    }
+
+    .led-glow-green {
+      color: var(--led-green);
+      text-shadow:
+        0 0 5px var(--led-green),
+        0 0 10px var(--led-green),
+        0 0 20px var(--led-green),
+        0 0 40px rgba(0,255,0,0.5);
+    }
+
+    .led-glow-red {
+      color: var(--led-red);
+      text-shadow:
+        0 0 5px var(--led-red),
+        0 0 10px var(--led-red),
+        0 0 20px var(--led-red);
+    }
+
+    .led-glow-white {
+      color: var(--led-white);
+      text-shadow:
+        0 0 3px var(--led-white),
+        0 0 8px var(--led-white),
+        0 0 15px rgba(255,255,255,0.5);
+    }
+
+    /* Jumbotron style */
+    .jumbotron {
+      background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 50%, #0f0f0f 100%);
+      border: 6px solid #444;
+      border-radius: 8px;
+      box-shadow:
+        inset 0 2px 0 rgba(255,255,255,0.1),
+        inset 0 -5px 20px rgba(0,0,0,0.8),
+        0 10px 40px rgba(0,0,0,0.6);
+    }
+
+    /* Scoreboard segment display */
+    .segment-display {
+      background: #0a0a0a;
+      border: 2px solid #222;
+      padding: 10px 20px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.9);
+    }
+
+    /* LED flicker animation */
+    @keyframes ledFlicker {
+      0%, 100% { opacity: 1; }
+      92% { opacity: 1; }
+      93% { opacity: 0.8; }
+      94% { opacity: 1; }
+    }
+    .led-flicker { animation: ledFlicker 3s infinite; }
+
+    /* Stadium pulse animation */
+    @keyframes stadiumPulse {
+      0%, 100% { opacity: 0.15; }
+      50% { opacity: 0.25; }
+    }
+    .stadium-pulse { animation: stadiumPulse 4s ease-in-out infinite; }
+
+    /* Running lights */
+    @keyframes runningLights {
+      0% { background-position: 0 0; }
+      100% { background-position: 40px 0; }
+    }
+    .running-lights {
+      background: repeating-linear-gradient(
+        90deg,
+        var(--led-yellow) 0px,
+        var(--led-yellow) 5px,
+        transparent 5px,
+        transparent 20px
+      );
+      animation: runningLights 0.5s linear infinite;
+    }
+
+    /* Win streak fire */
+    @keyframes fireGlow {
+      0%, 100% { text-shadow: 0 0 10px #ff6600, 0 0 20px #ff3300, 0 0 30px #ff0000; }
+      50% { text-shadow: 0 0 20px #ff9900, 0 0 40px #ff6600, 0 0 60px #ff3300; }
+    }
+    .fire-glow { animation: fireGlow 0.5s ease-in-out infinite; }
+
+    /* Timeline */
     .timeline-line {
-      background: linear-gradient(180deg, #3b82f6 0%, #8b5cf6 50%, #a855f7 100%);
+      background: linear-gradient(180deg, var(--led-green) 0%, var(--led-yellow) 50%, var(--led-green) 100%);
+      box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
     }
+
+    /* Timeline node animation */
+    @keyframes nodeGlow {
+      0%, 100% { box-shadow: 0 0 10px currentColor, 0 0 20px currentColor; }
+      50% { box-shadow: 0 0 20px currentColor, 0 0 40px currentColor; }
+    }
+    .timeline-node { animation: nodeGlow 2s ease-in-out infinite; }
+
+    /* Entry slide in */
+    @keyframes entrySlide {
+      from { transform: translateX(-20px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .entry-slide { animation: entrySlide 0.5s ease-out forwards; }
+
+    /* Navigation */
+    .nav-btn {
+      background: linear-gradient(180deg, #444 0%, #222 100%);
+      border: 2px solid #555;
+      box-shadow: 0 3px 0 #111;
+      transition: all 0.1s;
+    }
+    .nav-btn:hover {
+      transform: translateY(1px);
+      box-shadow: 0 2px 0 #111;
+    }
+    .nav-btn:active {
+      transform: translateY(3px);
+      box-shadow: none;
+    }
+    .nav-btn.active {
+      background: linear-gradient(180deg, var(--grass-light) 0%, var(--grass-dark) 100%);
+      border-color: var(--grass-bright);
+    }
+
+    /* Filter tabs */
+    .filter-tab {
+      transition: all 0.2s;
+    }
+    .filter-tab:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: #666;
+    }
+    .filter-tab.active {
+      background: linear-gradient(180deg, var(--grass-light) 0%, var(--grass-dark) 100%);
+      border-color: var(--grass-bright);
+    }
+
+    /* Game cards */
+    .game-card {
+      transition: all 0.3s;
+    }
+    .game-card:hover {
+      transform: translateX(5px);
+      border-color: var(--led-yellow);
+    }
+    .game-card.win { border-left-color: var(--led-green); }
+    .game-card.loss { border-left-color: var(--led-red); }
+    .game-card.active { border-left-color: var(--led-yellow); }
+
+    /* Animated pulse */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .pulse { animation: pulse 2s ease-in-out infinite; }
   </style>
 </head>
-<body class="min-h-screen text-white">
+<body class="min-h-screen grass-field field-lines stadium-lights">
 
-  <!-- Scanline Overlay -->
-  <div class="fixed inset-0 scanlines pointer-events-none z-50"></div>
+  <!-- Stadium Atmosphere Overlay -->
+  <div class="fixed inset-0 stadium-pulse pointer-events-none" style="background: radial-gradient(ellipse at center, rgba(255,255,200,0.1) 0%, transparent 70%);"></div>
 
-  <!-- Floating Nav Orb -->
-  <div class="fixed top-6 left-6 z-40">
-    <a href="plan-a-dashboard.html" class="nav-orb w-14 h-14 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
-      <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-      </svg>
-    </a>
+  <!-- Main Container -->
+  <div class="relative min-h-screen z-10 p-6">
+
+    <!-- TOP: Running Lights Bar -->
+    <div class="h-2 running-lights rounded-full mb-4"></div>
+
+    <!-- TOP SCOREBOARD HEADER -->
+    <div class="led-panel led-dots rounded-lg p-4 mb-6">
+      <div class="flex items-center justify-between">
+
+        <!-- Logo & Brand -->
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 bg-gradient-to-br from-green-600 to-green-800 rounded-full flex items-center justify-center border-4 border-yellow-500 shadow-lg">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke-width="2"/>
+              <circle cx="12" cy="12" r="6" stroke-width="2"/>
+              <circle cx="12" cy="12" r="2" fill="currentColor"/>
+            </svg>
+          </div>
+          <div>
+            <div class="display-font text-4xl led-glow-yellow">OUTVESTMENTS</div>
+            <div class="text-gray-400 text-sm tracking-widest">CHAMPIONSHIP TRADING</div>
+          </div>
+        </div>
+
+        <!-- Season Record -->
+        <div class="segment-display rounded text-center">
+          <div class="text-gray-500 text-xs">SEASON RECORD</div>
+          <div class="display-font text-3xl">
+            <span class="led-glow-green">34</span>
+            <span class="text-gray-600">-</span>
+            <span class="led-glow-red">9</span>
+            <span class="text-gray-600">-</span>
+            <span class="led-glow-yellow">4</span>
+          </div>
+          <div class="text-gray-500 text-xs mt-1">W - L - ACTIVE</div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex gap-2">
+          <a href="plan-a-dashboard.html" class="nav-btn px-6 py-3 rounded display-font text-lg text-gray-300">GAME DAY</a>
+          <a href="plan-a-scoreboard.html" class="nav-btn px-6 py-3 rounded display-font text-lg text-gray-300">STANDINGS</a>
+          <a href="#" class="nav-btn active px-6 py-3 rounded display-font text-lg text-white">GAME LOG</a>
+          <a href="plan-a-settings.html" class="nav-btn px-6 py-3 rounded display-font text-lg text-gray-300">SETTINGS</a>
+        </div>
+
+        <!-- Player Info -->
+        <div class="flex items-center gap-3">
+          <div class="text-right">
+            <div class="display-font text-lg text-white">MATT G</div>
+            <div class="text-gray-500 text-xs">LVL 42</div>
+          </div>
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-cyan-700 rounded-lg border-2 border-green-400 flex items-center justify-center">
+            <span class="display-font text-xl text-white">M</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PAGE TITLE & STATS -->
+    <div class="max-w-5xl mx-auto mb-6">
+      <div class="text-center mb-6">
+        <div class="display-font text-6xl led-glow-yellow tracking-wider">GAME LOG</div>
+        <div class="text-gray-400 display-font text-xl tracking-widest mt-2">YOUR COMPLETE BATTLE HISTORY</div>
+      </div>
+
+      <!-- Stats Summary -->
+      <div class="grid grid-cols-4 gap-4 mb-6">
+        <div class="jumbotron p-4 text-center">
+          <div class="text-gray-500 text-xs display-font">TOTAL SHOTS</div>
+          <div class="display-font text-4xl led-glow-white">47</div>
+        </div>
+        <div class="jumbotron p-4 text-center">
+          <div class="text-gray-500 text-xs display-font">HITS</div>
+          <div class="display-font text-4xl led-glow-green">34</div>
+        </div>
+        <div class="jumbotron p-4 text-center">
+          <div class="text-gray-500 text-xs display-font">MISSES</div>
+          <div class="display-font text-4xl led-glow-red">9</div>
+        </div>
+        <div class="jumbotron p-4 text-center">
+          <div class="text-gray-500 text-xs display-font">IN PLAY</div>
+          <div class="display-font text-4xl led-glow-yellow">4</div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="led-panel led-dots rounded-lg p-4 mb-6">
+        <div class="flex items-center justify-between">
+          <div class="flex gap-2">
+            <button class="filter-tab active px-5 py-2 border-2 border-green-500 rounded display-font text-white">ALL</button>
+            <button class="filter-tab px-5 py-2 border-2 border-gray-700 rounded display-font text-gray-400">WINS</button>
+            <button class="filter-tab px-5 py-2 border-2 border-gray-700 rounded display-font text-gray-400">LOSSES</button>
+            <button class="filter-tab px-5 py-2 border-2 border-gray-700 rounded display-font text-gray-400">ACTIVE</button>
+          </div>
+          <div class="flex gap-4 items-center">
+            <select class="bg-black border-2 border-gray-700 px-4 py-2 text-sm text-gray-400 display-font rounded focus:outline-none focus:border-green-500">
+              <option>All Targets</option>
+              <option>AI Infrastructure</option>
+              <option>EV Revolution</option>
+              <option>Fed Rate Pivot</option>
+            </select>
+            <select class="bg-black border-2 border-gray-700 px-4 py-2 text-sm text-gray-400 display-font rounded focus:outline-none focus:border-green-500">
+              <option>Newest First</option>
+              <option>Oldest First</option>
+              <option>Highest Gain</option>
+              <option>Highest Loss</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GAME LOG TIMELINE -->
+    <div class="max-w-5xl mx-auto">
+      <div class="relative">
+        <!-- Timeline Line -->
+        <div class="absolute left-8 top-0 bottom-0 w-1 timeline-line rounded-full"></div>
+
+        <!-- DECEMBER 2025 -->
+        <div class="mb-8">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-16 h-16 jumbotron flex items-center justify-center z-10 timeline-node rounded-lg border-4 border-green-500" style="color: var(--led-green);">
+              <span class="display-font text-sm text-white">DEC</span>
+            </div>
+            <h3 class="display-font text-2xl led-glow-green">DECEMBER 2025</h3>
+            <div class="flex-1 h-1 bg-gradient-to-r from-green-500/50 to-transparent rounded"></div>
+          </div>
+
+          <div class="ml-20 space-y-4">
+            <!-- Active Entry -->
+            <div class="game-card active entry-slide jumbotron p-5 border-l-4 border-yellow-500">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-4">
+                  <div class="segment-display rounded px-3 py-2">
+                    <span class="display-font text-xl led-glow-yellow">NVDA</span>
+                  </div>
+                  <div>
+                    <p class="display-font text-xl text-white">NVIDIA - Shot Active</p>
+                    <p class="text-sm text-gray-500">Target: AI Infrastructure Boom</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="display-font text-3xl led-glow-green">+15.2%</p>
+                  <p class="text-xs text-gray-500 display-font">Dec 20, 2025</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-6 text-sm">
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">Entry:</span>
+                  <span class="text-gray-300 display-font">$118.45</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">Current:</span>
+                  <span class="led-glow-green display-font">$136.46</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">Shares:</span>
+                  <span class="text-gray-300 display-font">42</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">P&L:</span>
+                  <span class="led-glow-green display-font">+$756.42</span>
+                </div>
+                <div class="ml-auto flex items-center gap-2">
+                  <div class="w-2 h-2 bg-yellow-500 rounded-full pulse"></div>
+                  <span class="px-3 py-1 bg-yellow-500/20 border-2 border-yellow-500 text-yellow-400 text-xs display-font rounded">IN PLAY</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Active Entry 2 -->
+            <div class="game-card active entry-slide jumbotron p-5 border-l-4 border-yellow-500" style="animation-delay: 0.1s">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-4">
+                  <div class="segment-display rounded px-3 py-2">
+                    <span class="display-font text-xl text-blue-400">MSFT</span>
+                  </div>
+                  <div>
+                    <p class="display-font text-xl text-white">Microsoft - Shot Active</p>
+                    <p class="text-sm text-gray-500">Target: AI Infrastructure Boom</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="display-font text-3xl led-glow-green">+4.3%</p>
+                  <p class="text-xs text-gray-500 display-font">Dec 15, 2025</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-6 text-sm">
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">Entry:</span>
+                  <span class="text-gray-300 display-font">$374.20</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">Current:</span>
+                  <span class="led-glow-green display-font">$390.29</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">Shares:</span>
+                  <span class="text-gray-300 display-font">15</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">P&L:</span>
+                  <span class="led-glow-green display-font">+$241.35</span>
+                </div>
+                <div class="ml-auto flex items-center gap-2">
+                  <div class="w-2 h-2 bg-yellow-500 rounded-full pulse"></div>
+                  <span class="px-3 py-1 bg-yellow-500/20 border-2 border-yellow-500 text-yellow-400 text-xs display-font rounded">IN PLAY</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Target Created -->
+            <div class="entry-slide jumbotron p-5 border-l-4 border-purple-500" style="animation-delay: 0.2s">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 bg-purple-500/20 border-2 border-purple-500 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                      <circle cx="12" cy="12" r="6" stroke-width="2"/>
+                      <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="display-font text-xl text-white">New Target Created</p>
+                    <p class="text-sm text-purple-400">AI Infrastructure Boom 2025</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="px-3 py-1 bg-purple-500/20 border-2 border-purple-500 text-purple-400 text-sm display-font rounded">TARGET</span>
+                  <p class="text-xs text-gray-500 display-font mt-1">Dec 10, 2025</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NOVEMBER 2025 -->
+        <div class="mb-8">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-16 h-16 jumbotron flex items-center justify-center z-10 timeline-node rounded-lg border-4 border-blue-500" style="color: var(--led-yellow);">
+              <span class="display-font text-sm text-white">NOV</span>
+            </div>
+            <h3 class="display-font text-2xl text-blue-400">NOVEMBER 2025</h3>
+            <div class="flex-1 h-1 bg-gradient-to-r from-blue-500/50 to-transparent rounded"></div>
+          </div>
+
+          <div class="ml-20 space-y-4">
+            <!-- Win Entry -->
+            <div class="game-card win entry-slide jumbotron p-5 border-l-4 border-green-500">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-4">
+                  <div class="segment-display rounded px-3 py-2">
+                    <span class="display-font text-xl led-glow-green">AMD</span>
+                  </div>
+                  <div>
+                    <p class="display-font text-xl text-white">AMD - Target Hit!</p>
+                    <p class="text-sm text-gray-500">Target: Chip Shortage Play</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="display-font text-3xl led-glow-green">+28.5%</p>
+                  <p class="text-xs text-gray-500 display-font">Nov 28, 2025</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-6 text-sm">
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">Entry:</span>
+                  <span class="text-gray-300 display-font">$112.30</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">Exit:</span>
+                  <span class="led-glow-green display-font">$144.30</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">Shares:</span>
+                  <span class="text-gray-300 display-font">100</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">P&L:</span>
+                  <span class="led-glow-green display-font">+$3,200</span>
+                </div>
+                <div class="ml-auto flex items-center gap-2">
+                  <span class="text-xl">🎯</span>
+                  <span class="px-3 py-1 bg-green-500/20 border-2 border-green-500 text-green-400 text-xs display-font rounded">WIN</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Loss Entry -->
+            <div class="game-card loss entry-slide jumbotron p-5 border-l-4 border-red-500" style="animation-delay: 0.1s">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-4">
+                  <div class="segment-display rounded px-3 py-2">
+                    <span class="display-font text-xl led-glow-red">TSLA</span>
+                  </div>
+                  <div>
+                    <p class="display-font text-xl text-white">Tesla - Stop Loss Hit</p>
+                    <p class="text-sm text-gray-500">Target: EV Revolution</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="display-font text-3xl led-glow-red">-12.4%</p>
+                  <p class="text-xs text-gray-500 display-font">Nov 15, 2025</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-6 text-sm">
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">Entry:</span>
+                  <span class="text-gray-300 display-font">$248.30</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">Exit:</span>
+                  <span class="led-glow-red display-font">$217.50</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">Shares:</span>
+                  <span class="text-gray-300 display-font">30</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">P&L:</span>
+                  <span class="led-glow-red display-font">-$924</span>
+                </div>
+                <div class="ml-auto">
+                  <span class="px-3 py-1 bg-red-500/20 border-2 border-red-500 text-red-400 text-xs display-font rounded">LOSS</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OCTOBER 2025 -->
+        <div class="mb-8">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-16 h-16 jumbotron flex items-center justify-center z-10 timeline-node rounded-lg border-4 border-orange-500" style="color: var(--led-yellow);">
+              <span class="display-font text-sm text-white">OCT</span>
+            </div>
+            <h3 class="display-font text-2xl text-orange-400">OCTOBER 2025</h3>
+            <div class="flex-1 h-1 bg-gradient-to-r from-orange-500/50 to-transparent rounded"></div>
+          </div>
+
+          <div class="ml-20 space-y-4">
+            <!-- Big Win Entry -->
+            <div class="game-card win entry-slide jumbotron p-5 border-l-4 border-green-500">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-4">
+                  <div class="segment-display rounded px-3 py-2">
+                    <span class="display-font text-xl led-glow-green">NVDA</span>
+                  </div>
+                  <div>
+                    <p class="display-font text-xl text-white">NVIDIA - Target Hit!</p>
+                    <p class="text-sm text-gray-500">Target: AI Chip Dominance</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="display-font text-3xl led-glow-green">+34.2%</p>
+                  <p class="text-xs text-gray-500 display-font">Oct 22, 2025</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-6 text-sm">
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">Entry:</span>
+                  <span class="text-gray-300 display-font">$89.50</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">Exit:</span>
+                  <span class="led-glow-green display-font">$120.10</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">Shares:</span>
+                  <span class="text-gray-300 display-font">200</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-gray-600">P&L:</span>
+                  <span class="led-glow-green display-font">+$6,120</span>
+                </div>
+                <div class="ml-auto flex items-center gap-2">
+                  <span class="text-xl">🏆</span>
+                  <span class="text-xl">🎯</span>
+                  <span class="px-3 py-1 bg-green-500/20 border-2 border-green-500 text-green-400 text-xs display-font rounded">WIN</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Load More -->
+      <div class="text-center mt-8">
+        <button class="px-10 py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 rounded-lg display-font text-2xl text-white shadow-lg border-2 border-green-400 transition-all hover:scale-[1.02]">
+          LOAD MORE HISTORY
+        </button>
+      </div>
+    </div>
+
+    <!-- BOTTOM: Running Lights Bar -->
+    <div class="h-2 running-lights rounded-full mt-8"></div>
+
   </div>
-
-  <!-- Main Content -->
-  <main class="max-w-4xl mx-auto px-6 py-8 pt-24">
-
-    <!-- Header -->
-    <div class="text-center mb-8">
-      <h1 class="led-font text-4xl font-bold glow-purple mb-2">BATTLE LOG</h1>
-      <p class="text-gray-500">Your complete trading history</p>
-    </div>
-
-    <!-- Filters -->
-    <div class="flex items-center justify-between mb-8">
-      <div class="flex gap-2">
-        <button class="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg text-sm led-font">ALL</button>
-        <button class="px-4 py-2 text-gray-500 hover:bg-gray-800 rounded-lg text-sm led-font">HITS</button>
-        <button class="px-4 py-2 text-gray-500 hover:bg-gray-800 rounded-lg text-sm led-font">MISSES</button>
-        <button class="px-4 py-2 text-gray-500 hover:bg-gray-800 rounded-lg text-sm led-font">ACTIVE</button>
-      </div>
-      <div class="flex gap-2">
-        <select class="bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-sm text-gray-400 focus:outline-none focus:border-purple-500">
-          <option>All Targets</option>
-          <option>AI Infrastructure</option>
-          <option>EV Revolution</option>
-          <option>Fed Rate Pivot</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Timeline -->
-    <div class="relative">
-      <!-- Timeline Line -->
-      <div class="absolute left-6 top-0 bottom-0 w-1 timeline-line rounded-full"></div>
-
-      <!-- December 2025 -->
-      <div class="mb-8">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center z-10 shadow-lg shadow-purple-500/50">
-            <span class="led-font text-xs font-bold">DEC</span>
-          </div>
-          <h3 class="led-font text-lg font-bold text-purple-400 glow-purple">DECEMBER 2025</h3>
-        </div>
-
-        <div class="ml-16 space-y-4">
-          <!-- Entry -->
-          <div class="bg-gray-900/80 rounded-xl p-5 border border-emerald-500/20 hover:border-emerald-500/40 transition-colors">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
-                  <span class="text-xs font-bold text-green-400">NVDA</span>
-                </div>
-                <div>
-                  <p class="font-medium">NVIDIA - Shot Fired</p>
-                  <p class="text-xs text-gray-500">AI Infrastructure Boom</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <p class="led-font text-lg font-bold text-emerald-400 glow-green">+13.6%</p>
-                <p class="text-xs text-gray-500">Dec 20, 2025</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-4 text-xs text-gray-500">
-              <span>Entry: $118.45</span>
-              <span>•</span>
-              <span>Current: $134.52</span>
-              <span>•</span>
-              <span>Shares: 42</span>
-              <span class="ml-auto px-2 py-1 bg-blue-500/20 text-blue-400 rounded">ACTIVE</span>
-            </div>
-          </div>
-
-          <!-- Entry -->
-          <div class="bg-gray-900/80 rounded-xl p-5 border border-blue-500/20 hover:border-blue-500/40 transition-colors">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                  <span class="text-xs font-bold text-blue-400">MSFT</span>
-                </div>
-                <div>
-                  <p class="font-medium">Microsoft - Shot Fired</p>
-                  <p class="text-xs text-gray-500">AI Infrastructure Boom</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <p class="led-font text-lg font-bold text-emerald-400">+4.3%</p>
-                <p class="text-xs text-gray-500">Dec 15, 2025</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-4 text-xs text-gray-500">
-              <span>Entry: $374.20</span>
-              <span>•</span>
-              <span>Current: $390.15</span>
-              <span>•</span>
-              <span>Shares: 15</span>
-              <span class="ml-auto px-2 py-1 bg-blue-500/20 text-blue-400 rounded">ACTIVE</span>
-            </div>
-          </div>
-
-          <!-- Target Created -->
-          <div class="bg-gray-900/80 rounded-xl p-5 border border-purple-500/20 hover:border-purple-500/40 transition-colors">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                  <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10" stroke-width="2"/>
-                    <circle cx="12" cy="12" r="6" stroke-width="2"/>
-                    <circle cx="12" cy="12" r="2" fill="currentColor"/>
-                  </svg>
-                </div>
-                <div>
-                  <p class="font-medium">Target Created</p>
-                  <p class="text-xs text-gray-500">AI Infrastructure Boom 2025</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <p class="text-sm text-purple-400">New Target</p>
-                <p class="text-xs text-gray-500">Dec 10, 2025</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- November 2025 -->
-      <div class="mb-8">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center z-10 shadow-lg shadow-blue-500/50">
-            <span class="led-font text-xs font-bold">NOV</span>
-          </div>
-          <h3 class="led-font text-lg font-bold text-blue-400 glow-blue">NOVEMBER 2025</h3>
-        </div>
-
-        <div class="ml-16 space-y-4">
-          <!-- Hit Entry -->
-          <div class="bg-gray-900/80 rounded-xl p-5 border border-emerald-500/30 hover:border-emerald-500/50 transition-colors">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                  <span class="text-xs font-bold text-purple-400">AMD</span>
-                </div>
-                <div>
-                  <p class="font-medium">AMD - Target Hit!</p>
-                  <p class="text-xs text-gray-500">Chip Shortage Play</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <p class="led-font text-lg font-bold text-emerald-400 glow-green">+28.5%</p>
-                <p class="text-xs text-gray-500">Nov 28, 2025</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-4 text-xs text-gray-500">
-              <span>Entry: $112.30</span>
-              <span>•</span>
-              <span>Exit: $144.30</span>
-              <span>•</span>
-              <span>P&L: +$3,200</span>
-              <span class="ml-auto px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded">HIT</span>
-            </div>
-          </div>
-
-          <!-- Miss Entry -->
-          <div class="bg-gray-900/80 rounded-xl p-5 border border-red-500/30 hover:border-red-500/50 transition-colors">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
-                  <span class="text-xs font-bold text-red-400">TSLA</span>
-                </div>
-                <div>
-                  <p class="font-medium">Tesla - Stop Loss Hit</p>
-                  <p class="text-xs text-gray-500">EV Revolution</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <p class="led-font text-lg font-bold text-red-400 glow-red">-12.4%</p>
-                <p class="text-xs text-gray-500">Nov 15, 2025</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-4 text-xs text-gray-500">
-              <span>Entry: $248.30</span>
-              <span>•</span>
-              <span>Exit: $217.50</span>
-              <span>•</span>
-              <span>P&L: -$924</span>
-              <span class="ml-auto px-2 py-1 bg-red-500/20 text-red-400 rounded">MISS</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- October 2025 -->
-      <div class="mb-8">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center z-10 shadow-lg shadow-emerald-500/50">
-            <span class="led-font text-xs font-bold">OCT</span>
-          </div>
-          <h3 class="led-font text-lg font-bold text-emerald-400 glow-green">OCTOBER 2025</h3>
-        </div>
-
-        <div class="ml-16 space-y-4">
-          <div class="bg-gray-900/80 rounded-xl p-5 border border-emerald-500/30">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
-                  <span class="text-xs font-bold text-green-400">NVDA</span>
-                </div>
-                <div>
-                  <p class="font-medium">NVIDIA - Target Hit!</p>
-                  <p class="text-xs text-gray-500">AI Chip Dominance</p>
-                </div>
-              </div>
-              <div class="text-right">
-                <p class="led-font text-lg font-bold text-emerald-400 glow-green">+34.2%</p>
-                <p class="text-xs text-gray-500">Oct 22, 2025</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-4 text-xs text-gray-500">
-              <span>Entry: $89.50</span>
-              <span>•</span>
-              <span>Exit: $120.10</span>
-              <span>•</span>
-              <span>P&L: +$6,120</span>
-              <span class="ml-auto px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded">HIT</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Load More -->
-    <div class="text-center mt-8">
-      <button class="px-8 py-3 bg-gray-900 border border-purple-500/30 rounded-xl led-font text-purple-400 hover:bg-purple-500/10 transition-colors">
-        LOAD MORE HISTORY
-      </button>
-    </div>
-
-  </main>
 
 </body>
 </html>

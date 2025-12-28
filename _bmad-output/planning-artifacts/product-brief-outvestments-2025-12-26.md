@@ -4,8 +4,10 @@ inputDocuments:
   - paper-trading-api-research.md
   - competitive-analysis.md
 date: 2025-12-26
+updated: 2025-12-27
 author: Matt
 project_name: outvestments
+version: 2.0
 ---
 
 # Product Brief: Outvestments
@@ -18,9 +20,12 @@ project_name: outvestments
 
 ## Executive Summary
 
-Outvestments is a platform for **proving, measuring, and learning investing skill**.
+Outvestments is a **gamified platform for proving, measuring, and learning investing skill** through paper trading and prediction tracking. Unlike traditional paper trading apps that focus on simulated returns, Outvestments emphasizes **thesis documentation**, **time-normalized scoring**, and a **game-like experience** that makes tracking predictions engaging rather than tedious.
+
+**Core Identity:** Outvestments is not just a trading tracker - it's a **trading education system** disguised as a game.
 
 It solves three core problems:
+
 1. **Skill Proof:** How do you prove you're a good investor without risking real money?
 2. **Skill Discovery:** How do you identify who's actually skilled vs lucky?
 3. **Fair Comparison:** How do you compare performance when people hold for different durations?
@@ -28,6 +33,21 @@ It solves three core problems:
 By requiring thesis documentation before predictions and scoring with time-normalized metrics (PPD), Outvestments creates transparent, comparable track records that distinguish genuine skill from luck.
 
 Paper trading is the starting instrument - chosen for accessibility and low regulatory friction. The thesis and tracking methodology will later integrate into **DoughFlow** for real trading.
+
+---
+
+## The Six Messaging Pillars
+
+These messages are woven throughout the app to teach better trading habits:
+
+| Pillar | Core Message | Why It Matters |
+|--------|--------------|----------------|
+| **Trades You Can Trust** | Immutable records, timestamped predictions | Traders can't verify their own track records. We fix that. |
+| **Everyone Wins in a Good Market** | Bull/Bear/Flat tagging, benchmark comparison | Bull markets create false confidence. We show context. |
+| **Trading the Right Way** | Thesis-first workflow (Target → Aim → Shot) | Most traders skip fundamentals. We force discipline. |
+| **Have a Plan and Know It** | Exit conditions, warning signs, macro risks | Traders know when to get in but not out. We remind them. |
+| **The Only App With a Real Scoreboard** | PPD, accuracy, difficulty, NPC opponents | No other app scores trading performance meaningfully. |
+| **The Only App That Shows Opportunity Cost** | Dollar difference vs benchmark, not just % | "I made 20%" means nothing without context. |
 
 ---
 
@@ -50,22 +70,15 @@ Context matters: "I made 5% this year" sounds good - but if market average was 1
 
 **The Gap:** No platform lets you transparently prove your investing skill, show your reasoning, and enable others to evaluate and learn from your methodology.
 
-### Proposed Solution
-
-A platform where every prediction requires:
-- **Thesis** - WHY you believe this
-- **Catalyst** - WHAT will drive the movement
-- **Target** - WHERE you expect it to go and WHEN
-
-Scored with time-normalized metrics to enable fair comparison.
-
 ### Key Differentiators
 
 | Differentiator | Why It Matters |
 |----------------|----------------|
 | Thesis Transparency | See WHY someone made a prediction, not just what |
 | Performance Per Day (PPD) | Fair comparison across different timeframes |
-| Catalyst Tracking | Completely unique in market |
+| NPC Opponents | Always know if you beat the market (S&P, sector ETFs) |
+| Market Condition Tags | Performance in context (bull/bear/flat markets) |
+| Opportunity Cost Display | Dollar amounts vs benchmark, not just percentages |
 | Skill Verification | Distinguish genuine skill from luck over time |
 
 ### Platform Trajectory
@@ -78,168 +91,155 @@ The thesis and tracking methodology developed here will integrate into DoughFlow
 
 ## Core Terminology
 
-### Prediction Units
+### The Three-Tier Hierarchy
 
-| Term | Definition |
-|------|------------|
-| **Shot** | A single prediction/thesis on a stock. "Call your shot" - like Babe Ruth pointing to the stands before his home run. Represents a complete prediction with thesis, catalyst, target, and timeframe. |
-| **Clip** | A cluster of shots representing an allocation strategy. Like a clip in a gun - multiple rounds ready to fire as part of a coordinated strategy. |
+| Term | Definition | Analogy |
+|------|------------|---------|
+| **Target** | A thesis or theme-level prediction. The WHY behind your trades. | "AI will dominate 2025" |
+| **Aim** | A specific prediction: ticker + price + date. The WHAT you're betting on. | "NVDA to $200 by March 2025" |
+| **Shot** | A trade/order. The execution of your prediction. | Buy 10 shares NVDA @ $140 |
 
-### Competition Types
+**Flow:** Target (thesis) → Aim (prediction) → Shot (trade)
+
+### Shot States
+
+| State | Description |
+|-------|-------------|
+| **Pending** | Order created, not yet armed |
+| **Armed** | Ready to execute (limit order waiting) |
+| **Fired** | Order submitted to market |
+| **Active** | Position open, being tracked |
+| **Closed** | Position closed, scored |
+
+### NPC Opponents
+
+Benchmark comparisons are framed as "NPC Opponents" - computer-controlled enemies you're trying to beat:
+
+| NPC | Benchmark | Description |
+|-----|-----------|-------------|
+| **The Index** | S&P 500 (SPY) | The default opponent. Did you beat the market? |
+| **The Sector** | Sector ETFs | Beat the sector you're trading in |
+| **The Risk-Free** | T-Bills | Beat doing nothing |
+
+*Future: PvP (player vs player) leaderboards*
+
+### Competition Types (Future)
 
 | Term | Definition | Typical Duration |
 |------|------------|------------------|
-| **Volley** | Head-to-head competition between two users or teams | Variable |
+| **Volley** | Head-to-head competition between two users | Variable |
 | **Heat** | Short burst competition | 7-30 days |
 | **Season** | Major quarterly competition period | ~3 months |
 | **Series** | Multi-part competition with cumulative scoring | Multiple heats |
-| **Campaign** | Long-term thematic competition (e.g., "Tech Titans 2025") | Extended |
-| **Bracket** | Elimination tournament format | Variable |
 
-*Note: Avoided "Round" as it conflicts with archery terminology (a round is a single arrow/bullet).*
+---
 
-### Shot Scoring Overview
+## Scoring System
 
-Each shot is evaluated on three dimensions:
+### Three-Tier Scoring
 
-| Dimension | What It Measures | Scale |
-|-----------|------------------|-------|
-| **Accuracy** | Did you hit your target? | 0-100+ (percentage of target achieved) |
-| **Performance** | How much did you make vs benchmarks? | % difference (Raw vs 10%/yr, Delta vs actual S&P) |
-| **Difficulty** | How bold was your prediction? | Multiplier (0.5x - 2.5x) |
+| Level | What's Scored | Key Metrics |
+|-------|---------------|-------------|
+| **Target** | Thesis quality | % of Aims that hit, overall thesis grade |
+| **Aim** | Prediction accuracy | Hit target? How close? |
+| **Shot** | Trade execution | PPD, alpha generated, opportunity cost |
 
-**Composite Shot Score** = Accuracy × Difficulty Multiplier
+### Performance Per Day (PPD)
 
-*Example: 85 accuracy × 1.5x difficulty = **127.5** shot score*
+The core time-normalized metric:
 
-*Note: "Alpha" reserved for future platform branding/features.*
+**PPD = (% gain or loss) / (days held)**
+
+This solves the problem of comparing a 10% gain over 3 days vs 10% gain over 30 days.
+
+| Scenario | Return | Days | PPD |
+|----------|--------|------|-----|
+| Quick win | +10% | 5 | **2.0** |
+| Slow win | +10% | 50 | **0.2** |
+| Quick loss | -5% | 3 | **-1.67** |
 
 ### Accuracy Scoring
 
-How close did you get to your predicted target? Simple percentage-based score:
+How close did you get to your predicted target?
 
 | Actual vs Target | Accuracy Score |
 |------------------|----------------|
 | Hit target exactly | **100** |
 | Exceeded by 50% | **150** |
-| Doubled target | **200** |
 | Got 80% of target | **80** |
-| Got 50% of target | **50** |
-| Broke even (predicted gains) | **0** |
+| Broke even | **0** |
 | Wrong direction | **Negative** |
 
 *Formula: (Actual Return / Target Return) × 100*
 
-No terminology to memorize - just look at the number. Badges and achievements can layer on top later.
+### NPC Comparison (Alpha/Opportunity Cost)
 
-### Performance Scoring
+Every trade shows:
+- **Your return** ($ and %)
+- **What SPY did** in the same period
+- **Dollar difference** ("You made $2,000. SPY would have made $3,100.")
+- **Alpha generated** (or opportunity cost)
 
-How well did you do vs what the market would have done in the same time?
+### Market Condition Tags
 
-| Type | Benchmark | Description |
-|------|-----------|-------------|
-| **Raw Performance** | Expected market (~10%/yr prorated) | Your return vs what market "should" return in same period |
-| **Delta Performance** | Actual S&P (same period) | Your return vs what S&P actually did during your hold |
+Each trade is tagged with market conditions at entry:
 
-**Formulas:**
-- Expected Market Return = 10% × (Days Held / 365)
-- Raw Performance = (Your Return / Expected) × 67
-- Delta Performance = (Your Return / Actual S&P) × 67
+| Condition | Definition | Icon |
+|-----------|------------|------|
+| **Bull** | S&P up >10% annualized | 🐂 |
+| **Bear** | S&P down >10% annualized | 🐻 |
+| **Flat** | Between -10% and +10% | ➖ |
 
-**Examples:**
+*Addresses "everybody does well in a good market" - context matters.*
 
-| Holding Period | Your Return | Expected (10%/yr) | Actual S&P | Raw | Delta |
-|----------------|-------------|-------------------|------------|-----|-------|
-| 36 days | +5% | +1% | +3% | **335** | **112** |
-| 180 days | +3% | +5% | +8% | **40** | **25** |
-| Matched market | +1% | +1% | +1% | **67** | **67** |
-| 20% better | +1.2% | +1% | +1% | **80** | **80** |
-| 1.5x market | +1.5% | +1% | +1% | **100** | **100** |
-| Doubled market | +2% | +1% | +1% | **134** | **134** |
+### Unicorn Events (Black Swan Tracking)
 
-- **67** = matched market (C grade, average)
-- **80** = 20% better (B-)
-- **100** = 1.5x market (A)
-- **134** = doubled market (A+)
-- **Below 67** = underperformed
+Major market events are flagged:
+- COVID crash (Mar 2020)
+- Trump tariffs (Dec 2024)
+- Flash crashes
 
-*67 is baseline (⅔ × 100), so 1.5x market = 100 exactly.*
-
-### Difficulty Scoring
-
-How bold was your prediction? Like archery - hitting bullseye from 70m is harder than from 10m.
-
-| Distance | Target Return | Difficulty Multiplier |
-|----------|---------------|----------------------|
-| Point Blank | <5% | 0.5x |
-| Close Range | 5-15% | 1.0x |
-| Mid Range | 15-30% | 1.5x |
-| Long Range | 30-50% | 2.0x |
-| Extreme Range | >50% | 2.5x |
-
-**Delta Difficulty:** Predictions significantly above/below market expectations earn higher difficulty ratings.
-
-*Note: Short plays get extra credit - beating S&P when it went UP shows more skill.*
-
-### Trajectory Scoring
-
-Unlike traditional platforms that only score final outcomes, Outvestments tracks the **journey** toward the target:
-
-- **Trajectory** - The path a prediction takes toward its target over time
-- **On Track** - Prediction moving in the expected direction
-- **Drifting** - Prediction moving sideways or slowly diverging
-- **Off Course** - Prediction moving opposite to thesis
-
-### Performance Metrics
-
-| Metric | Definition |
-|--------|------------|
-| **Performance Per Day (PPD)** | Time-normalized performance metric: (% gain or loss) / (days held). Solves the problem of comparing a 10% gain over 3 days vs 10% gain over 30 days. |
-| **Thesis Accuracy** | How well the stated thesis predicted actual market movement |
-| **Catalyst Hit Rate** | Percentage of identified catalysts that actually occurred |
+Trades during these periods get a unicorn icon 🦄 and separate performance tracking.
 
 ---
 
-## Social Features
+## Design Philosophy
 
-- **Following** - Users can follow other users to see their shots
-- **Public Profiles** - Track record, thesis history, accuracy stats
-- **Leaderboards** - Ranked by various metrics (accuracy, PPD, trajectory)
-- **Comments/Discussion** - Engage with predictions and theses
+- **Game feel, not finance feel** - Engaging, fun, less intimidating
+- **Scoreboard first** - Performance is the hero, not portfolio value
+- **Transparency over vanity** - All predictions visible, wins AND losses
+- **Learning over bragging** - Personal growth is the primary value
+- **Educational by design** - Every feature teaches better trading habits
 
----
+### UI/UX Identity
 
-## Technical Platform
-
-**Primary Integration: Alpaca Paper Trading API**
-
-Selected based on research:
-- Free paper trading with no funded account required
-- Real-time IEX market data included
-- 200 requests/minute rate limit (sufficient for MVP)
-- Clear path to multi-user via Broker API
-- Excellent documentation and SDK support
-- Commission-free, modern REST API
-
-See: [paper-trading-api-research.md](../../paper-trading-api-research.md)
-
----
-
-## Competitive Advantage Summary
-
-| Feature | Outvestments | Competitors |
-|---------|--------------|-------------|
-| Thesis Requirement | Mandatory | Optional/None |
-| Catalyst Tracking | Full system | None |
-| Trajectory Scoring | Yes | No |
-| Performance Per Day | Yes | No |
-| Skill Verification | Transparent records | Hidden/None |
-
-See: [competitive-analysis.md](../../competitive-analysis.md)
+- **Floating Sidebar** - Main navigation, always accessible
+- **Windows 95 Modals** - Distinctive, nostalgic feel for detail views
+- **Toast Notifications** - Achievement unlocks, milestone celebrations
+- **Dark Theme** - Professional trading aesthetic
 
 ---
 
 ## Target Users
+
+### Primary Persona: The Self-Aware Investor
+
+*"I want to know if I'm actually good at this, and WHERE I'm good at it."*
+
+**Core Needs:**
+- Track all predictions with full accountability
+- See performance broken down by sector, thesis type, timeframe
+- Identify patterns: "I do great in AI, awful in retail"
+- Answer: "Am I getting better or worse as a trader?"
+
+### Secondary Persona: The Transparency Seeker
+
+*"I'm tired of finfluencers who only show their wins."*
+
+**Core Needs:**
+- See FULL track records, not curated highlights
+- Verify overall win rate, consistency, return across ALL choices
+- "Anyone can show 20 wins - show me your 1000 trades"
 
 ### User Value Hierarchy
 
@@ -250,100 +250,24 @@ See: [competitive-analysis.md](../../competitive-analysis.md)
 | **3. Tertiary** | Discovery | Find proven performers to learn from |
 | **4. Icing** | Competition | Heats, volleys, leaderboards for fun |
 
-### Acquisition vs Retention Model
-
-| | Competition | Personal Growth |
-|--|-------------|-----------------|
-| **Purpose** | Acquisition hook | Retention value |
-| **Message** | "Prove you're the best" | "Know yourself" |
-| **Viral potential** | High | Low |
-
-**Hook:** Competition brings users in ("Can you outvest the rest?")
-**Sticky:** Personal insights keep them (sector analysis, thesis patterns, improvement tracking)
-
-### Primary Persona: The Self-Aware Investor
-
-*"I want to know if I'm actually good at this, and WHERE I'm good at it."*
-
-**Core Needs:**
-- Track all predictions with full accountability
-- See performance broken down by sector, thesis type, timeframe
-- Identify patterns: "I do great in AI, awful in retail, weak on macro/BLS plays"
-- Stop wasting effort on weak areas, double down on strengths
-- Validate which thesis patterns consistently work FOR ME
-
-**Key Questions Answered:**
-- Am I actually good, or just lucky?
-- Which sectors should I focus on?
-- Which thesis types consistently win for me?
-- Am I improving over time?
-
-### Secondary Persona: The Transparency Seeker
-
-*"I'm tired of finfluencers who only show their wins."*
-
-**Core Needs:**
-- See FULL track records, not curated highlights
-- Verify overall win rate, consistency, return across ALL choices
-- Find people worth following based on proven performance
-- Cut through pump-and-dump noise
-- "Anyone can show 20 wins - show me your 1000 trades"
-
-### Platform Transparency Features
-
-| What Finfluencers Do | What Outvestments Forces |
-|----------------------|--------------------------|
-| Show only wins | All shots visible - wins AND losses |
-| Cherry-pick highlights | Full track record, no hiding |
-| No accountability | Every prediction timestamped and scored |
-| Vague "I called it" claims | Specific thesis + target + timeframe recorded |
-
-### User Journey
-
-1. **Discovery:** "I want to prove I'm good / find who's actually good"
-2. **Onboarding:** Create first shot with thesis, catalyst, target
-3. **Core Usage:** Track predictions, review performance analytics by sector/thesis type
-4. **Value Moment:** "I finally see WHERE I'm strong and weak"
-5. **Long-term:** Personal performance dashboard becomes essential investing tool
-
 ---
 
-## Success Metrics
+## Technical Platform
 
-### Phase 1: Critical Must-Goals (MVP)
+**Primary Integration: Alpaca Paper Trading API**
 
-*"Can I use this to track my trades and know what to do with them?"*
+| Layer | Technology |
+|-------|------------|
+| Frontend | Next.js 14+ (App Router) |
+| UI Components | shadcn/ui + Tailwind CSS |
+| Database | PostgreSQL |
+| Authentication | Authentik |
+| Trading API | Alpaca Paper Trading API |
+| Testing | Playwright (E2E) + Vitest (unit) |
+| Monitoring | Sentry + Loki |
+| Deployment | Docker (self-hosted) |
 
-| Goal | Success Metric |
-|------|----------------|
-| Log trades | Shots created with thesis, catalyst, target |
-| Track performance | Portfolio view with historical trajectory |
-| On path assessment | Trajectory status (On Track / Drifting / Off Course) |
-| Gain per period | PPD calculated and displayed per shot |
-| Hold/exit clarity | Exit signals based on target + trajectory |
-
-**MVP Success:** User can create shots, track trajectory, and make informed hold/exit decisions.
-
-### Phase 2: Pattern & Social
-
-*"What works for me, and can I share/learn?"*
-
-| Goal | Success Metric |
-|------|----------------|
-| Pattern analysis | Performance breakdown by sector, thesis type |
-| Best thesis types | Win rate by thesis category |
-| Share methodology | Public profile with full track record |
-| Learn from others | Browse/follow proven performers |
-
-### Phase 3: Competitive Market (Reach Goal)
-
-*"Can this be a competitive platform that goes to market?"*
-
-| Goal | Success Metric |
-|------|----------------|
-| Competition features | Heats, volleys, brackets functional |
-| User acquisition | Growth via competitive hook |
-| Market viability | Revenue potential validated |
+See: [paper-trading-api-research.md](../../paper-trading-api-research.md)
 
 ---
 
@@ -354,66 +278,108 @@ See: [competitive-analysis.md](../../competitive-analysis.md)
 | Feature | Description |
 |---------|-------------|
 | User Auth | Individual accounts (Authentik) |
-| Create Shot | Thesis, catalyst, target price, timeframe |
+| Create Target | Thesis with reasoning, catalysts, timeframe |
+| Create Aim | Specific prediction: ticker + price + date |
+| Execute Shot | Trade execution through Alpaca |
 | Manual Trade Entry | Backfill external trades with thesis data |
-| Clips | Group related shots by theme (Mag 7, AI plays, sector bets) |
 | Live Portfolio View | Real-time positions and performance |
 | Historical Chart | 30-day bar graph of daily gain/loss |
-| Trajectory Status | On Track / Drifting / Off Course per shot |
 | PPD Display | Performance Per Day per shot |
-| Exit Signals | Target reached / off course indicators |
+| NPC Comparison | Performance vs S&P on every trade |
+| Market Condition Tags | Bull/Bear/Flat tagging |
+| Trader Progress Dashboard | "Am I getting better?" with win/loss trends |
 | Nightly Data Capture | Store EOD holdings, assets, performance daily |
 | Options Support | Calls/Puts with strike, expiration, premium tracking |
 | Short Positions | Short selling with thesis on downward movement |
-| Delta Performance | Compare shot performance vs S&P over same period |
-
-### Nice to Have (MVP)
-
-| Feature | Description |
-|---------|-------------|
-| Pre/After Market Quotes | Extended hours price data |
-
-### Technical Stack
-
-- Alpaca Paper Trading API
-- Authentik (auth per existing setup)
-- Nightly jobs for EOD data capture
-- Real-time price updates
-
-### MVP+1 (Near-term Enhancements)
-
-| Feature | Description |
-|---------|-------------|
-| Import Live Trades | Connect to brokerage API to import real trades with thesis backfill |
-| Mirror Live Portfolio | Real-time sync of live brokerage positions for tracking |
-
-*Note: Enables users to apply Outvestments methodology to their real trading without switching platforms.*
-
-### Out of Scope (Future Enhancements)
-
-| Feature | Phase | Notes |
-|---------|-------|-------|
-| Sharing (public/private profiles) | 2 | Toggle profile visibility |
-| Share with specific users | 2 | Private sharing without groups |
-| Pattern/sector analysis | 2 | Performance breakdown by sector/thesis type |
-| Win rate by thesis category | 2 | Which thesis patterns work for you |
-| Following/discovery | 2 | Browse and follow proven performers |
-| Groups (private sharing circles) | 2+ | Friends-only visibility |
-| Competition (heats/volleys/brackets) | 3 | Gamification layer |
-| Leaderboards | 3 | Ranked user performance |
-| Teams | 3+ | Group competition structure |
-| Revenue/monetization | 3 | Premium features, subscriptions |
 
 ### MVP Success Criteria
 
 User can:
-- Create shots with thesis/catalyst/target
-- Backfill trades made outside the system
-- Group related shots into clips
-- See trajectory and PPD for each shot
+- Create Targets with thesis documentation
+- Add Aims with specific predictions
+- Execute Shots (trades) linked to Aims
+- See trajectory and PPD for each Shot
+- Compare every trade to the S&P NPC
 - View 30-day historical performance chart
-- Make informed hold/exit decisions from dashboard
+- Answer: "Am I getting better as a trader?"
+
+### Out of Scope (Phase 2+)
+
+| Feature | Phase | Notes |
+|---------|-------|-------|
+| Sharing (public/private profiles) | 2 | Toggle profile visibility |
+| Pattern/sector analysis | 2 | Performance breakdown by sector/thesis type |
+| Following/discovery | 2 | Browse and follow proven performers |
+| Competition (heats/volleys) | 3 | Gamification layer |
+| Leaderboards | 3 | Ranked user performance |
+| Rookie Season | 3 | Protected first 90 days |
+| Daily Streak | 3 | Duolingo-style engagement |
+| Weekly Challenges | 3 | Rotating objectives |
+| Shareable Shot Cards | 3 | Social media sharing |
+| Sector Leagues | 3 | Specialized leaderboards |
+| Duo-style Notifications | 3 | Playful push notifications |
+| Daily Market Quiz | 3 | Educational touchpoint |
 
 ---
 
-<!-- Workflow complete -->
+## Competitive Advantage Summary
+
+| Feature | Outvestments | Competitors |
+|---------|--------------|-------------|
+| Thesis Requirement | Mandatory | Optional/None |
+| NPC Opponents | Yes (SPY, sectors) | None |
+| Market Condition Tags | Yes | No |
+| Opportunity Cost Display | Dollar amounts | None |
+| Performance Per Day | Yes | No |
+| Skill Verification | Transparent records | Hidden/None |
+| Three-Tier Scoring | Target/Aim/Shot | None |
+
+See: [competitive-analysis.md](../../competitive-analysis.md)
+
+---
+
+## Success Metrics
+
+### Phase 1: MVP
+
+*"Can I use this to track my trades and know if I'm getting better?"*
+
+| Goal | Success Metric |
+|------|----------------|
+| Log trades | Targets → Aims → Shots created with thesis |
+| Track performance | Portfolio view with historical trajectory |
+| Beat the market? | NPC comparison on every trade |
+| Am I improving? | Trader Progress Dashboard with trends |
+| Gain per period | PPD calculated and displayed per Shot |
+
+### Phase 2: Pattern & Social
+
+| Goal | Success Metric |
+|------|----------------|
+| Pattern analysis | Performance breakdown by sector, thesis type |
+| Share methodology | Public profile with full track record |
+| Learn from others | Browse/follow proven performers |
+
+### Phase 3: Engagement & Competition
+
+| Goal | Success Metric |
+|------|----------------|
+| Daily engagement | Streak tracking, weekly challenges |
+| Social sharing | Shareable Shot Cards, viral moments |
+| Competition | Heats, volleys, leaderboards functional |
+
+---
+
+## Related Documents
+
+- [PRD](prd-outvestments-2025-12-27.md) - Full requirements
+- [Architecture](architecture.md) - Technical design
+- [Epics](epics.md) - User stories (95 total)
+- [UX Design Specification](ux-design-specification.md) - UI/UX details
+- [Messaging & Positioning](messaging-and-positioning.md) - Core messaging strategy
+- [Future Enhancements - Phase 3](future-enhancements-phase3.md) - Engagement features
+- [Achievement Ideas](achievement-ideas.md) - 100 achievements across 10 categories
+
+---
+
+*Last Updated: 2025-12-27 | Version 2.0*

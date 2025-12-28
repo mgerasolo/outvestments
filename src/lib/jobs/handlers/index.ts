@@ -9,3 +9,5 @@
 export { handler as scoreRefreshHandler } from './score-refresh';
 export { handler as eodSnapshotHandler } from './eod-snapshot';
 export { handler as cacheCleanupHandler } from './cache-cleanup';
+export { handler as priceAlertHandler } from './price-alert';
+export { handler as phantomTrackHandler } from './phantom-track';

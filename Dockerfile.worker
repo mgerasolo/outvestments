@@ -1,0 +1,42 @@
+# Dockerfile for background job worker
+# Uses pg-boss for job scheduling and processing
+#
+# Build: docker build -f Dockerfile.worker -t mgerasolo/outvestments-worker:latest .
+# Run: docker run --env-file .env mgerasolo/outvestments-worker:latest
+
+FROM node:20-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Install dependencies
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+# Production image
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 worker
+
+# Copy dependencies
+COPY --from=deps --chown=worker:nodejs /app/node_modules ./node_modules
+
+# Copy source files needed for worker
+COPY --chown=worker:nodejs package.json ./
+COPY --chown=worker:nodejs tsconfig.json ./
+COPY --chown=worker:nodejs scripts/ ./scripts/
+COPY --chown=worker:nodejs src/lib/ ./src/lib/
+
+USER worker
+
+# Health check - verify worker process is running
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD pgrep -f "worker.ts" || exit 1
+
+CMD ["npx", "tsx", "scripts/worker.ts"]

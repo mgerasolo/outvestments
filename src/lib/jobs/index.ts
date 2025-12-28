@@ -35,6 +35,8 @@ export {
   enqueueScoreRefresh,
   enqueueEodSnapshot,
   enqueueCacheCleanup,
+  enqueuePriceAlert,
+  enqueuePhantomTrack,
 } from './scheduler';
 
 // Type exports
@@ -43,6 +45,8 @@ export type {
   ScoreRefreshJobData,
   EodSnapshotJobData,
   CacheCleanupJobData,
+  PriceAlertJobData,
+  PhantomTrackJobData,
   JobResult,
   JobHandler,
   JobName,
@@ -57,4 +61,6 @@ export {
   scoreRefreshHandler,
   eodSnapshotHandler,
   cacheCleanupHandler,
+  priceAlertHandler,
+  phantomTrackHandler,
 } from './handlers';

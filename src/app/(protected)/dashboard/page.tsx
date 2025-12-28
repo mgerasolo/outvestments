@@ -1,22 +1,29 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { db } from "@/lib/db";
 import { targets, aims, shots, auditLogs } from "@/lib/db/schema";
 import { eq, and, isNull, desc, sql, count } from "drizzle-orm";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+  ArenaHeader,
+  ArenaJumbotron,
+  ArenaTicker,
+  ArenaStatPanel,
+  ArenaPositionGrid,
+  ArenaLiveFeed,
+  ArenaPlayerCard,
+  ArenaActionButtons,
+  ArenaBuyingPower,
+  ArenaPortfolioChart,
+  ArenaPaceGauge,
+  defaultTickerItems,
+} from "@/components/arena";
+import { getAlpacaPortfolio, type AlpacaPosition } from "@/app/actions/alpaca";
+import { getPortfolioHistory } from "@/app/actions/account";
+import type { PaceStatus } from "@/lib/pace-tracking";
 
 export const metadata = {
   title: "Dashboard - Outvestments",
-  description: "Your paper trading dashboard",
+  description: "Your paper trading command center",
 };
 
 export default async function DashboardPage() {
@@ -27,6 +34,12 @@ export default async function DashboardPage() {
   }
 
   const firstName = session.user.name?.split(" ")[0] || "Trader";
+  const initials = session.user.name
+    ?.split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2) || "TR";
 
   // Fetch stats
   const [targetStats] = await db
@@ -49,6 +62,8 @@ export default async function DashboardPage() {
   let aimCount = 0;
   let activeShots = 0;
   let pendingShots = 0;
+  const closedWins = 0;
+  const closedLosses = 0;
 
   if (targetIdList.length > 0) {
     const [aimStats] = await db
@@ -108,474 +123,282 @@ export default async function DashboardPage() {
     .from(auditLogs)
     .where(eq(auditLogs.userId, session.user.dbId))
     .orderBy(desc(auditLogs.createdAt))
-    .limit(5);
+    .limit(6);
 
-  // Fetch recent targets
-  const recentTargets = await db
-    .select()
-    .from(targets)
-    .where(
-      and(
-        eq(targets.userId, session.user.dbId),
-        eq(targets.status, "active"),
-        isNull(targets.deletedAt)
-      )
-    )
-    .orderBy(desc(targets.createdAt))
-    .limit(3);
+  // Fetch Alpaca data
+  let alpacaAccount: {
+    portfolioValue: string;
+    buyingPower: string;
+    dayPL: string;
+    dayPLPercent: string;
+  } | null = null;
+  let alpacaPositions: AlpacaPosition[] = [];
 
-  const getActivityIcon = (action: string) => {
-    if (action.includes("CREATED")) {
-      return (
-        <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4 text-green-600"
-          >
-            <path d="M5 12h14" />
-            <path d="M12 5v14" />
-          </svg>
-        </div>
-      );
+  try {
+    const portfolioResult = await getAlpacaPortfolio();
+    if (portfolioResult.success && portfolioResult.account) {
+      alpacaAccount = portfolioResult.account;
     }
-    if (action.includes("FIRED")) {
-      return (
-        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4 text-blue-600"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
-        </div>
-      );
+    if (portfolioResult.success && portfolioResult.positions) {
+      alpacaPositions = portfolioResult.positions;
     }
-    if (action.includes("DELETED") || action.includes("CANCELLED")) {
-      return (
-        <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4 text-red-600"
-          >
-            <path d="M3 6h18" />
-            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-          </svg>
-        </div>
-      );
-    }
-    return (
-      <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="h-4 w-4 text-gray-600"
-        >
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" x2="12" y1="8" y2="12" />
-          <line x1="12" x2="12.01" y1="16" y2="16" />
-        </svg>
-      </div>
-    );
-  };
+  } catch {
+    // Alpaca not configured - use defaults
+  }
 
+  // Fetch portfolio history for chart
+  let portfolioHistoryData: Array<{
+    date: Date | string;
+    value: number;
+    cashValue?: number;
+    positionsValue?: number;
+  }> = [];
+
+  try {
+    const historyResult = await getPortfolioHistory(30);
+    if (historyResult.success && historyResult.data) {
+      portfolioHistoryData = historyResult.data.map((d) => ({
+        date: d.date,
+        value: d.value,
+        cashValue: d.cash,
+        positionsValue: d.positions,
+      }));
+    }
+  } catch {
+    // History not available - will show empty state
+  }
+
+  // Calculate dashboard metrics
+  const portfolioValue = alpacaAccount?.portfolioValue
+    ? parseFloat(alpacaAccount.portfolioValue)
+    : 100000;
+  const buyingPower = alpacaAccount?.buyingPower
+    ? parseFloat(alpacaAccount.buyingPower)
+    : 100000;
+  const deployed = portfolioValue - buyingPower;
+
+  // Calculate today's P&L from Alpaca or positions
+  const todayPnL = alpacaAccount?.dayPL
+    ? parseFloat(alpacaAccount.dayPL)
+    : alpacaPositions.reduce((sum, p) => sum + parseFloat(p.unrealized_pl || "0"), 0);
+  const todayPnLPercent = alpacaAccount?.dayPLPercent
+    ? parseFloat(alpacaAccount.dayPLPercent)
+    : portfolioValue > 0 ? (todayPnL / portfolioValue) * 100 : 0;
+
+  // Calculate total return (mock - would need entry point data)
+  const totalReturn = todayPnLPercent * 5; // Placeholder multiplier
+  const totalReturnDollars = todayPnL * 5;
+
+  // NPC (S&P 500) comparison - mock data
+  const npcReturn = 12.5;
+  const npcReturnDollars = (portfolioValue * 0.125);
+
+  // Alpha calculation
+  const alphaGenerated = totalReturn - npcReturn;
+  const alphaDollars = totalReturnDollars - npcReturnDollars;
+
+  // Calculate win rate
+  const totalClosed = closedWins + closedLosses;
+  const winRate = totalClosed > 0 ? Math.round((closedWins / totalClosed) * 100) : 0;
+
+  // Calculate pace metrics for the gauge
+  // Using a target of 10% annualized return as baseline
+  const targetAnnualReturn = 10; // 10% annual target
+  const targetMonthlyReturn = targetAnnualReturn / 12;
+
+  // Calculate current pace based on portfolio history or today's performance
+  let currentMonthlyPace = 0;
+  let paceStatus: PaceStatus = "unknown";
+
+  if (portfolioHistoryData.length >= 2) {
+    const startValue = portfolioHistoryData[0].value;
+    const endValue = portfolioHistoryData[portfolioHistoryData.length - 1].value;
+    const days = portfolioHistoryData.length;
+    const periodReturn = startValue > 0 ? ((endValue - startValue) / startValue) * 100 : 0;
+    // Extrapolate to monthly
+    currentMonthlyPace = days > 0 ? (periodReturn / days) * 30 : 0;
+  } else if (todayPnLPercent !== 0) {
+    // Use today's P&L extrapolated to monthly (21 trading days)
+    currentMonthlyPace = todayPnLPercent * 21;
+  }
+
+  // Determine pace status
+  if (targetMonthlyReturn > 0) {
+    const paceRatio = currentMonthlyPace / targetMonthlyReturn;
+    if (paceRatio >= 1.1) {
+      paceStatus = "ahead";
+    } else if (paceRatio <= 0.9) {
+      paceStatus = "behind";
+    } else {
+      paceStatus = "on_pace";
+    }
+  }
+
+  // Format positions for ArenaPositionGrid
+  const formattedPositions = alpacaPositions.map((p) => ({
+    symbol: p.symbol,
+    quantity: parseInt(p.qty || "0"),
+    returnPercent: parseFloat(p.unrealized_plpc || "0") * 100,
+    returnDollars: parseFloat(p.unrealized_pl || "0"),
+  }));
+
+  // Format activity for ArenaLiveFeed
   const formatActivityMessage = (action: string, entityType: string) => {
     const entityName = entityType.toLowerCase();
-    if (action.includes("CREATED")) return `Created a new ${entityName}`;
+    if (action.includes("CREATED")) return `Created ${entityName}`;
     if (action.includes("UPDATED")) return `Updated ${entityName}`;
     if (action.includes("DELETED")) return `Deleted ${entityName}`;
-    if (action.includes("ARMED")) return `Armed shot for execution`;
-    if (action.includes("FIRED")) return `Executed a trade`;
-    if (action.includes("CLOSED")) return `Closed position`;
+    if (action.includes("ARMED")) return `Armed shot`;
+    if (action.includes("FIRED")) return `Shot fired!`;
+    if (action.includes("CLOSED")) return `Position closed`;
     if (action.includes("CANCELLED")) return `Cancelled ${entityName}`;
     if (action.includes("LOGIN")) return `Logged in`;
     return action.replace(/_/g, " ").toLowerCase();
   };
 
+  const getActivityIcon = (action: string) => {
+    if (action.includes("CREATED")) return "➕";
+    if (action.includes("FIRED")) return "⚡";
+    if (action.includes("DELETED") || action.includes("CANCELLED")) return "🗑️";
+    if (action.includes("CLOSED")) return "✅";
+    if (action.includes("ARMED")) return "🎯";
+    return "📋";
+  };
+
+  const getActivityType = (action: string): "gain" | "loss" | "target" | "shot" | "achievement" | "npc" => {
+    if (action.includes("FIRED") || action.includes("ARMED")) return "shot";
+    if (action.includes("CLOSED")) return "gain";
+    return "target";
+  };
+
+  const formatTimeAgo = (date: Date) => {
+    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+    if (seconds < 60) return "just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  };
+
+  const feedItems = recentActivity.map((log) => ({
+    id: log.id,
+    icon: getActivityIcon(log.action),
+    title: formatActivityMessage(log.action, log.entityType),
+    timestamp: formatTimeAgo(new Date(log.createdAt)),
+    type: getActivityType(log.action),
+  }));
+
+  // Ticker items based on real data
+  const tickerItems = alpacaPositions.length > 0
+    ? alpacaPositions.slice(0, 3).map((p, i) => ({
+        id: `pos-${i}`,
+        icon: parseFloat(p.unrealized_pl || "0") >= 0 ? "📈" : "📉",
+        text: `${p.symbol} ${parseFloat(p.unrealized_pl || "0") >= 0 ? "+" : ""}$${Math.abs(parseFloat(p.unrealized_pl || "0")).toFixed(0)}`,
+        type: (parseFloat(p.unrealized_pl || "0") >= 0 ? "gain" : "loss") as "gain" | "loss",
+      }))
+    : defaultTickerItems;
+
+  // Season stats for left panel
+  const seasonStats = [
+    { label: "WIN RATE", value: `${winRate}%`, type: winRate >= 50 ? "gain" as const : "loss" as const },
+    { label: "PPD SCORE", value: "0.00%", type: "default" as const },
+    { label: "RECORD", value: `${closedWins}-${closedLosses}`, subValue: "W-L" },
+    { label: "STREAK", value: "🔥 0W", type: "fire" as const },
+  ];
+
   return (
-    <div className="space-y-8">
-      {/* Welcome Section */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Welcome back, {firstName}!
-          </h1>
-          <p className="text-muted-foreground">
-            Your paper trading dashboard. Track your targets and shots.
-          </p>
+    <div className="min-h-screen space-y-3 sm:space-y-4 lg:space-y-6 pb-4 sm:pb-6 lg:pb-8">
+      {/* Running Lights Top */}
+      <div className="h-1 sm:h-1.5 lg:h-2 running-lights rounded-full" />
+
+      {/* Arena Header */}
+      <ArenaHeader userName={firstName} />
+
+      {/* News Ticker */}
+      <ArenaTicker items={tickerItems} />
+
+      {/* Main Scoreboard Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 lg:gap-6">
+        {/* LEFT COLUMN: Player Stats (hidden on mobile) */}
+        <div className="hidden lg:block lg:col-span-3 space-y-3 lg:space-y-4">
+          <ArenaPlayerCard
+            name={firstName.toUpperCase()}
+            initials={initials}
+            level={1}
+            xp={0}
+            xpToNextLevel={1000}
+            rank="ROOKIE"
+          />
+
+          {/* Pace Gauge */}
+          <ArenaPaceGauge
+            currentPace={currentMonthlyPace}
+            requiredPace={targetMonthlyReturn}
+            status={paceStatus}
+            title="PORTFOLIO PACE"
+          />
+
+          <ArenaStatPanel
+            title="SEASON STATS"
+            stats={seasonStats}
+          />
         </div>
-        <Link href="/targets/new">
-          <Button>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="mr-2 h-4 w-4"
-            >
-              <path d="M5 12h14" />
-              <path d="M12 5v14" />
-            </svg>
-            New Target
-          </Button>
-        </Link>
+
+        {/* CENTER COLUMN: Main Jumbotron Scoreboard */}
+        <div className="lg:col-span-6 space-y-3 sm:space-y-4 lg:space-y-6">
+          <ArenaJumbotron
+            todayPnL={todayPnL}
+            todayPnLPercent={todayPnLPercent}
+            yourReturn={totalReturn}
+            yourReturnDollars={totalReturnDollars}
+            npcReturn={npcReturn}
+            npcReturnDollars={npcReturnDollars}
+            alphaGenerated={alphaGenerated}
+            alphaDollars={alphaDollars}
+          />
+
+          {/* Portfolio Performance Chart */}
+          {portfolioHistoryData.length > 0 && (
+            <ArenaPortfolioChart
+              data={portfolioHistoryData}
+              showCashSplit={true}
+            />
+          )}
+
+          <ArenaPositionGrid positions={formattedPositions} />
+        </div>
+
+        {/* RIGHT COLUMN: Account & Actions */}
+        <div className="lg:col-span-3 space-y-3 lg:space-y-4">
+          <ArenaBuyingPower
+            buyingPower={buyingPower}
+            deployed={deployed}
+            total={portfolioValue}
+          />
+
+          <ArenaLiveFeed items={feedItems} />
+
+          <ArenaActionButtons />
+        </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Active Targets
-            </CardTitle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-4 w-4 text-muted-foreground"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <circle cx="12" cy="12" r="6" />
-              <circle cx="12" cy="12" r="2" />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{targetStats?.count || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Investment theses tracked
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Aims</CardTitle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-4 w-4 text-muted-foreground"
-            >
-              <path d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20z" />
-              <path d="M8 12h8" />
-              <path d="M12 8v8" />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{aimCount}</div>
-            <p className="text-xs text-muted-foreground">
-              Price targets set
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Active Positions
-            </CardTitle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-4 w-4 text-muted-foreground"
-            >
-              <path d="M3 3v18h18" />
-              <path d="m19 9-5 5-4-4-3 3" />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeShots}</div>
-            <p className="text-xs text-muted-foreground">
-              Open trades
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Shots</CardTitle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-4 w-4 text-muted-foreground"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingShots}</div>
-            <p className="text-xs text-muted-foreground">
-              Awaiting execution
-            </p>
-          </CardContent>
-        </Card>
+      {/* Quick Stats Row (Mobile visible) */}
+      <div className="lg:hidden">
+        <ArenaStatPanel
+          title="YOUR STATS"
+          stats={[
+            { label: "TARGETS", value: targetStats?.count || 0 },
+            { label: "AIMS", value: aimCount },
+            { label: "ACTIVE", value: activeShots },
+            { label: "PENDING", value: pendingShots },
+          ]}
+        />
       </div>
 
-      {/* Recent Targets & Activity Grid */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Recent Targets */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Recent Targets</CardTitle>
-              <CardDescription>
-                Your latest investment theses
-              </CardDescription>
-            </div>
-            <Link href="/targets">
-              <Button variant="outline" size="sm">
-                View All
-              </Button>
-            </Link>
-          </CardHeader>
-          <CardContent>
-            {recentTargets.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-10 w-10 text-muted-foreground/50 mb-4"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <circle cx="12" cy="12" r="6" />
-                  <circle cx="12" cy="12" r="2" />
-                </svg>
-                <p className="text-sm text-muted-foreground">
-                  No targets yet. Create your first target to get started.
-                </p>
-                <Link href="/targets/new" className="mt-4">
-                  <Button size="sm">Create Target</Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {recentTargets.map((target) => (
-                  <Link
-                    key={target.id}
-                    href={`/targets/${target.id}`}
-                    className="block"
-                  >
-                    <div className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{target.thesis}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline" className="text-xs">
-                            {target.targetType}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(target.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="h-4 w-4 text-muted-foreground ml-2"
-                      >
-                        <path d="m9 18 6-6-6-6" />
-                      </svg>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Your latest actions and trades</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {recentActivity.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-10 w-10 text-muted-foreground/50 mb-4"
-                >
-                  <path d="M3 3v18h18" />
-                  <path d="m19 9-5 5-4-4-3 3" />
-                </svg>
-                <p className="text-sm text-muted-foreground">
-                  No activity yet. Start by creating a target.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {recentActivity.map((log) => (
-                  <div
-                    key={log.id}
-                    className="flex items-start gap-3 py-2 border-b last:border-0"
-                  >
-                    {getActivityIcon(log.action)}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">
-                        {formatActivityMessage(log.action, log.entityType)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(log.createdAt).toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Get started with these actions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <Link href="/targets/new" className="block">
-              <div className="flex items-center gap-3 p-4 rounded-lg border hover:bg-muted/50 transition-colors">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-5 w-5 text-primary"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <circle cx="12" cy="12" r="6" />
-                    <circle cx="12" cy="12" r="2" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-medium">New Target</p>
-                  <p className="text-xs text-muted-foreground">
-                    Create investment thesis
-                  </p>
-                </div>
-              </div>
-            </Link>
-
-            <Link href="/targets" className="block">
-              <div className="flex items-center gap-3 p-4 rounded-lg border hover:bg-muted/50 transition-colors">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-5 w-5 text-primary"
-                  >
-                    <path d="M3 3v18h18" />
-                    <path d="m19 9-5 5-4-4-3 3" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-medium">View Targets</p>
-                  <p className="text-xs text-muted-foreground">
-                    Manage your theses
-                  </p>
-                </div>
-              </div>
-            </Link>
-
-            <Link href="/settings" className="block">
-              <div className="flex items-center gap-3 p-4 rounded-lg border hover:bg-muted/50 transition-colors">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-5 w-5 text-primary"
-                  >
-                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-medium">Settings</p>
-                  <p className="text-xs text-muted-foreground">
-                    Configure Alpaca API
-                  </p>
-                </div>
-              </div>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Running Lights Bottom */}
+      <div className="h-1 sm:h-1.5 lg:h-2 running-lights rounded-full" />
     </div>
   );
 }

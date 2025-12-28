@@ -3,262 +3,644 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Outvestments - Scoreboard (Plan A)</title>
+  <title>OUTVESTMENTS // LEAGUE STANDINGS</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; background: #030712; }
-    .led-font { font-family: 'Orbitron', monospace; }
-    .glow-green { text-shadow: 0 0 10px #10b981, 0 0 20px #10b981, 0 0 30px #10b981; }
-    .glow-red { text-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444; }
-    .glow-blue { text-shadow: 0 0 10px #3b82f6, 0 0 20px #3b82f6; }
-    .glow-yellow { text-shadow: 0 0 10px #eab308, 0 0 20px #eab308, 0 0 30px #eab308; }
-    .scanlines {
-      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px);
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;700&display=swap');
+
+    :root {
+      --grass-dark: #1a4d1a;
+      --grass-light: #2d7a2d;
+      --grass-bright: #3d9a3d;
+      --scoreboard-bg: #111111;
+      --led-yellow: #ffcc00;
+      --led-green: #00ff00;
+      --led-red: #ff3333;
+      --led-white: #ffffff;
+      --stadium-gold: #d4af37;
     }
-    .nav-orb {
-      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
-      box-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
+
+    body {
+      font-family: 'Roboto Condensed', sans-serif;
+      background: var(--grass-dark);
+      overflow-x: hidden;
     }
-    .vs-divider {
-      background: linear-gradient(180deg, transparent 0%, #eab308 50%, transparent 100%);
+
+    .display-font { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.05em; }
+    .score-font { font-family: 'Oswald', sans-serif; }
+
+    /* Grass field background */
+    .grass-field {
+      background:
+        repeating-linear-gradient(
+          90deg,
+          var(--grass-dark) 0px,
+          var(--grass-dark) 80px,
+          var(--grass-light) 80px,
+          var(--grass-light) 160px
+        );
     }
-    .player-glow {
-      box-shadow: 0 0 40px rgba(59, 130, 246, 0.4);
+
+    /* Field lines */
+    .field-lines::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 49.5%, rgba(255,255,255,0.1) 49.5%, rgba(255,255,255,0.1) 50.5%, transparent 50.5%),
+        repeating-linear-gradient(0deg, transparent 0%, transparent 9.5%, rgba(255,255,255,0.05) 9.5%, rgba(255,255,255,0.05) 10%);
+      pointer-events: none;
     }
-    .npc-glow {
-      box-shadow: 0 0 40px rgba(239, 68, 68, 0.4);
+
+    /* Stadium lights effect */
+    .stadium-lights::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 600px 400px at 0% 0%, rgba(255,255,200,0.15) 0%, transparent 70%),
+        radial-gradient(ellipse 600px 400px at 100% 0%, rgba(255,255,200,0.15) 0%, transparent 70%),
+        radial-gradient(ellipse 800px 500px at 50% -10%, rgba(255,255,255,0.1) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 1;
     }
-    .rank-badge {
-      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-      box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+
+    /* LED Scoreboard panel */
+    .led-panel {
+      background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
+      border: 4px solid #333;
+      box-shadow:
+        inset 0 0 20px rgba(0,0,0,0.8),
+        0 0 30px rgba(0,0,0,0.5),
+        0 5px 0 #222;
+    }
+
+    /* LED dot matrix effect */
+    .led-dots {
+      background-image:
+        radial-gradient(circle at 50% 50%, rgba(0,0,0,0.3) 30%, transparent 30%);
+      background-size: 4px 4px;
+    }
+
+    /* LED text glow */
+    .led-glow-yellow {
+      color: var(--led-yellow);
+      text-shadow:
+        0 0 5px var(--led-yellow),
+        0 0 10px var(--led-yellow),
+        0 0 20px var(--led-yellow),
+        0 0 40px rgba(255,204,0,0.5);
+    }
+
+    .led-glow-green {
+      color: var(--led-green);
+      text-shadow:
+        0 0 5px var(--led-green),
+        0 0 10px var(--led-green),
+        0 0 20px var(--led-green),
+        0 0 40px rgba(0,255,0,0.5);
+    }
+
+    .led-glow-red {
+      color: var(--led-red);
+      text-shadow:
+        0 0 5px var(--led-red),
+        0 0 10px var(--led-red),
+        0 0 20px var(--led-red);
+    }
+
+    .led-glow-white {
+      color: var(--led-white);
+      text-shadow:
+        0 0 3px var(--led-white),
+        0 0 8px var(--led-white),
+        0 0 15px rgba(255,255,255,0.5);
+    }
+
+    /* Jumbotron style */
+    .jumbotron {
+      background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 50%, #0f0f0f 100%);
+      border: 6px solid #444;
+      border-radius: 8px;
+      box-shadow:
+        inset 0 2px 0 rgba(255,255,255,0.1),
+        inset 0 -5px 20px rgba(0,0,0,0.8),
+        0 10px 40px rgba(0,0,0,0.6);
+    }
+
+    /* Scoreboard segment display */
+    .segment-display {
+      background: #0a0a0a;
+      border: 2px solid #222;
+      padding: 10px 20px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.9);
+    }
+
+    /* LED flicker animation */
+    @keyframes ledFlicker {
+      0%, 100% { opacity: 1; }
+      92% { opacity: 1; }
+      93% { opacity: 0.8; }
+      94% { opacity: 1; }
+    }
+    .led-flicker { animation: ledFlicker 3s infinite; }
+
+    /* Stadium pulse animation */
+    @keyframes stadiumPulse {
+      0%, 100% { opacity: 0.15; }
+      50% { opacity: 0.25; }
+    }
+    .stadium-pulse { animation: stadiumPulse 4s ease-in-out infinite; }
+
+    /* Running lights */
+    @keyframes runningLights {
+      0% { background-position: 0 0; }
+      100% { background-position: 40px 0; }
+    }
+    .running-lights {
+      background: repeating-linear-gradient(
+        90deg,
+        var(--led-yellow) 0px,
+        var(--led-yellow) 5px,
+        transparent 5px,
+        transparent 20px
+      );
+      animation: runningLights 0.5s linear infinite;
+    }
+
+    /* Championship banner */
+    .banner {
+      background: linear-gradient(180deg, #c9a227 0%, #a08020 50%, #c9a227 100%);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      position: relative;
+    }
+    .banner::before, .banner::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      width: 20px;
+      height: 20px;
+      background: #8b7015;
+    }
+    .banner::before { left: 0; clip-path: polygon(0 0, 100% 0, 100% 100%); }
+    .banner::after { right: 0; clip-path: polygon(0 0, 100% 0, 0 100%); }
+
+    /* Win streak fire */
+    @keyframes fireGlow {
+      0%, 100% { text-shadow: 0 0 10px #ff6600, 0 0 20px #ff3300, 0 0 30px #ff0000; }
+      50% { text-shadow: 0 0 20px #ff9900, 0 0 40px #ff6600, 0 0 60px #ff3300; }
+    }
+    .fire-glow { animation: fireGlow 0.5s ease-in-out infinite; }
+
+    /* Crown animation */
+    @keyframes crownBob {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50% { transform: translateY(-5px) rotate(3deg); }
+    }
+    .crown-bob { animation: crownBob 2s ease-in-out infinite; }
+
+    /* Podium animations */
+    @keyframes podiumRise {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .podium-rise { animation: podiumRise 0.8s ease-out forwards; }
+
+    /* Rank slide in */
+    @keyframes rankSlide {
+      from { transform: translateX(-30px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .rank-slide { animation: rankSlide 0.5s ease-out forwards; }
+
+    /* Navigation */
+    .nav-btn {
+      background: linear-gradient(180deg, #444 0%, #222 100%);
+      border: 2px solid #555;
+      box-shadow: 0 3px 0 #111;
+      transition: all 0.1s;
+    }
+    .nav-btn:hover {
+      transform: translateY(1px);
+      box-shadow: 0 2px 0 #111;
+    }
+    .nav-btn:active {
+      transform: translateY(3px);
+      box-shadow: none;
+    }
+    .nav-btn.active {
+      background: linear-gradient(180deg, var(--grass-light) 0%, var(--grass-dark) 100%);
+      border-color: var(--grass-bright);
+    }
+
+    /* Medal styles */
+    .medal-gold {
+      background: linear-gradient(135deg, #ffd700 0%, #b8860b 50%, #ffd700 100%);
+      border: 3px solid #daa520;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    }
+    .medal-silver {
+      background: linear-gradient(135deg, #e8e8e8 0%, #a8a8a8 50%, #e8e8e8 100%);
+      border: 3px solid #c0c0c0;
+      box-shadow: 0 0 15px rgba(192, 192, 192, 0.5);
+    }
+    .medal-bronze {
+      background: linear-gradient(135deg, #cd7f32 0%, #8b4513 50%, #cd7f32 100%);
+      border: 3px solid #a0522d;
+      box-shadow: 0 0 15px rgba(205, 127, 50, 0.5);
+    }
+
+    /* Highlight current user row */
+    .user-row {
+      background: linear-gradient(90deg, rgba(0,255,0,0.1) 0%, transparent 50%, rgba(0,255,0,0.1) 100%);
+      border: 2px solid rgba(0,255,0,0.3);
     }
   </style>
 </head>
-<body class="min-h-screen text-white">
+<body class="min-h-screen grass-field field-lines stadium-lights">
 
-  <!-- Scanline Overlay -->
-  <div class="fixed inset-0 scanlines pointer-events-none z-50"></div>
+  <!-- Stadium Atmosphere Overlay -->
+  <div class="fixed inset-0 stadium-pulse pointer-events-none" style="background: radial-gradient(ellipse at center, rgba(255,255,200,0.1) 0%, transparent 70%);"></div>
 
-  <!-- Floating Nav Orb -->
-  <div class="fixed top-6 left-6 z-40">
-    <a href="plan-a-dashboard.html" class="nav-orb w-14 h-14 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
-      <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-      </svg>
-    </a>
-  </div>
+  <!-- Main Container -->
+  <div class="relative min-h-screen z-10 p-6">
 
-  <!-- Main Content -->
-  <main class="max-w-6xl mx-auto px-6 py-8 pt-24">
+    <!-- TOP: Running Lights Bar -->
+    <div class="h-2 running-lights rounded-full mb-4"></div>
 
-    <!-- Header -->
-    <div class="text-center mb-8">
-      <h1 class="led-font text-4xl font-bold glow-yellow mb-2">SCOREBOARD</h1>
-      <p class="text-gray-500">Your battle stats</p>
-    </div>
+    <!-- TOP SCOREBOARD HEADER -->
+    <div class="led-panel led-dots rounded-lg p-4 mb-6">
+      <div class="flex items-center justify-between">
 
-    <!-- VS Battle Card -->
-    <div class="bg-gray-900/80 rounded-2xl p-8 mb-8 border border-yellow-500/30">
-      <div class="grid grid-cols-3 gap-8 items-center">
-
-        <!-- Player Side -->
-        <div class="text-center player-glow rounded-2xl p-6 bg-blue-500/10 border border-blue-500/30">
-          <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-3xl font-bold">
-            M
+        <!-- Logo & Brand -->
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 bg-gradient-to-br from-green-600 to-green-800 rounded-full flex items-center justify-center border-4 border-yellow-500 shadow-lg">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke-width="2"/>
+              <circle cx="12" cy="12" r="6" stroke-width="2"/>
+              <circle cx="12" cy="12" r="2" fill="currentColor"/>
+            </svg>
           </div>
-          <h3 class="led-font text-xl font-bold text-blue-400 glow-blue mb-1">MATT G</h3>
-          <p class="text-xs text-gray-500 mb-4">PRO SHOOTER</p>
-
-          <div class="led-font text-5xl font-black text-emerald-400 glow-green">
-            +18.4%
+          <div>
+            <div class="display-font text-4xl led-glow-yellow">OUTVESTMENTS</div>
+            <div class="text-gray-400 text-sm tracking-widest">CHAMPIONSHIP TRADING</div>
           </div>
-          <p class="text-sm text-gray-500 mt-2">YTD Return</p>
         </div>
 
-        <!-- VS Divider -->
-        <div class="text-center">
-          <div class="vs-divider w-1 h-32 mx-auto mb-4"></div>
-          <div class="led-font text-4xl font-black text-yellow-400 glow-yellow">VS</div>
-          <div class="vs-divider w-1 h-32 mx-auto mt-4"></div>
+        <!-- Season Info -->
+        <div class="segment-display rounded text-center">
+          <div class="text-gray-500 text-xs">SEASON</div>
+          <div class="display-font text-3xl led-glow-yellow led-flicker">Q4 2025</div>
+          <div class="text-gray-500 text-xs mt-1">ENDS IN 4D 12H</div>
         </div>
 
-        <!-- NPC Side -->
-        <div class="text-center npc-glow rounded-2xl p-6 bg-red-500/10 border border-red-500/30">
-          <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center">
-            <span class="led-font text-2xl font-bold">SPY</span>
-          </div>
-          <h3 class="led-font text-xl font-bold text-red-400 glow-red mb-1">S&P 500</h3>
-          <p class="text-xs text-gray-500 mb-4">NPC OPPONENT</p>
-
-          <div class="led-font text-5xl font-black text-emerald-400 glow-green">
-            +10.2%
-          </div>
-          <p class="text-sm text-gray-500 mt-2">YTD Return</p>
-        </div>
-
-      </div>
-
-      <!-- Battle Result -->
-      <div class="mt-8 text-center p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/30">
-        <p class="text-sm text-gray-400 mb-1">BATTLE STATUS</p>
-        <p class="led-font text-2xl font-bold text-emerald-400 glow-green">YOU ARE WINNING BY +8.2%</p>
-      </div>
-    </div>
-
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-4 gap-4 mb-8">
-
-      <div class="bg-gray-900/80 rounded-xl p-5 border border-blue-500/20 text-center">
-        <p class="text-xs text-gray-500 mb-2">WIN RATE</p>
-        <p class="led-font text-3xl font-bold text-emerald-400 glow-green">73%</p>
-        <p class="text-xs text-gray-600 mt-1">11 of 15</p>
-      </div>
-
-      <div class="bg-gray-900/80 rounded-xl p-5 border border-blue-500/20 text-center">
-        <p class="text-xs text-gray-500 mb-2">PPD SCORE</p>
-        <p class="led-font text-3xl font-bold text-blue-400 glow-blue">0.42%</p>
-        <p class="text-xs text-gray-600 mt-1">per day</p>
-      </div>
-
-      <div class="bg-gray-900/80 rounded-xl p-5 border border-blue-500/20 text-center">
-        <p class="text-xs text-gray-500 mb-2">BEST SHOT</p>
-        <p class="led-font text-3xl font-bold text-emerald-400 glow-green">+34%</p>
-        <p class="text-xs text-gray-600 mt-1">NVDA</p>
-      </div>
-
-      <div class="bg-gray-900/80 rounded-xl p-5 border border-blue-500/20 text-center">
-        <p class="text-xs text-gray-500 mb-2">WORST SHOT</p>
-        <p class="led-font text-3xl font-bold text-red-400 glow-red">-12%</p>
-        <p class="text-xs text-gray-600 mt-1">TSLA</p>
-      </div>
-
-    </div>
-
-    <!-- Leaderboard -->
-    <div class="bg-gray-900/80 rounded-2xl overflow-hidden border border-yellow-500/20">
-      <div class="p-6 border-b border-gray-800 flex items-center justify-between">
-        <h2 class="led-font text-xl font-bold text-yellow-400 glow-yellow">SHOT LEADERBOARD</h2>
+        <!-- Navigation -->
         <div class="flex gap-2">
-          <button class="px-3 py-1.5 bg-yellow-500/20 text-yellow-400 rounded-lg text-xs led-font">ALL TIME</button>
-          <button class="px-3 py-1.5 text-gray-500 hover:bg-gray-800 rounded-lg text-xs led-font">THIS YEAR</button>
-          <button class="px-3 py-1.5 text-gray-500 hover:bg-gray-800 rounded-lg text-xs led-font">THIS MONTH</button>
+          <a href="plan-a-dashboard.html" class="nav-btn px-6 py-3 rounded display-font text-lg text-gray-300">GAME DAY</a>
+          <a href="#" class="nav-btn active px-6 py-3 rounded display-font text-lg text-white">STANDINGS</a>
+          <a href="plan-a-history.html" class="nav-btn px-6 py-3 rounded display-font text-lg text-gray-300">GAME LOG</a>
+          <a href="plan-a-settings.html" class="nav-btn px-6 py-3 rounded display-font text-lg text-gray-300">SETTINGS</a>
         </div>
-      </div>
 
-      <table class="w-full">
-        <thead>
-          <tr class="text-left text-xs text-gray-500 border-b border-gray-800">
-            <th class="px-6 py-4 led-font">RANK</th>
-            <th class="px-6 py-4 led-font">SHOT</th>
-            <th class="px-6 py-4 led-font">TARGET</th>
-            <th class="px-6 py-4 led-font">RETURN</th>
-            <th class="px-6 py-4 led-font">PPD</th>
-            <th class="px-6 py-4 led-font">STATUS</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="border-b border-gray-800/50 bg-yellow-500/5">
-            <td class="px-6 py-4">
-              <div class="rank-badge w-8 h-8 rounded-full flex items-center justify-center text-black font-bold">1</div>
-            </td>
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
-                  <span class="text-xs font-bold text-green-400">NVDA</span>
-                </div>
-                <span class="font-medium">NVIDIA</span>
-              </div>
-            </td>
-            <td class="px-6 py-4 text-gray-400">AI Infrastructure</td>
-            <td class="px-6 py-4 led-font text-emerald-400 glow-green font-bold">+34.2%</td>
-            <td class="px-6 py-4 led-font text-blue-400">0.85%</td>
-            <td class="px-6 py-4">
-              <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-xs">HIT</span>
-            </td>
-          </tr>
-          <tr class="border-b border-gray-800/50">
-            <td class="px-6 py-4">
-              <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-white font-bold">2</div>
-            </td>
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                  <span class="text-xs font-bold text-purple-400">AMD</span>
-                </div>
-                <span class="font-medium">AMD</span>
-              </div>
-            </td>
-            <td class="px-6 py-4 text-gray-400">AI Infrastructure</td>
-            <td class="px-6 py-4 led-font text-emerald-400 font-bold">+28.5%</td>
-            <td class="px-6 py-4 led-font text-blue-400">0.71%</td>
-            <td class="px-6 py-4">
-              <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-xs">HIT</span>
-            </td>
-          </tr>
-          <tr class="border-b border-gray-800/50">
-            <td class="px-6 py-4">
-              <div class="w-8 h-8 rounded-full bg-amber-700 flex items-center justify-center text-white font-bold">3</div>
-            </td>
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                  <span class="text-xs font-bold text-blue-400">MSFT</span>
-                </div>
-                <span class="font-medium">Microsoft</span>
-              </div>
-            </td>
-            <td class="px-6 py-4 text-gray-400">AI Infrastructure</td>
-            <td class="px-6 py-4 led-font text-emerald-400 font-bold">+22.1%</td>
-            <td class="px-6 py-4 led-font text-blue-400">0.55%</td>
-            <td class="px-6 py-4">
-              <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-xs">HIT</span>
-            </td>
-          </tr>
-          <tr class="border-b border-gray-800/50">
-            <td class="px-6 py-4">
-              <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-gray-400 font-bold">4</div>
-            </td>
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
-                  <span class="text-xs font-bold text-yellow-400">GOOGL</span>
-                </div>
-                <span class="font-medium">Alphabet</span>
-              </div>
-            </td>
-            <td class="px-6 py-4 text-gray-400">AI Infrastructure</td>
-            <td class="px-6 py-4 led-font text-emerald-400 font-bold">+18.3%</td>
-            <td class="px-6 py-4 led-font text-blue-400">0.46%</td>
-            <td class="px-6 py-4">
-              <span class="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs">ACTIVE</span>
-            </td>
-          </tr>
-          <tr class="border-b border-gray-800/50">
-            <td class="px-6 py-4">
-              <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-gray-400 font-bold">5</div>
-            </td>
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
-                  <span class="text-xs font-bold text-red-400">TSLA</span>
-                </div>
-                <span class="font-medium">Tesla</span>
-              </div>
-            </td>
-            <td class="px-6 py-4 text-gray-400">EV Revolution</td>
-            <td class="px-6 py-4 led-font text-red-400 glow-red font-bold">-12.4%</td>
-            <td class="px-6 py-4 led-font text-red-400">-0.31%</td>
-            <td class="px-6 py-4">
-              <span class="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-xs">MISS</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        <!-- Players Count -->
+        <div class="segment-display rounded flex items-center gap-3">
+          <div class="text-center">
+            <div class="text-gray-500 text-xs">PLAYERS</div>
+            <div class="display-font text-2xl led-glow-green">2,847</div>
+          </div>
+        </div>
+
+      </div>
     </div>
 
-  </main>
+    <!-- PAGE TITLE -->
+    <div class="text-center mb-8">
+      <div class="display-font text-6xl led-glow-yellow tracking-wider">LEAGUE STANDINGS</div>
+      <div class="text-gray-400 display-font text-xl tracking-widest mt-2">TOP PERFORMERS THIS SEASON</div>
+    </div>
+
+    <!-- TOP 3 PODIUM -->
+    <div class="max-w-5xl mx-auto mb-8">
+      <div class="grid grid-cols-3 gap-6 items-end">
+
+        <!-- 2nd Place -->
+        <div class="podium-rise" style="animation-delay: 0.2s">
+          <div class="jumbotron p-6 text-center relative">
+            <!-- Silver Medal -->
+            <div class="absolute -top-6 left-1/2 transform -translate-x-1/2">
+              <div class="medal-silver w-14 h-14 rounded-full flex items-center justify-center">
+                <span class="display-font text-2xl text-gray-700">2</span>
+              </div>
+            </div>
+
+            <div class="pt-6">
+              <div class="w-20 h-20 mx-auto bg-gradient-to-br from-purple-600 to-pink-700 rounded-lg border-4 border-gray-400 flex items-center justify-center mb-3">
+                <span class="display-font text-4xl text-white">S</span>
+              </div>
+              <div class="display-font text-2xl text-white mb-1">SHADOW_TRADER</div>
+              <div class="banner inline-block px-4 py-1 mb-3">
+                <span class="display-font text-xs text-black">ELITE</span>
+              </div>
+              <div class="segment-display rounded inline-block px-4 py-2">
+                <span class="display-font text-4xl led-glow-green">+34.2%</span>
+              </div>
+              <div class="text-green-400 mt-2 display-font text-lg">$17,100 PROFIT</div>
+              <div class="flex justify-center gap-2 mt-3">
+                <span class="text-2xl">🔥</span>
+                <span class="text-2xl">🎯</span>
+              </div>
+            </div>
+          </div>
+          <!-- Podium Base -->
+          <div class="h-16 bg-gradient-to-b from-gray-500 to-gray-700 border-4 border-gray-400 mt-2"></div>
+        </div>
+
+        <!-- 1st Place -->
+        <div class="podium-rise" style="animation-delay: 0s">
+          <div class="jumbotron p-8 text-center relative border-4 border-yellow-500">
+            <!-- Crown -->
+            <div class="absolute -top-12 left-1/2 transform -translate-x-1/2">
+              <span class="text-5xl crown-bob inline-block">👑</span>
+            </div>
+            <!-- Gold Medal -->
+            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 mt-8">
+              <div class="medal-gold w-16 h-16 rounded-full flex items-center justify-center">
+                <span class="display-font text-3xl text-yellow-900">1</span>
+              </div>
+            </div>
+
+            <div class="pt-10">
+              <div class="w-24 h-24 mx-auto bg-gradient-to-br from-red-600 to-orange-700 rounded-lg border-4 border-yellow-500 flex items-center justify-center mb-3 relative">
+                <span class="display-font text-5xl text-white">X</span>
+                <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center border-2 border-black">
+                  <span class="display-font text-xs text-black">78</span>
+                </div>
+              </div>
+              <div class="display-font text-3xl led-glow-yellow mb-1">XENO_ALPHA</div>
+              <div class="banner inline-block px-5 py-1 mb-3">
+                <span class="display-font text-sm text-black fire-glow">LEGENDARY</span>
+              </div>
+              <div class="segment-display rounded inline-block px-6 py-3">
+                <span class="display-font text-5xl led-glow-green">+47.8%</span>
+              </div>
+              <div class="text-green-400 mt-3 display-font text-xl">$23,900 PROFIT</div>
+              <div class="flex justify-center gap-3 mt-4">
+                <span class="text-3xl">🏆</span>
+                <span class="text-3xl">🔥</span>
+                <span class="text-3xl">💎</span>
+              </div>
+            </div>
+          </div>
+          <!-- Podium Base -->
+          <div class="h-24 bg-gradient-to-b from-yellow-500 to-yellow-700 border-4 border-yellow-400 mt-2"></div>
+        </div>
+
+        <!-- 3rd Place (YOU) -->
+        <div class="podium-rise" style="animation-delay: 0.4s">
+          <div class="jumbotron p-6 text-center relative border-4 border-green-500">
+            <!-- YOU badge -->
+            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+              <span class="px-4 py-1 bg-green-500 text-black display-font text-sm rounded-full">YOU</span>
+            </div>
+            <!-- Bronze Medal -->
+            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 mt-6">
+              <div class="medal-bronze w-14 h-14 rounded-full flex items-center justify-center">
+                <span class="display-font text-2xl text-orange-900">3</span>
+              </div>
+            </div>
+
+            <div class="pt-6">
+              <div class="w-20 h-20 mx-auto bg-gradient-to-br from-blue-600 to-cyan-700 rounded-lg border-4 border-green-400 flex items-center justify-center mb-3 relative">
+                <span class="display-font text-4xl text-white">M</span>
+                <div class="absolute -bottom-2 -right-2 w-7 h-7 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center border-2 border-black">
+                  <span class="display-font text-[10px] text-black">42</span>
+                </div>
+              </div>
+              <div class="display-font text-2xl led-glow-green mb-1">MATT_SNIPER</div>
+              <div class="banner inline-block px-4 py-1 mb-3">
+                <span class="display-font text-xs text-black">PRO SHOOTER</span>
+              </div>
+              <div class="segment-display rounded inline-block px-4 py-2">
+                <span class="display-font text-4xl text-orange-400">+28.4%</span>
+              </div>
+              <div class="text-green-400 mt-2 display-font text-lg">$14,200 PROFIT</div>
+              <div class="flex justify-center gap-2 mt-3">
+                <span class="text-2xl">🔥</span>
+                <span class="text-2xl">🎯</span>
+              </div>
+            </div>
+          </div>
+          <!-- Podium Base -->
+          <div class="h-12 bg-gradient-to-b from-orange-600 to-orange-800 border-4 border-orange-500 mt-2"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- LEAGUE TABLE -->
+    <div class="max-w-5xl mx-auto">
+      <div class="jumbotron overflow-hidden">
+
+        <!-- Table Header -->
+        <div class="led-panel led-dots">
+          <div class="grid grid-cols-12 gap-4 p-4 display-font text-sm text-gray-400">
+            <div class="col-span-1 text-center">RANK</div>
+            <div class="col-span-4">PLAYER</div>
+            <div class="col-span-2 text-center">LEVEL</div>
+            <div class="col-span-2 text-right">RETURN</div>
+            <div class="col-span-2 text-right">PROFIT</div>
+            <div class="col-span-1 text-center">W%</div>
+          </div>
+        </div>
+
+        <!-- Table Rows -->
+        <div class="divide-y divide-gray-800">
+
+          <!-- Rank 4 -->
+          <div class="grid grid-cols-12 gap-4 p-4 items-center rank-slide hover:bg-white/5 transition-colors" style="animation-delay: 0.1s">
+            <div class="col-span-1 text-center">
+              <span class="display-font text-2xl text-gray-400">4</span>
+            </div>
+            <div class="col-span-4 flex items-center gap-4">
+              <div class="w-12 h-12 bg-gradient-to-br from-green-600 to-emerald-700 rounded-lg border-2 border-green-400 flex items-center justify-center">
+                <span class="display-font text-xl text-white">B</span>
+              </div>
+              <div>
+                <div class="display-font text-xl text-white">BULLRUN_KING</div>
+                <div class="text-xs text-green-400">EXPERT</div>
+              </div>
+            </div>
+            <div class="col-span-2 text-center display-font text-gray-400 text-lg">LVL 38</div>
+            <div class="col-span-2 text-right">
+              <span class="display-font text-2xl led-glow-green">+24.1%</span>
+            </div>
+            <div class="col-span-2 text-right display-font text-lg text-gray-300">$12,050</div>
+            <div class="col-span-1 text-center">
+              <div class="inline-block segment-display rounded px-2 py-1">
+                <span class="display-font text-sm text-green-400">68%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rank 5 -->
+          <div class="grid grid-cols-12 gap-4 p-4 items-center rank-slide hover:bg-white/5 transition-colors" style="animation-delay: 0.2s">
+            <div class="col-span-1 text-center">
+              <span class="display-font text-2xl text-gray-400">5</span>
+            </div>
+            <div class="col-span-4 flex items-center gap-4">
+              <div class="w-12 h-12 bg-gradient-to-br from-pink-600 to-purple-700 rounded-lg border-2 border-pink-400 flex items-center justify-center">
+                <span class="display-font text-xl text-white">N</span>
+              </div>
+              <div>
+                <div class="display-font text-xl text-white">NEON_NINJA</div>
+                <div class="text-xs text-purple-400">ELITE</div>
+              </div>
+            </div>
+            <div class="col-span-2 text-center display-font text-gray-400 text-lg">LVL 51</div>
+            <div class="col-span-2 text-right">
+              <span class="display-font text-2xl led-glow-green">+21.7%</span>
+            </div>
+            <div class="col-span-2 text-right display-font text-lg text-gray-300">$10,850</div>
+            <div class="col-span-1 text-center">
+              <div class="inline-block segment-display rounded px-2 py-1">
+                <span class="display-font text-sm text-green-400">71%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rank 6 -->
+          <div class="grid grid-cols-12 gap-4 p-4 items-center rank-slide hover:bg-white/5 transition-colors" style="animation-delay: 0.3s">
+            <div class="col-span-1 text-center">
+              <span class="display-font text-2xl text-gray-400">6</span>
+            </div>
+            <div class="col-span-4 flex items-center gap-4">
+              <div class="w-12 h-12 bg-gradient-to-br from-yellow-600 to-amber-700 rounded-lg border-2 border-yellow-400 flex items-center justify-center">
+                <span class="display-font text-xl text-white">D</span>
+              </div>
+              <div>
+                <div class="display-font text-xl text-white">DIAMOND_HANDS</div>
+                <div class="text-xs text-yellow-400">EXPERT</div>
+              </div>
+            </div>
+            <div class="col-span-2 text-center display-font text-gray-400 text-lg">LVL 33</div>
+            <div class="col-span-2 text-right">
+              <span class="display-font text-2xl led-glow-green">+19.3%</span>
+            </div>
+            <div class="col-span-2 text-right display-font text-lg text-gray-300">$9,650</div>
+            <div class="col-span-1 text-center">
+              <div class="inline-block segment-display rounded px-2 py-1">
+                <span class="display-font text-sm text-green-400">64%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rank 7 -->
+          <div class="grid grid-cols-12 gap-4 p-4 items-center rank-slide hover:bg-white/5 transition-colors" style="animation-delay: 0.4s">
+            <div class="col-span-1 text-center">
+              <span class="display-font text-2xl text-gray-400">7</span>
+            </div>
+            <div class="col-span-4 flex items-center gap-4">
+              <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-rose-700 rounded-lg border-2 border-red-400 flex items-center justify-center">
+                <span class="display-font text-xl text-white">R</span>
+              </div>
+              <div>
+                <div class="display-font text-xl text-white">ROCKET_FUEL</div>
+                <div class="text-xs text-red-400">PRO</div>
+              </div>
+            </div>
+            <div class="col-span-2 text-center display-font text-gray-400 text-lg">LVL 29</div>
+            <div class="col-span-2 text-right">
+              <span class="display-font text-2xl led-glow-green">+17.8%</span>
+            </div>
+            <div class="col-span-2 text-right display-font text-lg text-gray-300">$8,900</div>
+            <div class="col-span-1 text-center">
+              <div class="inline-block segment-display rounded px-2 py-1">
+                <span class="display-font text-sm text-yellow-400">59%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rank 8 -->
+          <div class="grid grid-cols-12 gap-4 p-4 items-center rank-slide hover:bg-white/5 transition-colors" style="animation-delay: 0.5s">
+            <div class="col-span-1 text-center">
+              <span class="display-font text-2xl text-gray-400">8</span>
+            </div>
+            <div class="col-span-4 flex items-center gap-4">
+              <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg border-2 border-blue-400 flex items-center justify-center">
+                <span class="display-font text-xl text-white">T</span>
+              </div>
+              <div>
+                <div class="display-font text-xl text-white">THETA_GANG</div>
+                <div class="text-xs text-blue-400">VETERAN</div>
+              </div>
+            </div>
+            <div class="col-span-2 text-center display-font text-gray-400 text-lg">LVL 45</div>
+            <div class="col-span-2 text-right">
+              <span class="display-font text-2xl led-glow-green">+15.2%</span>
+            </div>
+            <div class="col-span-2 text-right display-font text-lg text-gray-300">$7,600</div>
+            <div class="col-span-1 text-center">
+              <div class="inline-block segment-display rounded px-2 py-1">
+                <span class="display-font text-sm text-green-400">76%</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Pagination -->
+        <div class="led-panel led-dots p-4 flex items-center justify-between">
+          <div class="text-gray-500 display-font">SHOWING 1-8 OF 2,847 PLAYERS</div>
+          <div class="flex gap-2">
+            <button class="nav-btn px-4 py-2 rounded display-font text-sm text-gray-400">PREV</button>
+            <button class="nav-btn active px-4 py-2 rounded display-font text-sm text-white">1</button>
+            <button class="nav-btn px-4 py-2 rounded display-font text-sm text-gray-400">2</button>
+            <button class="nav-btn px-4 py-2 rounded display-font text-sm text-gray-400">3</button>
+            <span class="text-gray-600 px-2">...</span>
+            <button class="nav-btn px-4 py-2 rounded display-font text-sm text-gray-400">356</button>
+            <button class="nav-btn px-4 py-2 rounded display-font text-sm text-gray-400">NEXT</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- YOUR STATS BAR -->
+    <div class="max-w-5xl mx-auto mt-6">
+      <div class="led-panel led-dots rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <div class="display-font text-lg text-gray-400">YOUR SEASON STATS</div>
+          <div class="flex gap-6">
+            <div class="text-center">
+              <div class="text-gray-500 text-xs">RANK</div>
+              <div class="display-font text-3xl led-glow-green">#3</div>
+              <div class="text-green-400 text-xs">+2 THIS WEEK</div>
+            </div>
+            <div class="segment-display rounded text-center px-4">
+              <div class="text-gray-500 text-xs">RETURN</div>
+              <div class="display-font text-3xl led-glow-green">+28.4%</div>
+            </div>
+            <div class="segment-display rounded text-center px-4">
+              <div class="text-gray-500 text-xs">PROFIT</div>
+              <div class="display-font text-3xl led-glow-white">$14,200</div>
+            </div>
+            <div class="segment-display rounded text-center px-4">
+              <div class="text-gray-500 text-xs">WIN RATE</div>
+              <div class="display-font text-3xl led-glow-yellow">73%</div>
+            </div>
+            <div class="text-center">
+              <div class="text-gray-500 text-xs">STREAK</div>
+              <div class="display-font text-3xl fire-glow">🔥 5</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM: Running Lights Bar -->
+    <div class="h-2 running-lights rounded-full mt-6"></div>
+
+  </div>
 
 </body>
 </html>

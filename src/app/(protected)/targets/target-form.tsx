@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
 import { createTarget, updateTarget, type TargetFormData } from "@/app/actions/targets";
 import type { Target, TargetType } from "@/lib/db/schema";
 
@@ -36,9 +37,10 @@ const TARGET_TYPES: { value: TargetType; label: string; description: string }[] 
 interface TargetFormProps {
   target?: Target;
   onSuccess?: () => void;
+  prefillSymbol?: string;
 }
 
-export function TargetForm({ target, onSuccess }: TargetFormProps) {
+export function TargetForm({ target, onSuccess, prefillSymbol }: TargetFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -47,6 +49,12 @@ export function TargetForm({ target, onSuccess }: TargetFormProps) {
   const [catalyst, setCatalyst] = useState(target?.catalyst || "");
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>((target?.tags as string[]) || []);
+  // Trading discipline fields
+  const [confidenceLevel, setConfidenceLevel] = useState<number>(
+    target?.confidenceLevel ? Number(target.confidenceLevel) : 5
+  );
+  const [risks, setRisks] = useState(target?.risks || "");
+  const [exitTriggers, setExitTriggers] = useState(target?.exitTriggers || "");
 
   const isEditing = !!target;
 
@@ -77,6 +85,10 @@ export function TargetForm({ target, onSuccess }: TargetFormProps) {
       targetType,
       catalyst: catalyst || undefined,
       tags,
+      // Trading discipline fields
+      confidenceLevel: confidenceLevel || undefined,
+      risks: risks || undefined,
+      exitTriggers: exitTriggers || undefined,
     };
 
     startTransition(async () => {
@@ -109,6 +121,21 @@ export function TargetForm({ target, onSuccess }: TargetFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Symbol Context (from Watchlist) */}
+          {prefillSymbol && (
+            <div className="bg-muted/50 border rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Creating target for:</span>
+                <Badge variant="secondary" className="text-base font-semibold">
+                  {prefillSymbol}
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                After creating this target, add an Aim for {prefillSymbol} with your price target and timeline.
+              </p>
+            </div>
+          )}
+
           {/* Thesis */}
           <div className="space-y-2">
             <Label htmlFor="thesis">Investment Thesis *</Label>
@@ -204,6 +231,71 @@ export function TargetForm({ target, onSuccess }: TargetFormProps) {
             <p className="text-sm text-muted-foreground">
               Click a tag to remove it.
             </p>
+          </div>
+
+          {/* Trading Discipline Section */}
+          <div className="border-t pt-6 mt-6">
+            <h3 className="text-lg font-medium mb-4">Trading Discipline</h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              Think through your trade before executing. These fields help you stay disciplined.
+            </p>
+
+            {/* Confidence Level */}
+            <div className="space-y-4 mb-6">
+              <div className="flex justify-between items-center">
+                <Label htmlFor="confidenceLevel">Confidence Level</Label>
+                <span className="text-sm font-medium">
+                  {confidenceLevel}/10
+                  <span className="ml-2 text-muted-foreground">
+                    {confidenceLevel <= 3 ? "(Low)" : confidenceLevel <= 6 ? "(Medium)" : "(High)"}
+                  </span>
+                </span>
+              </div>
+              <Slider
+                id="confidenceLevel"
+                min={1}
+                max={10}
+                step={1}
+                value={[confidenceLevel]}
+                onValueChange={(value) => setConfidenceLevel(value[0])}
+                className="w-full"
+              />
+              <p className="text-sm text-muted-foreground">
+                How confident are you in this thesis? Be honest with yourself.
+              </p>
+            </div>
+
+            {/* Risks */}
+            <div className="space-y-2 mb-6">
+              <Label htmlFor="risks">Risks & Concerns</Label>
+              <Textarea
+                id="risks"
+                placeholder="What could go wrong? What are you worried about? e.g., Competition, regulatory issues, execution risk..."
+                value={risks}
+                onChange={(e) => setRisks(e.target.value)}
+                rows={3}
+                className="resize-none"
+              />
+              <p className="text-sm text-muted-foreground">
+                Identifying risks beforehand helps you stay rational when things get volatile.
+              </p>
+            </div>
+
+            {/* Exit Triggers */}
+            <div className="space-y-2">
+              <Label htmlFor="exitTriggers">Exit Triggers</Label>
+              <Textarea
+                id="exitTriggers"
+                placeholder="What would make you exit early? e.g., Missed earnings, management changes, thesis broken..."
+                value={exitTriggers}
+                onChange={(e) => setExitTriggers(e.target.value)}
+                rows={3}
+                className="resize-none"
+              />
+              <p className="text-sm text-muted-foreground">
+                Define your exit criteria now, before emotions take over.
+              </p>
+            </div>
           </div>
 
           {/* Submit */}

@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { hasPermission } from "@/lib/auth/rbac";
 import { AimActions } from "./aim-actions";
 import { ShotActions } from "./shot-actions";
+import { PaceStatus } from "@/components/trading/pace-status";
 
 export const metadata = {
   title: "Aim Details - Outvestments",
@@ -29,6 +30,7 @@ const STATE_COLORS: Record<string, string> = {
   fired: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
   active: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
   closed: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
+  partially_closed: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
 };
 
 const DIRECTION_COLORS: Record<string, string> = {
@@ -169,6 +171,9 @@ export default async function AimDetailPage({
         </CardContent>
       </Card>
 
+      {/* Pace Tracking */}
+      <PaceStatus aim={aim} />
+
       <Separator />
 
       {/* Shots Section */}
@@ -267,7 +272,7 @@ export default async function AimDetailPage({
                           <Separator orientation="vertical" className="h-10" />
                           <div className="flex flex-col">
                             <span className="font-semibold">
-                              ${Number(shot.positionSize).toFixed(2)}
+                              {Math.floor(Number(shot.positionSize))} shares
                             </span>
                             <span className="text-sm text-muted-foreground">
                               Position
@@ -283,6 +288,111 @@ export default async function AimDetailPage({
                       <ShotActions shot={shot} symbol={aim.symbol} />
                     </div>
                   </div>
+
+                  {/* Alpaca Order Details (for fired/active shots) */}
+                  {shot.alpacaOrderId && (
+                    <div className="mt-3 pt-3 border-t flex flex-wrap gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Order ID: </span>
+                        <span className="font-mono">
+                          {shot.alpacaOrderId.slice(0, 8)}...
+                        </span>
+                      </div>
+                      {shot.alpacaStatus && (
+                        <div>
+                          <span className="text-muted-foreground">Status: </span>
+                          <span className={
+                            shot.alpacaStatus === "filled"
+                              ? "text-gain font-medium"
+                              : shot.alpacaStatus === "canceled" || shot.alpacaStatus === "expired"
+                                ? "text-loss font-medium"
+                                : "text-foreground"
+                          }>
+                            {shot.alpacaStatus}
+                          </span>
+                        </div>
+                      )}
+                      {shot.fillPrice && (
+                        <div>
+                          <span className="text-muted-foreground">Fill Price: </span>
+                          <span className="text-gain font-semibold">
+                            ${Number(shot.fillPrice).toFixed(2)}
+                          </span>
+                        </div>
+                      )}
+                      {shot.filledQty && (
+                        <div>
+                          <span className="text-muted-foreground">Filled: </span>
+                          <span>{Math.floor(Number(shot.filledQty))} shares</span>
+                        </div>
+                      )}
+                      {shot.fillTimestamp && (
+                        <div>
+                          <span className="text-muted-foreground">Filled At: </span>
+                          <span>
+                            {new Date(shot.fillTimestamp).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Close Details (for closed/partially_closed shots) */}
+                  {(shot.state === "closed" || shot.state === "partially_closed") && shot.exitPrice && (
+                    <div className="mt-3 pt-3 border-t flex flex-wrap gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Exit Price: </span>
+                        <span className="font-semibold">
+                          ${Number(shot.exitPrice).toFixed(2)}
+                        </span>
+                      </div>
+                      {shot.closedQuantity && (
+                        <div>
+                          <span className="text-muted-foreground">Closed: </span>
+                          <span>{Math.floor(Number(shot.closedQuantity))} shares</span>
+                        </div>
+                      )}
+                      {shot.exitDate && (
+                        <div>
+                          <span className="text-muted-foreground">Closed At: </span>
+                          <span>
+                            {new Date(shot.exitDate).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+                      )}
+                      {shot.realizedPL && (
+                        <div>
+                          <span className="text-muted-foreground">Realized P&L: </span>
+                          <span className={
+                            Number(shot.realizedPL) >= 0
+                              ? "text-gain font-semibold"
+                              : "text-loss font-semibold"
+                          }>
+                            {Number(shot.realizedPL) >= 0 ? "+" : ""}
+                            ${Number(shot.realizedPL).toFixed(2)}
+                          </span>
+                        </div>
+                      )}
+                      {shot.parentShotId && (
+                        <div>
+                          <span className="text-muted-foreground">Split from: </span>
+                          <span className="font-mono text-xs">
+                            {shot.parentShotId.slice(0, 8)}...
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}

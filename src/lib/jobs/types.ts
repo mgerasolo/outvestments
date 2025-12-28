@@ -49,6 +49,24 @@ export interface CacheCleanupJobData extends JobData {
 }
 
 /**
+ * Price alert job data.
+ * Used for checking watchlist alert prices during market hours.
+ */
+export interface PriceAlertJobData extends JobData {
+  /** Skip the market hours check (for testing) */
+  skipMarketCheck?: boolean;
+}
+
+/**
+ * Phantom position tracking job data.
+ * Used for updating phantom (paper) positions with current prices.
+ */
+export interface PhantomTrackJobData extends JobData {
+  /** Optional specific position IDs to track (all if empty) */
+  positionIds?: string[];
+}
+
+/**
  * Job result interface for successful completions.
  */
 export interface JobResult {
@@ -95,6 +113,8 @@ export const JOB_NAMES = {
   SCORE_REFRESH: 'score-refresh',
   EOD_SNAPSHOT: 'eod-snapshot',
   CACHE_CLEANUP: 'cache-cleanup',
+  PRICE_ALERT: 'price-alert',
+  PHANTOM_TRACK: 'phantom-track',
 } as const;
 
 /**
@@ -104,14 +124,19 @@ export type JobName = (typeof JOB_NAMES)[keyof typeof JOB_NAMES];
 
 /**
  * Cron expressions for scheduled jobs.
+ * All times are in America/New_York timezone (set via scheduler options).
  */
 export const JOB_SCHEDULES = {
   /** Every hour at minute 0 */
   SCORE_REFRESH: '0 * * * *',
-  /** 4:30 PM ET daily (21:30 UTC during EST, 20:30 UTC during EDT) */
-  EOD_SNAPSHOT: '30 21 * * 1-5',
-  /** 2:00 AM ET daily (07:00 UTC during EST, 06:00 UTC during EDT) */
-  CACHE_CLEANUP: '0 7 * * *',
+  /** 4:30 PM ET weekdays - after market close */
+  EOD_SNAPSHOT: '30 16 * * 1-5',
+  /** 2:00 AM ET daily - low activity period for maintenance */
+  CACHE_CLEANUP: '0 2 * * *',
+  /** Every 5 minutes during market hours (9:30 AM - 4:00 PM ET) weekdays */
+  PRICE_ALERT: '*/5 * * * 1-5',
+  /** Every 15 minutes during market hours weekdays */
+  PHANTOM_TRACK: '*/15 * * * 1-5',
 } as const;
 
 /**

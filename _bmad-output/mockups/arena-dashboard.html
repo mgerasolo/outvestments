@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OUTVESTMENTS | ARENA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Arena Colors */
+      --color-bg-arena: #0a0d12;
+      --color-bg-panel: rgba(10, 14, 20, 0.85);
+      --color-bg-glass: rgba(20, 28, 40, 0.7);
+
+      /* Gold Frame Gradient */
+      --gold-light: #f4d03f;
+      --gold-main: #d4af37;
+      --gold-dark: #8b7020;
+      --gold-shadow: #5c4a15;
+
+      /* Status Colors */
+      --color-win: #00ff41;
+      --color-loss: #ff3333;
+      --color-text-led: #ff9500;
+      --color-alert: #00d4ff;
+      --color-accent: #b624ff;
+      --color-text-primary: #f5f5f5;
+      --color-text-secondary: #8a9aad;
+
+      /* Typography */
+      --font-led: 'IBM Plex Mono', monospace;
+      --font-display: 'Oswald', sans-serif;
+      --font-body: 'Inter', -apple-system, sans-serif;
+
+      /* Effects */
+      --glow-win: 0 0 30px rgba(0, 255, 65, 0.5);
+      --glow-loss: 0 0 25px rgba(255, 51, 51, 0.4);
+      --glow-gold: 0 0 40px rgba(212, 175, 55, 0.5);
+      --glow-led: 0 0 30px rgba(255, 149, 0, 0.6);
+
+      /* Glassmorphism */
+      --glass-blur: blur(20px);
+      --glass-border: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--color-text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: var(--color-bg-arena);
+    }
+
+    /* Arena Background - Basketball Court with Crowd */
+    .arena-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .arena-backdrop::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      /* Gradient simulating arena lighting */
+      background:
+        radial-gradient(ellipse 80% 50% at 50% 30%, rgba(255, 149, 0, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 30% 70%, rgba(212, 175, 55, 0.1) 0%, transparent 40%),
+        radial-gradient(ellipse 60% 40% at 70% 70%, rgba(212, 175, 55, 0.1) 0%, transparent 40%);
+    }
+
+    /* Court floor pattern */
+    .arena-court {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60%;
+      background:
+        linear-gradient(180deg, transparent 0%, rgba(139, 90, 43, 0.3) 30%, rgba(139, 90, 43, 0.5) 100%);
+      transform: perspective(1000px) rotateX(60deg);
+      transform-origin: bottom center;
+    }
+
+    .arena-court::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(90deg, transparent 0px, transparent 80px, rgba(0,0,0,0.2) 80px, rgba(0,0,0,0.2) 82px);
+    }
+
+    /* Court lines */
+    .arena-court::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 20%;
+      width: 200px;
+      height: 200px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      transform: translateX(-50%);
+    }
+
+    /* Crowd/atmosphere gradient at top */
+    .arena-crowd {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50%;
+      background:
+        linear-gradient(180deg,
+          rgba(5, 8, 12, 0.95) 0%,
+          rgba(10, 14, 20, 0.8) 40%,
+          transparent 100%
+        );
+    }
+
+    /* Crowd dots simulation */
+    .arena-crowd::before {
+      content: '';
+      position: absolute;
+      top: 5%;
+      left: 10%;
+      right: 10%;
+      height: 30%;
+      background-image:
+        radial-gradient(circle 2px, rgba(255,200,100,0.3) 100%, transparent 100%),
+        radial-gradient(circle 2px, rgba(200,150,80,0.2) 100%, transparent 100%),
+        radial-gradient(circle 3px, rgba(255,220,150,0.25) 100%, transparent 100%);
+      background-size: 40px 20px, 60px 25px, 80px 30px;
+      background-position: 0 0, 20px 10px, 10px 5px;
+      opacity: 0.6;
+    }
+
+    /* Stadium lights */
+    .arena-lights {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100px;
+      display: flex;
+      justify-content: space-around;
+      padding: 20px 100px;
+    }
+
+    .arena-light {
+      width: 60px;
+      height: 20px;
+      background: radial-gradient(ellipse at center, rgba(255, 230, 150, 0.8) 0%, transparent 70%);
+      filter: blur(5px);
+    }
+
+    /* Main Container */
+    .arena-container {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      min-height: 100vh;
+    }
+
+    /* === LEFT SIDEBAR === */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 80px;
+      height: 100vh;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 0;
+      background: var(--color-bg-panel);
+      backdrop-filter: var(--glass-blur);
+      border-right: 3px solid;
+      border-image: linear-gradient(180deg, var(--gold-light), var(--gold-main), var(--gold-dark)) 1;
+    }
+
+    .sidebar-logo {
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      position: relative;
+      /* Beveled gold frame */
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold-main) 50%, var(--gold-dark) 100%);
+      padding: 3px;
+    }
+
+    .sidebar-logo-inner {
+      width: 100%;
+      height: 100%;
+      background: var(--color-bg-arena);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sidebar-logo svg {
+      width: 30px;
+      height: 30px;
+      color: var(--gold-main);
+      filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.5));
+    }
+
+    .nav-icons {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .nav-icon {
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease-out;
+    }
+
+    .nav-icon::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 0;
+      background: linear-gradient(180deg, var(--gold-light), var(--gold-main));
+      box-shadow: var(--glow-gold);
+      transition: height 0.2s ease-out;
+    }
+
+    .nav-icon:hover {
+      color: var(--color-text-primary);
+    }
+
+    .nav-icon.active {
+      color: var(--gold-main);
+    }
+
+    .nav-icon.active::before {
+      height: 36px;
+    }
+
+    .nav-icon svg {
+      width: 26px;
+      height: 26px;
+      stroke-width: 2;
+    }
+
+    /* === MAIN CONTENT === */
+    .main-content {
+      margin-left: 80px;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    /* === JUMBOTRON SCOREBOARD HERO === */
+    .jumbotron {
+      position: relative;
+      padding: 4px;
+      /* Beveled gold frame - outer */
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold-main) 30%, var(--gold-dark) 70%, var(--gold-shadow) 100%);
+      box-shadow:
+        0 0 60px rgba(212, 175, 55, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .jumbotron-inner {
+      background: var(--color-bg-panel);
+      backdrop-filter: var(--glass-blur);
+      padding: 3px;
+      /* Inner gold accent line */
+      border: 2px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .jumbotron-content {
+      padding: 20px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 30px;
+    }
+
+    /* User Profile Left */
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 220px;
+    }
+
+    .user-avatar {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
+      padding: 3px;
+    }
+
+    .user-avatar-inner {
+      width: 100%;
+      height: 100%;
+      background: var(--color-bg-arena);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--gold-main);
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .user-name {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-text-primary);
+    }
+
+    .user-record {
+      font-family: var(--font-led);
+      font-size: 14px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .user-record .wins { color: var(--color-win); }
+    .user-record .losses { color: var(--color-loss); }
+
+    /* Center Hero Stats */
+    .hero-stats {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      flex: 1;
+    }
+
+    .hero-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .hero-stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--color-text-secondary);
+    }
+
+    .hero-stat-value {
+      font-family: var(--font-led);
+      font-size: 56px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--color-text-led);
+      text-shadow: var(--glow-led);
+      /* LED segment effect */
+      letter-spacing: -2px;
+    }
+
+    .hero-stat-value.positive {
+      color: var(--color-win);
+      text-shadow: var(--glow-win);
+    }
+
+    .hero-stat-value.negative {
+      color: var(--color-loss);
+      text-shadow: var(--glow-loss);
+    }
+
+    .hero-stat-sub {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+    }
+
+    .hero-divider {
+      width: 2px;
+      height: 70px;
+      background: linear-gradient(180deg, transparent, var(--gold-main), transparent);
+    }
+
+    /* Right Status */
+    .status-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      min-width: 180px;
+    }
+
+    .market-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      background: rgba(0, 255, 65, 0.1);
+      border: 2px solid var(--color-win);
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-win);
+    }
+
+    .market-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--color-win);
+      box-shadow: var(--glow-win);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.9); }
+    }
+
+    .session-time {
+      font-family: var(--font-led);
+      font-size: 18px;
+      color: var(--color-text-secondary);
+    }
+
+    /* === GLASS PANEL BASE === */
+    .glass-panel {
+      position: relative;
+      background: var(--color-bg-glass);
+      backdrop-filter: var(--glass-blur);
+      border: 2px solid rgba(212, 175, 55, 0.4);
+      box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    /* === QUICK STATS ROW === */
+    .quick-stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .quick-stat {
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .quick-stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-text-secondary);
+    }
+
+    .quick-stat-value {
+      font-family: var(--font-led);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--color-text-led);
+      text-shadow: var(--glow-led);
+      line-height: 1;
+    }
+
+    .quick-stat-value.positive {
+      color: var(--color-win);
+      text-shadow: var(--glow-win);
+    }
+
+    .quick-stat-sub {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+    }
+
+    /* === SECTION HEADERS === */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--color-text-primary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: linear-gradient(180deg, var(--gold-light), var(--gold-main));
+      box-shadow: var(--glow-gold);
+    }
+
+    .section-action {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-alert);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s;
+    }
+
+    .section-action:hover {
+      color: var(--color-text-primary);
+      text-shadow: 0 0 20px var(--color-alert);
+    }
+
+    /* === DIAMOND TARGET CARDS === */
+    .targets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 20px;
+    }
+
+    .diamond-card {
+      position: relative;
+      padding: 4px;
+      /* Diamond shape via clip-path won't work well, use skew transform */
+      transform: perspective(1000px) rotateY(-2deg);
+      transition: all 0.3s ease-out;
+      /* Beveled gold frame */
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold-main) 50%, var(--gold-dark) 100%);
+      /* Diagonal cut corners */
+      clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+    }
+
+    .diamond-card:hover {
+      transform: perspective(1000px) rotateY(-2deg) translateY(-8px) scale(1.02);
+      box-shadow: var(--glow-gold);
+    }
+
+    .diamond-card.winning {
+      background: linear-gradient(135deg, #40ff70 0%, var(--color-win) 50%, #00aa30 100%);
+    }
+
+    .diamond-card.losing {
+      background: linear-gradient(135deg, #ff6666 0%, var(--color-loss) 50%, #aa2020 100%);
+    }
+
+    .diamond-card-inner {
+      background: var(--color-bg-glass);
+      backdrop-filter: var(--glass-blur);
+      padding: 20px;
+      clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .card-ticker {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ticker-arrow {
+      font-size: 16px;
+    }
+    .ticker-arrow.up { color: var(--color-win); }
+    .ticker-arrow.down { color: var(--color-loss); }
+
+    .card-status {
+      font-family: var(--font-led);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 4px 12px;
+      border: 2px solid;
+    }
+
+    .card-status.on-track {
+      color: var(--color-win);
+      border-color: var(--color-win);
+      background: rgba(0, 255, 65, 0.1);
+    }
+
+    .card-status.behind {
+      color: var(--color-loss);
+      border-color: var(--color-loss);
+      background: rgba(255, 51, 51, 0.1);
+    }
+
+    /* Card Data Grid */
+    .card-data {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px 16px;
+    }
+
+    .data-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .data-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-text-secondary);
+    }
+
+    .data-value {
+      font-family: var(--font-led);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+
+    .data-value.positive { color: var(--color-win); }
+    .data-value.negative { color: var(--color-loss); }
+    .data-value.led { color: var(--color-text-led); }
+
+    .target-thesis {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      line-height: 1.5;
+      margin-top: 12px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border-left: 3px solid var(--gold-main);
+    }
+
+    .target-meta {
+      display: flex;
+      gap: 16px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--color-text-secondary);
+    }
+
+    /* === SHOTS TABLE === */
+    .shots-panel {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .shots-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .shots-table th {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-text-secondary);
+      text-align: left;
+      padding: 14px 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border-bottom: 2px solid var(--gold-main);
+    }
+
+    .shots-table th:last-child,
+    .shots-table td:last-child {
+      text-align: right;
+    }
+
+    .shots-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+      font-size: 14px;
+    }
+
+    .shots-table tbody tr {
+      transition: all 0.15s;
+    }
+
+    .shots-table tbody tr:hover {
+      background: rgba(212, 175, 55, 0.08);
+    }
+
+    .ticker-cell {
+      font-family: var(--font-led);
+      font-weight: 600;
+      color: var(--color-text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .return-cell {
+      font-family: var(--font-led);
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .ppd-cell {
+      font-family: var(--font-led);
+      color: var(--color-text-led);
+    }
+
+    .pace-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 4px 10px;
+    }
+
+    .pace-badge::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+    }
+
+    .pace-badge.on-track {
+      color: var(--color-win);
+      background: rgba(0, 255, 65, 0.1);
+    }
+    .pace-badge.on-track::before {
+      background: var(--color-win);
+      box-shadow: var(--glow-win);
+    }
+
+    .pace-badge.behind {
+      color: var(--color-loss);
+      background: rgba(255, 51, 51, 0.1);
+    }
+    .pace-badge.behind::before {
+      background: var(--color-loss);
+      box-shadow: var(--glow-loss);
+    }
+
+    /* === SCORECARD PREVIEW === */
+    .scorecard-panel {
+      padding: 20px;
+    }
+
+    .scorecard-grid {
+      display: grid;
+      grid-template-columns: 120px repeat(4, 1fr);
+    }
+
+    .scorecard-header {
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-text-secondary);
+      padding: 12px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.3);
+      border-bottom: 2px solid var(--gold-main);
+    }
+
+    .scorecard-header:first-child {
+      text-align: left;
+    }
+
+    .scorecard-label {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-text-secondary);
+      padding: 16px 12px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+    }
+
+    .scorecard-value {
+      font-family: var(--font-led);
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      padding: 16px 12px;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-led);
+      text-shadow: var(--glow-led);
+    }
+
+    .scorecard-value.grade {
+      font-size: 36px;
+      color: var(--color-win);
+      text-shadow: var(--glow-win);
+    }
+
+    /* === BUTTON === */
+    .arena-btn {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 12px 24px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      /* Gold gradient button */
+      background: linear-gradient(135deg, var(--gold-light), var(--gold-main), var(--gold-dark));
+      color: var(--color-bg-arena);
+    }
+
+    .arena-btn:hover {
+      transform: scale(1.05);
+      box-shadow: var(--glow-gold);
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 1200px) {
+      .hero-stat-value { font-size: 42px; }
+      .quick-stats-row { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 900px) {
+      .arena-container { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .main-content { margin-left: 0; }
+      .jumbotron-content { flex-direction: column; gap: 20px; }
+      .hero-stats { flex-wrap: wrap; }
+      .hero-divider { display: none; }
+      .targets-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Arena Background -->
+  <div class="arena-backdrop">
+    <div class="arena-crowd"></div>
+    <div class="arena-court"></div>
+    <div class="arena-lights">
+      <div class="arena-light"></div>
+      <div class="arena-light"></div>
+      <div class="arena-light"></div>
+      <div class="arena-light"></div>
+      <div class="arena-light"></div>
+    </div>
+  </div>
+
+  <div class="arena-container">
+    <!-- Left Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-inner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <circle cx="12" cy="12" r="6"/>
+            <circle cx="12" cy="12" r="2"/>
+          </svg>
+        </div>
+      </div>
+
+      <nav class="nav-icons">
+        <div class="nav-icon active" title="Arena">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect x="3" y="3" width="7" height="7"/>
+            <rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/>
+          </svg>
+        </div>
+        <div class="nav-icon" title="Targets">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"/>
+            <circle cx="12" cy="12" r="6"/>
+            <circle cx="12" cy="12" r="2"/>
+          </svg>
+        </div>
+        <div class="nav-icon" title="Shots">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        </div>
+        <div class="nav-icon" title="History">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="nav-icon" title="Leaderboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M12 15l-2 5l-5-1l2-5"/>
+            <path d="M12 15l2 5l5-1l-2-5"/>
+            <circle cx="12" cy="9" r="6"/>
+          </svg>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- Jumbotron Scoreboard -->
+      <header class="jumbotron">
+        <div class="jumbotron-inner">
+          <div class="jumbotron-content">
+
+            <!-- User Profile -->
+            <div class="user-profile">
+              <div class="user-avatar">
+                <div class="user-avatar-inner">MG</div>
+              </div>
+              <div class="user-info">
+                <div class="user-name">TRADER_42</div>
+                <div class="user-record">
+                  <span class="wins">12W</span>
+                  <span>-</span>
+                  <span class="losses">3L</span>
+                  <span style="color: var(--color-text-secondary);">| 80%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hero Stats -->
+            <div class="hero-stats">
+              <div class="hero-stat">
+                <div class="hero-stat-label">Portfolio</div>
+                <div class="hero-stat-value">$127K</div>
+                <div class="hero-stat-sub">All positions</div>
+              </div>
+              <div class="hero-divider"></div>
+              <div class="hero-stat">
+                <div class="hero-stat-label">Today</div>
+                <div class="hero-stat-value positive">+$2.3K</div>
+                <div class="hero-stat-sub">+1.87%</div>
+              </div>
+              <div class="hero-divider"></div>
+              <div class="hero-stat">
+                <div class="hero-stat-label">Alpha</div>
+                <div class="hero-stat-value positive">+4.2%</div>
+                <div class="hero-stat-sub">vs S&P YTD</div>
+              </div>
+              <div class="hero-divider"></div>
+              <div class="hero-stat">
+                <div class="hero-stat-label">PPD</div>
+                <div class="hero-stat-value">1.24</div>
+                <div class="hero-stat-sub">Avg daily</div>
+              </div>
+            </div>
+
+            <!-- Status Panel -->
+            <div class="status-panel">
+              <div class="market-badge">
+                <div class="market-dot"></div>
+                Market Open
+              </div>
+              <div class="session-time">3:42 remaining</div>
+            </div>
+
+          </div>
+        </div>
+      </header>
+
+      <!-- Quick Stats Row -->
+      <div class="quick-stats-row">
+        <div class="glass-panel quick-stat">
+          <div class="quick-stat-label">Active Targets</div>
+          <div class="quick-stat-value">4</div>
+          <div class="quick-stat-sub">3 on track</div>
+        </div>
+        <div class="glass-panel quick-stat">
+          <div class="quick-stat-label">Open Shots</div>
+          <div class="quick-stat-value">12</div>
+          <div class="quick-stat-sub">$47K deployed</div>
+        </div>
+        <div class="glass-panel quick-stat">
+          <div class="quick-stat-label">Unrealized P&L</div>
+          <div class="quick-stat-value positive">+$8.4K</div>
+          <div class="quick-stat-sub">+17.8%</div>
+        </div>
+        <div class="glass-panel quick-stat">
+          <div class="quick-stat-label">Weekly Alpha</div>
+          <div class="quick-stat-value positive">+2.1%</div>
+          <div class="quick-stat-sub">vs S&P 500</div>
+        </div>
+      </div>
+
+      <!-- Active Targets -->
+      <section>
+        <div class="section-header">
+          <h2 class="section-title">Active Targets</h2>
+          <button class="arena-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Set Target
+          </button>
+        </div>
+
+        <div class="targets-grid">
+          <!-- Target 1 - Winning -->
+          <div class="diamond-card winning">
+            <div class="diamond-card-inner">
+              <div class="card-header">
+                <div class="card-ticker">
+                  <span class="ticker-arrow up">&#9650;</span>
+                  AI Infrastructure
+                </div>
+                <span class="card-status on-track">On Track</span>
+              </div>
+              <div class="card-data">
+                <div class="data-item">
+                  <span class="data-label">Deployed</span>
+                  <span class="data-value">$15,000</span>
+                </div>
+                <div class="data-item">
+                  <span class="data-label">Target</span>
+                  <span class="data-value">+40%</span>
+                </div>
+                <div class="data-item">
+                  <span class="data-label">Current</span>
+                  <span class="data-value positive">+24.8%</span>
+                </div>
+                <div class="data-item">
+                  <span class="data-label">vs NPC</span>
+                  <span class="data-value positive">+7.0%</span>
+                </div>
+                <div class="data-item">
+                  <span class="data-label">PPD</span>
+                  <span class="data-value led">1.42</span>
+                </div>
+                <div class="data-item">
+                  <span class="data-label">Days Left</span>
+                  <span class="data-value">67d</span>
+                </div>
+              </div>
+              <p class="target-thesis">"AI chip demand will outpace supply through 2025 as hyperscalers race to build infrastructure"</p>
+              <div class="target-meta">
+                <span>3 Aims</span>
+                <span>5 Shots</span>
+                <span>Started Dec 15</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Target 2 -->
+          <div class="diamond-card">
+            <div class="diamond-card-inner">
+              <div class="card-header">
+                <div class="card-ticker">
+                  <span class="ticker-arrow up">&#9650;</span>
+                  Energy Transition
+                </div>
+                <span class="card-status on-track">On Track</span>
+              </div>
+              <div class="card-data">
+                <div class="data-item">
+                  <span class="data-label">Deployed</span>
+                  <span class="data-value">$12,000</span>
+                </div>
+                <div class="data-item">
+                  <span class="data-label">Target</span>
+                  <span class="data-value">+25%</span>
+                </div>
+                <div class="data-item">
+                  <span class="data-label">Current</span>
+                  <span class="data-value positive">+12.1%</span>
+                </div>
+                <div class="data-item">
+                  <span class="data-label">vs NPC</span>
+                  <span class="data-value positive">+3.4%</span>
+                </div>
+                <div class="data-item">
+                  <span class="data-label">PPD</span>
+                  <span class="data-value led">0.89</span>
+                </div>
+                <div class="data-item">
+                  <span class="data-label">Days Left</span>
+                  <span class="data-value">124d</span>
+                </div>
+              </div>
+              <p class="target-thesis">"Grid infrastructure spending will accelerate as EV adoption reaches tipping point"</p>
+              <div class="target-meta">
+                <span>2 Aims</span>
+                <span>4 Shots</span>
+                <span>Started Nov 28</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Target 3 - Losing -->
+          <div class="diamond-card losing">
+            <div class="diamond-card-inner">
+              <div class="card-header">
+                <div class="card-ticker">
+                  <span class="ticker-arrow down">&#9660;</span>
+                  Fintech Rebound
+                </div>
+                <span class="card-status behind">Behind</span>
+              </div>
+              <div class="card-data">
+                <div class="data-item">
+                  <span class="data-label">Deployed</span>
+                  <span class="data-value">$8,000</span>
+                </div>
+                <div class="data-item">
+                  <span class="data-label">Target</span>
+                  <span class="data-value">+30%</span>
+                </div>
+                <div class="data-item">
+                  <span class="data-label">Current</span>
+                  <span class="data-value negative">-4.2%</span>
+                </div>
+                <div class="data-item">
+                  <span class="data-label">vs NPC</span>
+                  <span class="data-value negative">-12.8%</span>
+                </div>
+                <div class="data-item">
+                  <span class="data-label">PPD</span>
+                  <span class="data-value led">-0.31</span>
+                </div>
+                <div class="data-item">
+                  <span class="data-label">Days Left</span>
+                  <span class="data-value">89d</span>
+                </div>
+              </div>
+              <p class="target-thesis">"Rate cuts will reignite fintech valuations as credit conditions ease"</p>
+              <div class="target-meta">
+                <span>2 Aims</span>
+                <span>3 Shots</span>
+                <span>Started Dec 1</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Active Shots Table -->
+      <section>
+        <div class="section-header">
+          <h2 class="section-title">Active Shots</h2>
+          <a href="#" class="section-action">
+            View All
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
+
+        <div class="glass-panel shots-panel">
+          <table class="shots-table">
+            <thead>
+              <tr>
+                <th>Ticker</th>
+                <th>Entry</th>
+                <th>Now</th>
+                <th>Return</th>
+                <th>vs NPC</th>
+                <th>PPD</th>
+                <th>Pace</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="ticker-cell">
+                  <span class="ticker-arrow up">&#9650;</span>
+                  NVDA
+                </td>
+                <td>$142.50</td>
+                <td>$164.20</td>
+                <td class="return-cell" style="color: var(--color-win);">+15.2%</td>
+                <td style="color: var(--color-win);">+6.5%</td>
+                <td class="ppd-cell">0.42%</td>
+                <td><span class="pace-badge on-track">On Track</span></td>
+              </tr>
+              <tr>
+                <td class="ticker-cell">
+                  <span class="ticker-arrow up">&#9650;</span>
+                  MSFT
+                </td>
+                <td>$378.00</td>
+                <td>$423.80</td>
+                <td class="return-cell" style="color: var(--color-win);">+12.1%</td>
+                <td style="color: var(--color-win);">+3.4%</td>
+                <td class="ppd-cell">0.28%</td>
+                <td><span class="pace-badge on-track">On Track</span></td>
+              </tr>
+              <tr>
+                <td class="ticker-cell">
+                  <span class="ticker-arrow up">&#9650;</span>
+                  AMD
+                </td>
+                <td>$156.20</td>
+                <td>$169.30</td>
+                <td class="return-cell" style="color: var(--color-win);">+8.4%</td>
+                <td style="color: var(--color-loss);">-3.7%</td>
+                <td class="ppd-cell">0.19%</td>
+                <td><span class="pace-badge behind">Behind</span></td>
+              </tr>
+              <tr>
+                <td class="ticker-cell">
+                  <span class="ticker-arrow down">&#9660;</span>
+                  PYPL
+                </td>
+                <td>$68.40</td>
+                <td>$62.10</td>
+                <td class="return-cell" style="color: var(--color-loss);">-9.2%</td>
+                <td style="color: var(--color-loss);">-17.8%</td>
+                <td class="ppd-cell">-0.34%</td>
+                <td><span class="pace-badge behind">Behind</span></td>
+              </tr>
+              <tr>
+                <td class="ticker-cell">
+                  <span class="ticker-arrow up">&#9650;</span>
+                  GOOGL
+                </td>
+                <td>$142.80</td>
+                <td>$152.50</td>
+                <td class="return-cell" style="color: var(--color-win);">+6.8%</td>
+                <td style="color: var(--color-loss);">-2.1%</td>
+                <td class="ppd-cell">0.15%</td>
+                <td><span class="pace-badge behind">Behind</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Scorecard Preview -->
+      <section>
+        <div class="section-header">
+          <h2 class="section-title">Your Scorecard</h2>
+          <a href="#" class="section-action">
+            Full Breakdown
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
+
+        <div class="glass-panel scorecard-panel">
+          <div class="scorecard-grid">
+            <div class="scorecard-header"></div>
+            <div class="scorecard-header">Target</div>
+            <div class="scorecard-header">Aim</div>
+            <div class="scorecard-header">Shot</div>
+            <div class="scorecard-header">Grade</div>
+
+            <div class="scorecard-label">Difficulty</div>
+            <div class="scorecard-value" style="grid-column: span 3;">1.5x</div>
+            <div class="scorecard-value" style="color: transparent;">-</div>
+
+            <div class="scorecard-label">Raw Score</div>
+            <div class="scorecard-value">90</div>
+            <div class="scorecard-value">18</div>
+            <div class="scorecard-value">72</div>
+            <div class="scorecard-value grade">A-</div>
+
+            <div class="scorecard-label">Alpha</div>
+            <div class="scorecard-value">5.6x</div>
+            <div class="scorecard-value">6x</div>
+            <div class="scorecard-value">5x</div>
+            <div class="scorecard-value" style="color: transparent;">-</div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</body>
+</html>

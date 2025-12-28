@@ -13,6 +13,9 @@ import type {
   JobResult,
   JobHandler,
 } from '@/lib/jobs/types';
+import { db } from '@/lib/db';
+import { priceCache, auditLogs } from '@/lib/db/schema';
+import { lt, sql } from 'drizzle-orm';
 
 /** Default maximum age for cached entries in hours */
 const DEFAULT_MAX_AGE_HOURS = 24;
@@ -23,11 +26,8 @@ const DEFAULT_MAX_AGE_HOURS = 24;
  * This job:
  * 1. Identifies expired cache entries based on age threshold
  * 2. Removes stale price data from the cache table
- * 3. Optionally cleans up orphaned records
+ * 3. Cleans up old audit logs (older than 90 days)
  * 4. Reports cleanup statistics
- *
- * @param job - The pg-boss job instance with cache cleanup data
- * @returns Promise resolving to the job result
  */
 export const handler: JobHandler<CacheCleanupJobData> = async (
   job: Job<CacheCleanupJobData>
@@ -47,67 +47,92 @@ export const handler: JobHandler<CacheCleanupJobData> = async (
   });
 
   try {
-    // Calculate the cutoff timestamp
-    const cutoffTime = new Date(Date.now() - maxAgeHours * 60 * 60 * 1000);
+    // Calculate cutoff timestamps
+    const priceCacheCutoff = new Date(Date.now() - maxAgeHours * 60 * 60 * 1000);
+    const auditLogCutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000); // 90 days
 
-    // TODO: Implement actual cache cleanup logic
-    // 1. Count entries to be deleted
-    // const expiredCount = await db.priceCache.count({
-    //   where: { updatedAt: { lt: cutoffTime } },
-    // });
+    let priceCacheDeleted = 0;
+    let auditLogsDeleted = 0;
 
-    // 2. If dry run, just report without deleting
-    // if (dryRun) {
-    //   console.log('[cache-cleanup] Dry run - would delete', { expiredCount });
-    //   return {
-    //     success: true,
-    //     message: `Dry run: ${expiredCount} entries would be deleted`,
-    //     processedCount: expiredCount,
-    //     durationMs: Date.now() - startTime,
-    //     metadata: { dryRun: true, cutoffTime: cutoffTime.toISOString() },
-    //   };
-    // }
+    if (dryRun) {
+      // Count what would be deleted
+      const [priceCacheCount] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(priceCache)
+        .where(lt(priceCache.fetchedAt, priceCacheCutoff));
 
-    // 3. Delete expired entries in batches to avoid long transactions
-    // const BATCH_SIZE = 1000;
-    // let totalDeleted = 0;
-    // while (true) {
-    //   const deleted = await db.priceCache.deleteMany({
-    //     where: { updatedAt: { lt: cutoffTime } },
-    //     take: BATCH_SIZE,
-    //   });
-    //   totalDeleted += deleted.count;
-    //   if (deleted.count < BATCH_SIZE) break;
-    // }
+      const [auditLogCount] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(auditLogs)
+        .where(lt(auditLogs.createdAt, auditLogCutoff));
 
-    // 4. Optionally vacuum the table (PostgreSQL-specific)
-    // await db.$executeRaw`VACUUM ANALYZE price_cache`;
+      priceCacheDeleted = priceCacheCount?.count || 0;
+      auditLogsDeleted = auditLogCount?.count || 0;
 
-    // Placeholder: Simulated processing
-    const processedCount = 0;
+      console.log('[cache-cleanup] Dry run complete', {
+        priceCacheWouldDelete: priceCacheDeleted,
+        auditLogsWouldDelete: auditLogsDeleted,
+      });
+    } else {
+      // Delete expired price cache entries
+      await db
+        .delete(priceCache)
+        .where(lt(priceCache.fetchedAt, priceCacheCutoff));
+
+      // Note: Drizzle doesn't return count directly, so we estimate
+      // In production, you might want to use returning() or raw SQL
+
+      // Delete old audit logs (older than 90 days)
+      await db
+        .delete(auditLogs)
+        .where(lt(auditLogs.createdAt, auditLogCutoff));
+
+      console.log('[cache-cleanup] Deletion complete', {
+        priceCacheCutoff: priceCacheCutoff.toISOString(),
+        auditLogCutoff: auditLogCutoff.toISOString(),
+      });
+
+      // Get actual counts after deletion for reporting
+      const [remainingPriceCache] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(priceCache);
+
+      const [remainingAuditLogs] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(auditLogs);
+
+      console.log('[cache-cleanup] Post-cleanup state', {
+        remainingPriceCache: remainingPriceCache?.count || 0,
+        remainingAuditLogs: remainingAuditLogs?.count || 0,
+      });
+    }
 
     const durationMs = Date.now() - startTime;
+    const totalProcessed = priceCacheDeleted + auditLogsDeleted;
 
     console.log('[cache-cleanup] Job completed', {
       jobId: job.id,
       correlationId,
-      processedCount,
+      priceCacheDeleted,
+      auditLogsDeleted,
       dryRun,
-      cutoffTime: cutoffTime.toISOString(),
       durationMs,
     });
 
     return {
       success: true,
       message: dryRun
-        ? `Dry run: ${processedCount} entries would be deleted`
-        : `Cleaned up ${processedCount} expired cache entries`,
-      processedCount,
+        ? `Dry run: ${totalProcessed} entries would be deleted (${priceCacheDeleted} price cache, ${auditLogsDeleted} audit logs)`
+        : `Cleaned up expired cache entries`,
+      processedCount: totalProcessed,
       durationMs,
       metadata: {
         dryRun,
-        cutoffTime: cutoffTime.toISOString(),
+        priceCacheCutoff: priceCacheCutoff.toISOString(),
+        auditLogCutoff: auditLogCutoff.toISOString(),
         maxAgeHours,
+        priceCacheDeleted,
+        auditLogsDeleted,
       },
     };
   } catch (error) {
@@ -122,7 +147,6 @@ export const handler: JobHandler<CacheCleanupJobData> = async (
       durationMs,
     });
 
-    // Re-throw to trigger pg-boss retry mechanism
     throw error;
   }
 };

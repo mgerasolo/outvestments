@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OUTVESTMENTS | TARGET DETAIL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-bg-arena: #0f1419;
+      --color-bg-crowdShadow: #0a0e13;
+      --color-border-gold: #d4af37;
+      --color-text-led: #ff9500;
+      --color-win: #00ff41;
+      --color-loss: #ff3333;
+      --color-alert: #00d4ff;
+      --color-accent: #b624ff;
+      --color-text-primary: #f5f5f5;
+      --color-text-secondary: #a0a0a0;
+      --font-led: 'IBM Plex Mono', monospace;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 12px;
+      --spacing-lg: 16px;
+      --spacing-xl: 24px;
+      --glow-win: 0 0 20px rgba(0, 255, 65, 0.4);
+      --glow-loss: 0 0 15px rgba(255, 51, 51, 0.3);
+      --glow-gold: 0 0 15px rgba(212, 175, 55, 0.3);
+      --glow-cyan: 0 0 15px rgba(0, 212, 255, 0.3);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--color-bg-arena);
+      color: var(--color-text-primary);
+      min-height: 100vh;
+    }
+
+    .arena-container {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: var(--color-bg-crowdShadow);
+      border-right: 2px solid var(--color-border-gold);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--spacing-md) 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 80px;
+      height: 100vh;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      width: 48px;
+      height: 48px;
+      border: 2px solid var(--color-border-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .sidebar-logo svg {
+      width: 28px;
+      height: 28px;
+      color: var(--color-border-gold);
+    }
+
+    .nav-icons {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      flex: 1;
+    }
+
+    .nav-icon {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s ease-out;
+    }
+
+    .nav-icon::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 0;
+      background: var(--color-border-gold);
+      transition: height 0.15s ease-out;
+    }
+
+    .nav-icon:hover {
+      color: var(--color-text-primary);
+      text-shadow: var(--glow-cyan);
+    }
+
+    .nav-icon.active {
+      color: var(--color-border-gold);
+    }
+
+    .nav-icon.active::before {
+      height: 32px;
+      box-shadow: var(--glow-gold);
+    }
+
+    .nav-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke-width: 2.5;
+    }
+
+    .nav-bottom { margin-top: auto; }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 80px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Target Hero */
+    .target-hero {
+      background: linear-gradient(180deg, var(--color-bg-crowdShadow) 0%, var(--color-bg-arena) 100%);
+      border-bottom: 3px solid var(--color-win);
+      padding: var(--spacing-xl);
+      box-shadow: var(--glow-win);
+    }
+
+    .target-hero.losing {
+      border-bottom-color: var(--color-loss);
+      box-shadow: var(--glow-loss);
+    }
+
+    .target-breadcrumb {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--spacing-md);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .target-breadcrumb a {
+      color: var(--color-alert);
+      text-decoration: none;
+    }
+
+    .target-breadcrumb a:hover {
+      text-shadow: var(--glow-cyan);
+    }
+
+    .target-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--spacing-xl);
+      align-items: start;
+    }
+
+    .target-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+
+    .target-title {
+      font-family: var(--font-led);
+      font-size: 28px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--color-text-primary);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    .status-badge {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 4px 12px;
+      border: 2px solid;
+    }
+
+    .status-badge.on-track {
+      color: var(--color-win);
+      border-color: var(--color-win);
+      box-shadow: var(--glow-win);
+    }
+
+    .status-badge.behind {
+      color: var(--color-loss);
+      border-color: var(--color-loss);
+      box-shadow: var(--glow-loss);
+    }
+
+    .target-thesis {
+      font-size: 15px;
+      color: var(--color-text-secondary);
+      line-height: 1.5;
+      max-width: 700px;
+      border-left: 3px solid var(--color-border-gold);
+      padding-left: var(--spacing-md);
+    }
+
+    .target-meta {
+      display: flex;
+      gap: var(--spacing-xl);
+      margin-top: var(--spacing-md);
+      font-size: 12px;
+      color: var(--color-text-secondary);
+    }
+
+    .target-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+
+    .arena-btn {
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: var(--spacing-sm) var(--spacing-lg);
+      border: 2px solid var(--color-border-gold);
+      background: transparent;
+      color: var(--color-border-gold);
+      cursor: pointer;
+      transition: all 0.15s ease-out;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+      min-width: 140px;
+    }
+
+    .arena-btn:hover {
+      background: var(--color-border-gold);
+      color: var(--color-bg-arena);
+      box-shadow: var(--glow-gold);
+      transform: scale(1.02);
+    }
+
+    .arena-btn.primary {
+      background: var(--color-border-gold);
+      color: var(--color-bg-arena);
+    }
+
+    .arena-btn.danger {
+      border-color: var(--color-loss);
+      color: var(--color-loss);
+    }
+
+    .arena-btn.danger:hover {
+      background: var(--color-loss);
+      color: var(--color-text-primary);
+      box-shadow: var(--glow-loss);
+    }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      border-bottom: 2px solid var(--color-border-gold);
+    }
+
+    .stat-item {
+      padding: var(--spacing-lg);
+      text-align: center;
+      border-right: 1px solid rgba(212, 175, 55, 0.3);
+      background: var(--color-bg-crowdShadow);
+    }
+
+    .stat-item:last-child {
+      border-right: none;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .stat-value {
+      font-family: var(--font-led);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--color-text-led);
+      text-shadow: 0 0 15px rgba(255, 149, 0, 0.4);
+    }
+
+    .stat-value.positive {
+      color: var(--color-win);
+      text-shadow: var(--glow-win);
+    }
+
+    .stat-value.negative {
+      color: var(--color-loss);
+      text-shadow: var(--glow-loss);
+    }
+
+    /* Content Area */
+    .content-area {
+      padding: var(--spacing-xl);
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: var(--spacing-xl);
+    }
+
+    /* Left Column */
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xl);
+    }
+
+    /* Section */
+    .section {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-title {
+      font-family: var(--font-led);
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--color-text-primary);
+    }
+
+    /* Aim Cards */
+    .aims-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .aim-card {
+      background: var(--color-bg-crowdShadow);
+      border: 2px solid var(--color-border-gold);
+      padding: var(--spacing-md);
+      position: relative;
+      transition: all 0.15s ease-out;
+    }
+
+    .aim-card:hover {
+      box-shadow: var(--glow-gold);
+    }
+
+    .aim-card.winning {
+      border-left: 4px solid var(--color-win);
+    }
+
+    .aim-card.losing {
+      border-left: 4px solid var(--color-loss);
+    }
+
+    .aim-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .aim-title {
+      font-family: var(--font-led);
+      font-size: 16px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .aim-direction {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 8px;
+      border: 1px solid;
+    }
+
+    .aim-direction.bullish {
+      color: var(--color-win);
+      border-color: var(--color-win);
+    }
+
+    .aim-direction.bearish {
+      color: var(--color-loss);
+      border-color: var(--color-loss);
+    }
+
+    .aim-description {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--spacing-md);
+      line-height: 1.4;
+    }
+
+    .aim-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--spacing-sm);
+    }
+
+    .aim-stat {
+      text-align: center;
+    }
+
+    .aim-stat-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-text-secondary);
+    }
+
+    .aim-stat-value {
+      font-family: var(--font-led);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+
+    .aim-stat-value.positive { color: var(--color-win); }
+    .aim-stat-value.negative { color: var(--color-loss); }
+    .aim-stat-value.led { color: var(--color-text-led); }
+
+    .aim-shots {
+      margin-top: var(--spacing-md);
+      padding-top: var(--spacing-md);
+      border-top: 1px solid rgba(212, 175, 55, 0.2);
+    }
+
+    .aim-shots-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .aim-shots-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-text-secondary);
+    }
+
+    .shot-chips {
+      display: flex;
+      gap: var(--spacing-xs);
+      flex-wrap: wrap;
+    }
+
+    .shot-chip {
+      font-family: var(--font-led);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border: 1px solid var(--color-text-secondary);
+      color: var(--color-text-secondary);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      cursor: pointer;
+      transition: all 0.15s ease-out;
+    }
+
+    .shot-chip:hover {
+      border-color: var(--color-border-gold);
+      color: var(--color-border-gold);
+    }
+
+    .shot-chip.winning {
+      border-color: var(--color-win);
+      color: var(--color-win);
+    }
+
+    .shot-chip.losing {
+      border-color: var(--color-loss);
+      color: var(--color-loss);
+    }
+
+    /* Right Column - Scorecard */
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xl);
+    }
+
+    .scorecard-panel {
+      background: var(--color-bg-crowdShadow);
+      border: 3px solid var(--color-border-gold);
+      padding: var(--spacing-lg);
+      box-shadow: var(--glow-gold);
+    }
+
+    .scorecard-title {
+      font-family: var(--font-led);
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--color-border-gold);
+      text-align: center;
+      margin-bottom: var(--spacing-lg);
+      padding-bottom: var(--spacing-md);
+      border-bottom: 2px solid var(--color-border-gold);
+    }
+
+    .scorecard-grade {
+      text-align: center;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .grade-value {
+      font-family: var(--font-led);
+      font-size: 72px;
+      font-weight: 700;
+      color: var(--color-win);
+      text-shadow: var(--glow-win);
+      line-height: 1;
+    }
+
+    .grade-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-text-secondary);
+      margin-top: var(--spacing-xs);
+    }
+
+    .scorecard-metrics {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .scorecard-row {
+      display: grid;
+      grid-template-columns: 80px 1fr 1fr 1fr;
+      gap: var(--spacing-sm);
+      align-items: center;
+    }
+
+    .scorecard-row-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-text-secondary);
+    }
+
+    .scorecard-cell {
+      text-align: center;
+      padding: var(--spacing-sm);
+      background: var(--color-bg-arena);
+    }
+
+    .scorecard-cell-header {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-text-secondary);
+      margin-bottom: 2px;
+    }
+
+    .scorecard-cell-value {
+      font-family: var(--font-led);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-text-led);
+    }
+
+    .scorecard-cell-value.small {
+      font-size: 14px;
+    }
+
+    /* Progress Section */
+    .progress-panel {
+      background: var(--color-bg-crowdShadow);
+      border: 2px solid var(--color-border-gold);
+      padding: var(--spacing-lg);
+    }
+
+    .progress-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .progress-bar-container {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .progress-bar-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--spacing-xs);
+      font-size: 11px;
+      color: var(--color-text-secondary);
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: var(--color-bg-arena);
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--color-win);
+      box-shadow: var(--glow-win);
+      position: relative;
+    }
+
+    .progress-marker {
+      position: absolute;
+      top: -4px;
+      width: 2px;
+      height: 16px;
+      background: var(--color-text-led);
+    }
+
+    .progress-marker::after {
+      content: attr(data-label);
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 9px;
+      color: var(--color-text-secondary);
+      white-space: nowrap;
+    }
+
+    .progress-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--spacing-md);
+    }
+
+    .progress-stat {
+      text-align: center;
+    }
+
+    .progress-stat-value {
+      font-family: var(--font-led);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-text-led);
+    }
+
+    .progress-stat-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-text-secondary);
+    }
+
+    /* Timeline */
+    .timeline-panel {
+      background: var(--color-bg-crowdShadow);
+      border: 2px solid var(--color-border-gold);
+      padding: var(--spacing-lg);
+    }
+
+    .timeline-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .timeline-item {
+      display: flex;
+      gap: var(--spacing-md);
+      font-size: 12px;
+    }
+
+    .timeline-date {
+      font-family: var(--font-led);
+      color: var(--color-text-secondary);
+      min-width: 60px;
+    }
+
+    .timeline-event {
+      color: var(--color-text-primary);
+    }
+
+    .timeline-event .positive { color: var(--color-win); }
+    .timeline-event .negative { color: var(--color-loss); }
+
+    /* Mobile */
+    @media (max-width: 1024px) {
+      .content-area {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-bar {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .stat-item:nth-child(3) {
+        border-right: none;
+      }
+
+      .stat-item:nth-child(4) {
+        border-right: 1px solid rgba(212, 175, 55, 0.3);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .arena-container {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .stats-bar {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .target-header {
+        grid-template-columns: 1fr;
+      }
+
+      .target-actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+
+      .aim-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="arena-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="12" cy="12" r="10" stroke-width="2"/>
+          <circle cx="12" cy="12" r="6" stroke-width="2"/>
+          <circle cx="12" cy="12" r="2" fill="currentColor"/>
+        </svg>
+      </div>
+      <nav class="nav-icons">
+        <div class="nav-icon" title="Arena">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect x="3" y="3" width="7" height="7"/>
+            <rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/>
+          </svg>
+        </div>
+        <div class="nav-icon active" title="Targets">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"/>
+            <circle cx="12" cy="12" r="6"/>
+            <circle cx="12" cy="12" r="2"/>
+          </svg>
+        </div>
+        <div class="nav-icon" title="Shots">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        </div>
+        <div class="nav-icon" title="History">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="nav-icon" title="Leaderboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M12 15l-2 5l-5-1l2-5"/>
+            <path d="M12 15l2 5l5-1l-2-5"/>
+            <circle cx="12" cy="9" r="6"/>
+          </svg>
+        </div>
+      </nav>
+      <div class="nav-bottom">
+        <div class="nav-icon" title="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+          </svg>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Target Hero -->
+      <header class="target-hero">
+        <div class="target-breadcrumb">
+          <a href="#">Arena</a>
+          <span>&#9656;</span>
+          <a href="#">Targets</a>
+          <span>&#9656;</span>
+          <span>AI Infrastructure</span>
+        </div>
+
+        <div class="target-header">
+          <div class="target-title-group">
+            <h1 class="target-title">
+              AI Infrastructure
+              <span class="status-badge on-track">On Track</span>
+            </h1>
+            <p class="target-thesis">
+              "AI chip demand will outpace supply through 2025 as hyperscalers race to build infrastructure. NVDA, AMD, and MSFT are the picks to ride this wave."
+            </p>
+            <div class="target-meta">
+              <span>Created Dec 15, 2024</span>
+              <span>67 days remaining</span>
+              <span>3 Aims | 5 Shots</span>
+            </div>
+          </div>
+          <div class="target-actions">
+            <button class="arena-btn primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Take Aim
+            </button>
+            <button class="arena-btn">Edit Target</button>
+            <button class="arena-btn danger">Close Target</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Stats Bar -->
+      <div class="stats-bar">
+        <div class="stat-item">
+          <div class="stat-label">Deployed</div>
+          <div class="stat-value">$15,000</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Current Value</div>
+          <div class="stat-value positive">$18,720</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Return</div>
+          <div class="stat-value positive">+24.8%</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Target</div>
+          <div class="stat-value">+40%</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">vs NPC</div>
+          <div class="stat-value positive">+7.0%</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">PPD</div>
+          <div class="stat-value">1.42</div>
+        </div>
+      </div>
+
+      <!-- Content Area -->
+      <div class="content-area">
+        <!-- Left Column -->
+        <div class="left-column">
+          <!-- Aims Section -->
+          <section class="section">
+            <div class="section-header">
+              <h2 class="section-title">Aims</h2>
+              <button class="arena-btn">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                New Aim
+              </button>
+            </div>
+
+            <div class="aims-list">
+              <!-- Aim 1 -->
+              <div class="aim-card winning">
+                <div class="aim-header">
+                  <h3 class="aim-title">GPU Compute Leaders</h3>
+                  <span class="aim-direction bullish">Bullish</span>
+                </div>
+                <p class="aim-description">
+                  NVDA and AMD will benefit most from AI training demand. Targeting 35% combined return as data center buildout accelerates.
+                </p>
+                <div class="aim-stats">
+                  <div class="aim-stat">
+                    <div class="aim-stat-value positive">+18.2%</div>
+                    <div class="aim-stat-label">Return</div>
+                  </div>
+                  <div class="aim-stat">
+                    <div class="aim-stat-value positive">+5.4%</div>
+                    <div class="aim-stat-label">vs NPC</div>
+                  </div>
+                  <div class="aim-stat">
+                    <div class="aim-stat-value led">1.52</div>
+                    <div class="aim-stat-label">PPD</div>
+                  </div>
+                  <div class="aim-stat">
+                    <div class="aim-stat-value">$8,500</div>
+                    <div class="aim-stat-label">Deployed</div>
+                  </div>
+                </div>
+                <div class="aim-shots">
+                  <div class="aim-shots-header">
+                    <span class="aim-shots-label">Active Shots</span>
+                  </div>
+                  <div class="shot-chips">
+                    <div class="shot-chip winning">NVDA +15.2%</div>
+                    <div class="shot-chip winning">AMD +8.4%</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Aim 2 -->
+              <div class="aim-card winning">
+                <div class="aim-header">
+                  <h3 class="aim-title">Cloud Infrastructure Play</h3>
+                  <span class="aim-direction bullish">Bullish</span>
+                </div>
+                <p class="aim-description">
+                  MSFT Azure and cloud services will see accelerated growth from AI workloads. Conservative 25% target.
+                </p>
+                <div class="aim-stats">
+                  <div class="aim-stat">
+                    <div class="aim-stat-value positive">+12.1%</div>
+                    <div class="aim-stat-label">Return</div>
+                  </div>
+                  <div class="aim-stat">
+                    <div class="aim-stat-value positive">+3.4%</div>
+                    <div class="aim-stat-label">vs NPC</div>
+                  </div>
+                  <div class="aim-stat">
+                    <div class="aim-stat-value led">1.18</div>
+                    <div class="aim-stat-label">PPD</div>
+                  </div>
+                  <div class="aim-stat">
+                    <div class="aim-stat-value">$4,000</div>
+                    <div class="aim-stat-label">Deployed</div>
+                  </div>
+                </div>
+                <div class="aim-shots">
+                  <div class="aim-shots-header">
+                    <span class="aim-shots-label">Active Shots</span>
+                  </div>
+                  <div class="shot-chips">
+                    <div class="shot-chip winning">MSFT +12.1%</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Aim 3 -->
+              <div class="aim-card">
+                <div class="aim-header">
+                  <h3 class="aim-title">AI Software Layer</h3>
+                  <span class="aim-direction bullish">Bullish</span>
+                </div>
+                <p class="aim-description">
+                  Software companies integrating AI will see multiple expansion. GOOGL is undervalued relative to AI opportunity.
+                </p>
+                <div class="aim-stats">
+                  <div class="aim-stat">
+                    <div class="aim-stat-value positive">+6.8%</div>
+                    <div class="aim-stat-label">Return</div>
+                  </div>
+                  <div class="aim-stat">
+                    <div class="aim-stat-value negative">-2.1%</div>
+                    <div class="aim-stat-label">vs NPC</div>
+                  </div>
+                  <div class="aim-stat">
+                    <div class="aim-stat-value led">0.82</div>
+                    <div class="aim-stat-label">PPD</div>
+                  </div>
+                  <div class="aim-stat">
+                    <div class="aim-stat-value">$2,500</div>
+                    <div class="aim-stat-label">Deployed</div>
+                  </div>
+                </div>
+                <div class="aim-shots">
+                  <div class="aim-shots-header">
+                    <span class="aim-shots-label">Active Shots</span>
+                  </div>
+                  <div class="shot-chips">
+                    <div class="shot-chip winning">GOOGL +6.8%</div>
+                    <div class="shot-chip">META +4.2%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Right Column -->
+        <div class="right-column">
+          <!-- Scorecard -->
+          <div class="scorecard-panel">
+            <h3 class="scorecard-title">Target Scorecard</h3>
+            <div class="scorecard-grade">
+              <div class="grade-value">A-</div>
+              <div class="grade-label">Current Grade</div>
+            </div>
+            <div class="scorecard-metrics">
+              <div class="scorecard-row">
+                <div class="scorecard-row-label">Difficulty</div>
+                <div class="scorecard-cell" style="grid-column: span 3;">
+                  <div class="scorecard-cell-value">1.5x</div>
+                </div>
+              </div>
+              <div class="scorecard-row">
+                <div class="scorecard-row-label"></div>
+                <div class="scorecard-cell">
+                  <div class="scorecard-cell-header">Target</div>
+                </div>
+                <div class="scorecard-cell">
+                  <div class="scorecard-cell-header">Aim</div>
+                </div>
+                <div class="scorecard-cell">
+                  <div class="scorecard-cell-header">Shot</div>
+                </div>
+              </div>
+              <div class="scorecard-row">
+                <div class="scorecard-row-label">Raw</div>
+                <div class="scorecard-cell">
+                  <div class="scorecard-cell-value">90</div>
+                </div>
+                <div class="scorecard-cell">
+                  <div class="scorecard-cell-value">18</div>
+                </div>
+                <div class="scorecard-cell">
+                  <div class="scorecard-cell-value">72</div>
+                </div>
+              </div>
+              <div class="scorecard-row">
+                <div class="scorecard-row-label">Alpha</div>
+                <div class="scorecard-cell">
+                  <div class="scorecard-cell-value small">5.6x</div>
+                </div>
+                <div class="scorecard-cell">
+                  <div class="scorecard-cell-value small">6x</div>
+                </div>
+                <div class="scorecard-cell">
+                  <div class="scorecard-cell-value small">5x</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress Panel -->
+          <div class="progress-panel">
+            <div class="progress-title">Progress to Target</div>
+            <div class="progress-bar-container">
+              <div class="progress-bar-labels">
+                <span>0%</span>
+                <span>Target: 40%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 62%;">
+                  <div class="progress-marker" style="right: 0;" data-label="24.8%"></div>
+                </div>
+              </div>
+            </div>
+            <div class="progress-stats">
+              <div class="progress-stat">
+                <div class="progress-stat-value">62%</div>
+                <div class="progress-stat-label">To Target</div>
+              </div>
+              <div class="progress-stat">
+                <div class="progress-stat-value">67d</div>
+                <div class="progress-stat-label">Remaining</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Timeline -->
+          <div class="timeline-panel">
+            <div class="progress-title">Activity</div>
+            <div class="timeline-list">
+              <div class="timeline-item">
+                <span class="timeline-date">Dec 27</span>
+                <span class="timeline-event">NVDA <span class="positive">+2.1%</span></span>
+              </div>
+              <div class="timeline-item">
+                <span class="timeline-date">Dec 26</span>
+                <span class="timeline-event">AMD <span class="negative">-0.8%</span></span>
+              </div>
+              <div class="timeline-item">
+                <span class="timeline-date">Dec 24</span>
+                <span class="timeline-event">Added META shot</span>
+              </div>
+              <div class="timeline-item">
+                <span class="timeline-date">Dec 22</span>
+                <span class="timeline-event">MSFT <span class="positive">+3.4%</span></span>
+              </div>
+              <div class="timeline-item">
+                <span class="timeline-date">Dec 20</span>
+                <span class="timeline-event">Created AI Software Aim</span>
+              </div>
+              <div class="timeline-item">
+                <span class="timeline-date">Dec 15</span>
+                <span class="timeline-event">Target created</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

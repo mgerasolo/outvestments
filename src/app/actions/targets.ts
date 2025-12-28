@@ -13,6 +13,10 @@ export interface TargetFormData {
   targetType: TargetType;
   catalyst?: string;
   tags?: string[];
+  // Trading discipline fields
+  confidenceLevel?: number;
+  risks?: string;
+  exitTriggers?: string;
 }
 
 export interface TargetResult {
@@ -60,6 +64,10 @@ export async function createTarget(data: TargetFormData): Promise<TargetResult> 
         catalyst: data.catalyst?.trim() || null,
         tags: data.tags || [],
         status: "active" as TargetStatus,
+        // Trading discipline fields
+        confidenceLevel: data.confidenceLevel?.toString() || null,
+        risks: data.risks?.trim() || null,
+        exitTriggers: data.exitTriggers?.trim() || null,
       })
       .returning();
 
@@ -72,6 +80,7 @@ export async function createTarget(data: TargetFormData): Promise<TargetResult> 
         targetType: newTarget.targetType,
         catalyst: newTarget.catalyst,
         tags: newTarget.tags,
+        confidenceLevel: newTarget.confidenceLevel,
       }
     );
 
@@ -137,6 +146,19 @@ export async function updateTarget(
 
     if (data.tags !== undefined) {
       updateData.tags = data.tags;
+    }
+
+    // Trading discipline fields
+    if (data.confidenceLevel !== undefined) {
+      updateData.confidenceLevel = data.confidenceLevel?.toString() || null;
+    }
+
+    if (data.risks !== undefined) {
+      updateData.risks = data.risks?.trim() || null;
+    }
+
+    if (data.exitTriggers !== undefined) {
+      updateData.exitTriggers = data.exitTriggers?.trim() || null;
     }
 
     const [updatedTarget] = await db

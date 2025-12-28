@@ -1,12 +1,19 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { aims, targets, type NewAim, type Aim } from "@/lib/db/schema";
-import { eq, and, isNull, desc } from "drizzle-orm";
+import { aims, targets, shots, type NewAim, type Aim } from "@/lib/db/schema";
+import { eq, and, isNull, desc, inArray } from "drizzle-orm";
 import { auth } from "@/auth";
 import { logAudit, AuditActions, AuditEntityTypes } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
 import { hasPermission } from "@/lib/auth/rbac";
+import {
+  closeAim as closeAimService,
+  rolloverAim as rolloverAimService,
+  getExpiringAims,
+  type AimWithExpiryInfo,
+  type ExpiringAimsResult,
+} from "@/lib/aim-lifecycle";
 
 export interface AimFormData {
   targetId: string;
@@ -14,6 +21,10 @@ export interface AimFormData {
   targetPriceRealistic: number;
   targetPriceReach?: number;
   targetDate: Date;
+  // Trading discipline fields
+  stopLossPrice?: number;
+  takeProfitPrice?: number;
+  exitConditions?: string;
 }
 
 export interface AimResult {
@@ -85,6 +96,10 @@ export async function createAim(data: AimFormData): Promise<AimResult> {
         targetPriceRealistic: data.targetPriceRealistic.toString(),
         targetPriceReach: data.targetPriceReach?.toString() || null,
         targetDate: data.targetDate,
+        // Trading discipline fields
+        stopLossPrice: data.stopLossPrice?.toString() || null,
+        takeProfitPrice: data.takeProfitPrice?.toString() || null,
+        exitConditions: data.exitConditions?.trim() || null,
       })
       .returning();
 
@@ -98,6 +113,8 @@ export async function createAim(data: AimFormData): Promise<AimResult> {
         targetPriceReach: newAim.targetPriceReach,
         targetDate: newAim.targetDate.toISOString(),
         parentTargetId: data.targetId,
+        stopLossPrice: newAim.stopLossPrice,
+        takeProfitPrice: newAim.takeProfitPrice,
       }
     );
 
@@ -176,6 +193,19 @@ export async function updateAim(
 
     if (data.targetDate !== undefined) {
       updateData.targetDate = data.targetDate;
+    }
+
+    // Trading discipline fields
+    if (data.stopLossPrice !== undefined) {
+      updateData.stopLossPrice = data.stopLossPrice?.toString() || null;
+    }
+
+    if (data.takeProfitPrice !== undefined) {
+      updateData.takeProfitPrice = data.takeProfitPrice?.toString() || null;
+    }
+
+    if (data.exitConditions !== undefined) {
+      updateData.exitConditions = data.exitConditions?.trim() || null;
     }
 
     const [updatedAim] = await db
@@ -356,5 +386,290 @@ export async function getAim(aimId: string): Promise<AimResult> {
   } catch (error) {
     console.error("Error fetching aim:", error);
     return { success: false, error: "Failed to fetch aim" };
+  }
+}
+
+// ============================================================================
+// Aim Lifecycle Actions
+// ============================================================================
+
+export interface ExpiringAimsActionResult {
+  success: boolean;
+  error?: string;
+  data?: ExpiringAimsResult;
+}
+
+/**
+ * Get all expiring and expired aims for the current user
+ */
+export async function getUserExpiringAims(): Promise<ExpiringAimsActionResult> {
+  const session = await auth();
+
+  if (!session?.user?.dbId) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  try {
+    const data = await getExpiringAims(session.user.dbId);
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error fetching expiring aims:", error);
+    return { success: false, error: "Failed to fetch expiring aims" };
+  }
+}
+
+/**
+ * Close an aim (mark as closed, no further action needed)
+ */
+export async function closeAimAction(
+  aimId: string,
+  reason: "manual" | "hit" | "liquidated" = "manual"
+): Promise<AimResult> {
+  const session = await auth();
+
+  if (!session?.user?.dbId) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  try {
+    // Verify ownership
+    const [existingAim] = await db
+      .select()
+      .from(aims)
+      .where(and(eq(aims.id, aimId), isNull(aims.deletedAt)))
+      .limit(1);
+
+    if (!existingAim) {
+      return { success: false, error: "Aim not found" };
+    }
+
+    const [target] = await db
+      .select()
+      .from(targets)
+      .where(
+        and(
+          eq(targets.id, existingAim.targetId),
+          eq(targets.userId, session.user.dbId),
+          isNull(targets.deletedAt)
+        )
+      )
+      .limit(1);
+
+    if (!target) {
+      return { success: false, error: "Target not found" };
+    }
+
+    // Check for active shots
+    const activeShots = await db
+      .select()
+      .from(shots)
+      .where(
+        and(
+          eq(shots.aimId, aimId),
+          eq(shots.state, "active"),
+          isNull(shots.deletedAt)
+        )
+      );
+
+    if (activeShots.length > 0 && reason !== "liquidated") {
+      return {
+        success: false,
+        error: `Cannot close aim with ${activeShots.length} active shot(s). Liquidate or close shots first.`,
+      };
+    }
+
+    const closedAim = await closeAimService(aimId, reason);
+
+    if (!closedAim) {
+      return { success: false, error: "Failed to close aim" };
+    }
+
+    await logAudit(
+      AuditActions.AIM_UPDATED,
+      AuditEntityTypes.AIM,
+      aimId,
+      {
+        action: "closed",
+        reason,
+        previousStatus: existingAim.status,
+      }
+    );
+
+    revalidatePath(`/targets/${existingAim.targetId}`);
+    revalidatePath(`/targets/${existingAim.targetId}/aims/${aimId}`);
+    revalidatePath("/dashboard");
+
+    return { success: true, aim: closedAim };
+  } catch (error) {
+    console.error("Error closing aim:", error);
+    return { success: false, error: "Failed to close aim" };
+  }
+}
+
+/**
+ * Rollover an aim to a new target date
+ */
+export async function rolloverAimAction(
+  aimId: string,
+  newTargetDate: Date,
+  newTargetPrice?: number
+): Promise<AimResult> {
+  const session = await auth();
+
+  if (!session?.user?.dbId) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  if (!newTargetDate || new Date(newTargetDate) <= new Date()) {
+    return { success: false, error: "New target date must be in the future" };
+  }
+
+  try {
+    // Verify ownership
+    const [existingAim] = await db
+      .select()
+      .from(aims)
+      .where(and(eq(aims.id, aimId), isNull(aims.deletedAt)))
+      .limit(1);
+
+    if (!existingAim) {
+      return { success: false, error: "Aim not found" };
+    }
+
+    const [target] = await db
+      .select()
+      .from(targets)
+      .where(
+        and(
+          eq(targets.id, existingAim.targetId),
+          eq(targets.userId, session.user.dbId),
+          isNull(targets.deletedAt)
+        )
+      )
+      .limit(1);
+
+    if (!target) {
+      return { success: false, error: "Target not found" };
+    }
+
+    const newAim = await rolloverAimService(aimId, newTargetDate, newTargetPrice);
+
+    if (!newAim) {
+      return { success: false, error: "Failed to rollover aim" };
+    }
+
+    await logAudit(
+      AuditActions.AIM_CREATED,
+      AuditEntityTypes.AIM,
+      newAim.id,
+      {
+        action: "rollover",
+        rolledFromId: aimId,
+        originalSymbol: existingAim.symbol,
+        originalTargetDate: existingAim.targetDate.toISOString(),
+        newTargetDate: newTargetDate.toISOString(),
+        newTargetPrice,
+      }
+    );
+
+    revalidatePath(`/targets/${existingAim.targetId}`);
+    revalidatePath("/dashboard");
+
+    return { success: true, aim: newAim };
+  } catch (error) {
+    console.error("Error rolling over aim:", error);
+    return { success: false, error: "Failed to rollover aim" };
+  }
+}
+
+/**
+ * Liquidate an aim - close all active shots and mark aim as closed
+ */
+export async function liquidateAimAction(aimId: string): Promise<AimResult> {
+  const session = await auth();
+
+  if (!session?.user?.dbId) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  try {
+    // Verify ownership
+    const [existingAim] = await db
+      .select()
+      .from(aims)
+      .where(and(eq(aims.id, aimId), isNull(aims.deletedAt)))
+      .limit(1);
+
+    if (!existingAim) {
+      return { success: false, error: "Aim not found" };
+    }
+
+    const [target] = await db
+      .select()
+      .from(targets)
+      .where(
+        and(
+          eq(targets.id, existingAim.targetId),
+          eq(targets.userId, session.user.dbId),
+          isNull(targets.deletedAt)
+        )
+      )
+      .limit(1);
+
+    if (!target) {
+      return { success: false, error: "Target not found" };
+    }
+
+    // Get all active shots for this aim
+    const activeShots = await db
+      .select()
+      .from(shots)
+      .where(
+        and(
+          eq(shots.aimId, aimId),
+          eq(shots.state, "active"),
+          isNull(shots.deletedAt)
+        )
+      );
+
+    // TODO: In production, this should trigger Alpaca API calls to close positions
+    // For now, we just mark shots as closed in the database
+    if (activeShots.length > 0) {
+      const shotIds = activeShots.map((s) => s.id);
+      await db
+        .update(shots)
+        .set({
+          state: "closed",
+          updatedAt: new Date(),
+        })
+        .where(inArray(shots.id, shotIds));
+    }
+
+    // Close the aim as liquidated
+    const closedAim = await closeAimService(aimId, "liquidated");
+
+    if (!closedAim) {
+      return { success: false, error: "Failed to liquidate aim" };
+    }
+
+    await logAudit(
+      AuditActions.AIM_UPDATED,
+      AuditEntityTypes.AIM,
+      aimId,
+      {
+        action: "liquidated",
+        shotsClosed: activeShots.length,
+        previousStatus: existingAim.status,
+      }
+    );
+
+    revalidatePath(`/targets/${existingAim.targetId}`);
+    revalidatePath(`/targets/${existingAim.targetId}/aims/${aimId}`);
+    revalidatePath("/dashboard");
+
+    return { success: true, aim: closedAim };
+  } catch (error) {
+    console.error("Error liquidating aim:", error);
+    return { success: false, error: "Failed to liquidate aim" };
   }
 }

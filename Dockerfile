@@ -43,6 +43,9 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Copy full postgres module (standalone trace doesn't include all ESM files)
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/postgres ./node_modules/postgres
+
 USER nextjs
 
 EXPOSE 3000

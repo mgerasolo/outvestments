@@ -57,6 +57,10 @@ export function ShotForm({ targetId, aim, onSuccess }: ShotFormProps) {
   const [positionSize, setPositionSize] = useState("");
   const [triggerType, setTriggerType] = useState<TriggerType>("market");
   const [shotType, setShotType] = useState<ShotType>("stock");
+  // Trading discipline field - inherit from aim if set
+  const [stopLossPrice, setStopLossPrice] = useState(
+    aim.stopLossPrice ? Number(aim.stopLossPrice).toFixed(2) : ""
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +73,7 @@ export function ShotForm({ targetId, aim, onSuccess }: ShotFormProps) {
       positionSize: positionSize ? Number(positionSize) : undefined,
       triggerType,
       shotType,
+      stopLossPrice: stopLossPrice ? Number(stopLossPrice) : undefined,
     };
 
     startTransition(async () => {
@@ -188,6 +193,34 @@ export function ShotForm({ targetId, aim, onSuccess }: ShotFormProps) {
             <p className="text-sm text-muted-foreground">
               Total dollar amount invested in this position.
             </p>
+          </div>
+
+          {/* Stop Loss */}
+          <div className="space-y-2">
+            <Label htmlFor="stopLossPrice">Stop Loss Price</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                $
+              </span>
+              <Input
+                id="stopLossPrice"
+                type="number"
+                step="0.01"
+                min="0.01"
+                placeholder="140.00"
+                value={stopLossPrice}
+                onChange={(e) => setStopLossPrice(e.target.value)}
+                className="pl-7"
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              <strong>Strongly encouraged.</strong> At what price would you cut losses?
+            </p>
+            {!stopLossPrice && (
+              <p className="text-sm text-amber-600 dark:text-amber-400">
+                Trading without a stop loss increases risk. Consider setting one.
+              </p>
+            )}
           </div>
 
           {/* Trigger Type */}

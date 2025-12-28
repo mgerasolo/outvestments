@@ -3,233 +3,598 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Outvestments - Settings (Plan A)</title>
+  <title>OUTVESTMENTS // LOCKER ROOM</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; background: #030712; }
-    .led-font { font-family: 'Orbitron', monospace; }
-    .glow-green { text-shadow: 0 0 10px #10b981, 0 0 20px #10b981, 0 0 30px #10b981; }
-    .glow-blue { text-shadow: 0 0 10px #3b82f6, 0 0 20px #3b82f6; }
-    .glow-purple { text-shadow: 0 0 10px #a855f7, 0 0 20px #a855f7; }
-    .card-glow {
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255,255,255,0.1);
-      border: 1px solid rgba(59, 130, 246, 0.3);
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;700&display=swap');
+
+    :root {
+      --grass-dark: #1a4d1a;
+      --grass-light: #2d7a2d;
+      --grass-bright: #3d9a3d;
+      --scoreboard-bg: #111111;
+      --led-yellow: #ffcc00;
+      --led-green: #00ff00;
+      --led-red: #ff3333;
+      --led-white: #ffffff;
+      --stadium-gold: #d4af37;
     }
-    .scanlines {
-      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px);
+
+    body {
+      font-family: 'Roboto Condensed', sans-serif;
+      background: var(--grass-dark);
+      overflow-x: hidden;
     }
-    .nav-orb {
-      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
-      box-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
+
+    .display-font { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.05em; }
+    .score-font { font-family: 'Oswald', sans-serif; }
+
+    /* Grass field background */
+    .grass-field {
+      background:
+        repeating-linear-gradient(
+          90deg,
+          var(--grass-dark) 0px,
+          var(--grass-dark) 80px,
+          var(--grass-light) 80px,
+          var(--grass-light) 160px
+        );
     }
-    .toggle-on {
-      background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
-      box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+
+    /* Field lines */
+    .field-lines::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 49.5%, rgba(255,255,255,0.1) 49.5%, rgba(255,255,255,0.1) 50.5%, transparent 50.5%),
+        repeating-linear-gradient(0deg, transparent 0%, transparent 9.5%, rgba(255,255,255,0.05) 9.5%, rgba(255,255,255,0.05) 10%);
+      pointer-events: none;
     }
-    .section-glow {
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      box-shadow: 0 0 15px rgba(16, 185, 129, 0.1);
+
+    /* Stadium lights effect */
+    .stadium-lights::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 600px 400px at 0% 0%, rgba(255,255,200,0.15) 0%, transparent 70%),
+        radial-gradient(ellipse 600px 400px at 100% 0%, rgba(255,255,200,0.15) 0%, transparent 70%),
+        radial-gradient(ellipse 800px 500px at 50% -10%, rgba(255,255,255,0.1) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 1;
     }
+
+    /* LED Scoreboard panel */
+    .led-panel {
+      background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
+      border: 4px solid #333;
+      box-shadow:
+        inset 0 0 20px rgba(0,0,0,0.8),
+        0 0 30px rgba(0,0,0,0.5),
+        0 5px 0 #222;
+    }
+
+    /* LED dot matrix effect */
+    .led-dots {
+      background-image:
+        radial-gradient(circle at 50% 50%, rgba(0,0,0,0.3) 30%, transparent 30%);
+      background-size: 4px 4px;
+    }
+
+    /* LED text glow */
+    .led-glow-yellow {
+      color: var(--led-yellow);
+      text-shadow:
+        0 0 5px var(--led-yellow),
+        0 0 10px var(--led-yellow),
+        0 0 20px var(--led-yellow),
+        0 0 40px rgba(255,204,0,0.5);
+    }
+
+    .led-glow-green {
+      color: var(--led-green);
+      text-shadow:
+        0 0 5px var(--led-green),
+        0 0 10px var(--led-green),
+        0 0 20px var(--led-green),
+        0 0 40px rgba(0,255,0,0.5);
+    }
+
+    .led-glow-red {
+      color: var(--led-red);
+      text-shadow:
+        0 0 5px var(--led-red),
+        0 0 10px var(--led-red),
+        0 0 20px var(--led-red);
+    }
+
+    .led-glow-white {
+      color: var(--led-white);
+      text-shadow:
+        0 0 3px var(--led-white),
+        0 0 8px var(--led-white),
+        0 0 15px rgba(255,255,255,0.5);
+    }
+
+    /* Jumbotron style */
+    .jumbotron {
+      background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 50%, #0f0f0f 100%);
+      border: 6px solid #444;
+      border-radius: 8px;
+      box-shadow:
+        inset 0 2px 0 rgba(255,255,255,0.1),
+        inset 0 -5px 20px rgba(0,0,0,0.8),
+        0 10px 40px rgba(0,0,0,0.6);
+    }
+
+    /* Scoreboard segment display */
+    .segment-display {
+      background: #0a0a0a;
+      border: 2px solid #222;
+      padding: 10px 20px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.9);
+    }
+
+    /* Stadium pulse animation */
+    @keyframes stadiumPulse {
+      0%, 100% { opacity: 0.15; }
+      50% { opacity: 0.25; }
+    }
+    .stadium-pulse { animation: stadiumPulse 4s ease-in-out infinite; }
+
+    /* Running lights */
+    @keyframes runningLights {
+      0% { background-position: 0 0; }
+      100% { background-position: 40px 0; }
+    }
+    .running-lights {
+      background: repeating-linear-gradient(
+        90deg,
+        var(--led-yellow) 0px,
+        var(--led-yellow) 5px,
+        transparent 5px,
+        transparent 20px
+      );
+      animation: runningLights 0.5s linear infinite;
+    }
+
+    /* Championship banner */
+    .banner {
+      background: linear-gradient(180deg, #c9a227 0%, #a08020 50%, #c9a227 100%);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+
+    /* Navigation */
+    .nav-btn {
+      background: linear-gradient(180deg, #444 0%, #222 100%);
+      border: 2px solid #555;
+      box-shadow: 0 3px 0 #111;
+      transition: all 0.1s;
+    }
+    .nav-btn:hover {
+      transform: translateY(1px);
+      box-shadow: 0 2px 0 #111;
+    }
+    .nav-btn:active {
+      transform: translateY(3px);
+      box-shadow: none;
+    }
+    .nav-btn.active {
+      background: linear-gradient(180deg, var(--grass-light) 0%, var(--grass-dark) 100%);
+      border-color: var(--grass-bright);
+    }
+
+    /* Toggle switch */
+    .toggle-track {
+      background: linear-gradient(180deg, #333 0%, #1a1a1a 100%);
+      border: 2px solid #444;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+      transition: all 0.3s;
+    }
+    .toggle-track.on {
+      background: linear-gradient(180deg, var(--grass-light) 0%, var(--grass-dark) 100%);
+      border-color: var(--grass-bright);
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.3), 0 0 15px rgba(0, 255, 0, 0.4);
+    }
+    .toggle-knob {
+      background: linear-gradient(180deg, #fff 0%, #ddd 100%);
+      border: 2px solid #ccc;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      transition: all 0.3s;
+    }
+
+    /* Input styling */
+    .stadium-input {
+      background: #0a0a0a;
+      border: 2px solid #333;
+      transition: all 0.3s;
+    }
+    .stadium-input:focus {
+      border-color: var(--grass-bright);
+      box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+      outline: none;
+    }
+
+    /* NPC option cards */
+    .npc-card {
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    .npc-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--led-yellow);
+    }
+    .npc-card.selected {
+      border-color: var(--led-green);
+      box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+    }
+
+    /* Setting row */
+    .setting-row {
+      transition: all 0.2s;
+    }
+    .setting-row:hover {
+      background: rgba(255,255,255,0.02);
+    }
+
+    /* Animated pulse */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .pulse { animation: pulse 2s ease-in-out infinite; }
   </style>
 </head>
-<body class="min-h-screen text-white">
+<body class="min-h-screen grass-field field-lines stadium-lights">
 
-  <!-- Scanline Overlay -->
-  <div class="fixed inset-0 scanlines pointer-events-none z-50"></div>
+  <!-- Stadium Atmosphere Overlay -->
+  <div class="fixed inset-0 stadium-pulse pointer-events-none" style="background: radial-gradient(ellipse at center, rgba(255,255,200,0.1) 0%, transparent 70%);"></div>
 
-  <!-- Floating Nav Orb -->
-  <div class="fixed top-6 left-6 z-40">
-    <a href="plan-a-dashboard.html" class="nav-orb w-14 h-14 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
-      <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-      </svg>
-    </a>
+  <!-- Main Container -->
+  <div class="relative min-h-screen z-10 p-6">
+
+    <!-- TOP: Running Lights Bar -->
+    <div class="h-2 running-lights rounded-full mb-4"></div>
+
+    <!-- TOP SCOREBOARD HEADER -->
+    <div class="led-panel led-dots rounded-lg p-4 mb-6">
+      <div class="flex items-center justify-between">
+
+        <!-- Logo & Brand -->
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 bg-gradient-to-br from-green-600 to-green-800 rounded-full flex items-center justify-center border-4 border-yellow-500 shadow-lg">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke-width="2"/>
+              <circle cx="12" cy="12" r="6" stroke-width="2"/>
+              <circle cx="12" cy="12" r="2" fill="currentColor"/>
+            </svg>
+          </div>
+          <div>
+            <div class="display-font text-4xl led-glow-yellow">OUTVESTMENTS</div>
+            <div class="text-gray-400 text-sm tracking-widest">CHAMPIONSHIP TRADING</div>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex gap-2">
+          <a href="plan-a-dashboard.html" class="nav-btn px-6 py-3 rounded display-font text-lg text-gray-300">GAME DAY</a>
+          <a href="plan-a-scoreboard.html" class="nav-btn px-6 py-3 rounded display-font text-lg text-gray-300">STANDINGS</a>
+          <a href="plan-a-history.html" class="nav-btn px-6 py-3 rounded display-font text-lg text-gray-300">GAME LOG</a>
+          <a href="#" class="nav-btn active px-6 py-3 rounded display-font text-lg text-white">SETTINGS</a>
+        </div>
+
+        <!-- Player Info -->
+        <div class="flex items-center gap-3">
+          <div class="text-right">
+            <div class="display-font text-lg text-white">MATT G</div>
+            <div class="text-gray-500 text-xs">LVL 42</div>
+          </div>
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-cyan-700 rounded-lg border-2 border-green-400 flex items-center justify-center">
+            <span class="display-font text-xl text-white">M</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PAGE TITLE -->
+    <div class="text-center mb-6">
+      <div class="display-font text-6xl led-glow-yellow tracking-wider">LOCKER ROOM</div>
+      <div class="text-gray-400 display-font text-xl tracking-widest mt-2">CONFIGURE YOUR LOADOUT</div>
+    </div>
+
+    <!-- SETTINGS CONTENT -->
+    <div class="max-w-4xl mx-auto">
+
+      <!-- PLAYER PROFILE -->
+      <div class="jumbotron p-6 mb-6">
+        <div class="display-font text-xl led-glow-yellow mb-6 border-b border-gray-700 pb-3">PLAYER PROFILE</div>
+
+        <div class="flex items-start gap-6 mb-6">
+          <!-- Avatar with editing -->
+          <div class="relative group">
+            <div class="w-24 h-24 bg-gradient-to-br from-blue-600 to-cyan-700 rounded-lg border-4 border-green-400 flex items-center justify-center">
+              <span class="display-font text-5xl text-white">M</span>
+            </div>
+            <!-- Level Badge -->
+            <div class="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center border-2 border-black">
+              <span class="display-font text-sm text-black">42</span>
+            </div>
+            <!-- Edit overlay -->
+            <div class="absolute inset-0 bg-black/70 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+              <span class="text-green-400 text-xs display-font">EDIT</span>
+            </div>
+          </div>
+
+          <!-- Player Stats -->
+          <div class="flex-1">
+            <div class="mb-4">
+              <label class="text-gray-500 text-xs display-font tracking-wider block mb-2">PLAYER NAME</label>
+              <input type="text" value="MATT G" class="stadium-input w-full px-4 py-3 text-white display-font text-lg rounded" />
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="flex-1">
+                <div class="text-gray-600 text-xs mb-1">XP PROGRESS</div>
+                <div class="h-4 bg-black rounded-full overflow-hidden border-2 border-gray-700">
+                  <div class="h-full bg-gradient-to-r from-green-500 to-yellow-500 rounded-full" style="width: 81%"></div>
+                </div>
+                <div class="text-gray-500 text-xs mt-1 display-font">2,450 / 3,000 XP TO NEXT LEVEL</div>
+              </div>
+              <div class="text-right">
+                <div class="banner px-4 py-2 rounded">
+                  <span class="display-font text-sm text-black">PRO SHOOTER</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-gray-500 text-xs display-font tracking-wider block mb-2">EMAIL</label>
+            <input type="email" value="matt@example.com" class="stadium-input w-full px-4 py-3 text-gray-300 rounded" />
+          </div>
+          <div>
+            <label class="text-gray-500 text-xs display-font tracking-wider block mb-2">MEMBER SINCE</label>
+            <div class="segment-display rounded px-4 py-3">
+              <span class="display-font text-gray-400">JAN 15, 2024</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NPC OPPONENT -->
+      <div class="jumbotron p-6 mb-6">
+        <div class="display-font text-xl led-glow-yellow mb-4 border-b border-gray-700 pb-3">DEFAULT NPC OPPONENT</div>
+        <p class="text-gray-500 text-sm mb-4">Select your benchmark enemy for target comparison</p>
+
+        <div class="grid grid-cols-3 gap-4">
+          <div class="npc-card selected jumbotron p-5 text-center border-4 border-green-500">
+            <div class="display-font text-4xl led-glow-green mb-2">SPY</div>
+            <div class="text-xs text-gray-400 mb-3">S&P 500 INDEX</div>
+            <div class="segment-display rounded inline-block px-3 py-1">
+              <span class="display-font text-lg led-glow-green">+17.2% YTD</span>
+            </div>
+          </div>
+          <div class="npc-card jumbotron p-5 text-center border-4 border-gray-700">
+            <div class="display-font text-4xl text-gray-400 mb-2">QQQ</div>
+            <div class="text-xs text-gray-500 mb-3">NASDAQ 100</div>
+            <div class="segment-display rounded inline-block px-3 py-1">
+              <span class="display-font text-lg text-green-400">+24.8% YTD</span>
+            </div>
+          </div>
+          <div class="npc-card jumbotron p-5 text-center border-4 border-gray-700">
+            <div class="display-font text-4xl text-gray-400 mb-2">DIA</div>
+            <div class="text-xs text-gray-500 mb-3">DOW JONES</div>
+            <div class="segment-display rounded inline-block px-3 py-1">
+              <span class="display-font text-lg text-green-400">+12.1% YTD</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GAME ALERTS -->
+      <div class="jumbotron p-6 mb-6">
+        <div class="display-font text-xl led-glow-yellow mb-6 border-b border-gray-700 pb-3">GAME ALERTS</div>
+
+        <div class="space-y-3">
+          <div class="setting-row flex items-center justify-between p-4 led-panel rounded-lg">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-green-500/20 border-2 border-green-500 rounded-lg flex items-center justify-center">
+                <span class="text-2xl">🎯</span>
+              </div>
+              <div>
+                <p class="display-font text-lg text-white">Target Hit Alerts</p>
+                <p class="text-xs text-gray-500">Notify when aims reach price targets</p>
+              </div>
+            </div>
+            <div class="toggle-track on w-14 h-8 rounded-full relative">
+              <div class="toggle-knob absolute right-1 top-1 w-6 h-6 rounded-full"></div>
+            </div>
+          </div>
+
+          <div class="setting-row flex items-center justify-between p-4 led-panel rounded-lg">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-yellow-500/20 border-2 border-yellow-500 rounded-lg flex items-center justify-center">
+                <span class="text-2xl">📊</span>
+              </div>
+              <div>
+                <p class="display-font text-lg text-white">Daily Scoreboard</p>
+                <p class="text-xs text-gray-500">Morning P&L summary report</p>
+              </div>
+            </div>
+            <div class="toggle-track on w-14 h-8 rounded-full relative">
+              <div class="toggle-knob absolute right-1 top-1 w-6 h-6 rounded-full"></div>
+            </div>
+          </div>
+
+          <div class="setting-row flex items-center justify-between p-4 led-panel rounded-lg">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-red-500/20 border-2 border-red-500 rounded-lg flex items-center justify-center">
+                <span class="text-2xl">⚔️</span>
+              </div>
+              <div>
+                <p class="display-font text-lg text-white">NPC Battle Updates</p>
+                <p class="text-xs text-gray-500">When you overtake or fall behind NPC</p>
+              </div>
+            </div>
+            <div class="toggle-track w-14 h-8 rounded-full relative">
+              <div class="toggle-knob absolute left-1 top-1 w-6 h-6 rounded-full"></div>
+            </div>
+          </div>
+
+          <div class="setting-row flex items-center justify-between p-4 led-panel rounded-lg">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-purple-500/20 border-2 border-purple-500 rounded-lg flex items-center justify-center">
+                <span class="text-2xl">⚡</span>
+              </div>
+              <div>
+                <p class="display-font text-lg text-white">Shot Execution</p>
+                <p class="text-xs text-gray-500">Confirm when trades fire</p>
+              </div>
+            </div>
+            <div class="toggle-track on w-14 h-8 rounded-full relative">
+              <div class="toggle-knob absolute right-1 top-1 w-6 h-6 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DISPLAY SETTINGS -->
+      <div class="jumbotron p-6 mb-6">
+        <div class="display-font text-xl led-glow-yellow mb-6 border-b border-gray-700 pb-3">STADIUM EFFECTS</div>
+
+        <div class="space-y-3">
+          <div class="setting-row flex items-center justify-between p-4 led-panel rounded-lg">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-green-500/20 border-2 border-green-500 rounded-lg flex items-center justify-center">
+                <span class="text-xl">🏟️</span>
+              </div>
+              <div>
+                <p class="display-font text-lg text-white">Stadium Lights</p>
+                <p class="text-xs text-gray-500">Atmospheric lighting overlay</p>
+              </div>
+            </div>
+            <div class="toggle-track on w-14 h-8 rounded-full relative">
+              <div class="toggle-knob absolute right-1 top-1 w-6 h-6 rounded-full"></div>
+            </div>
+          </div>
+
+          <div class="setting-row flex items-center justify-between p-4 led-panel rounded-lg">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-yellow-500/20 border-2 border-yellow-500 rounded-lg flex items-center justify-center">
+                <span class="text-xl">💡</span>
+              </div>
+              <div>
+                <p class="display-font text-lg text-white">Running Lights</p>
+                <p class="text-xs text-gray-500">Animated marquee borders</p>
+              </div>
+            </div>
+            <div class="toggle-track on w-14 h-8 rounded-full relative">
+              <div class="toggle-knob absolute right-1 top-1 w-6 h-6 rounded-full"></div>
+            </div>
+          </div>
+
+          <div class="setting-row flex items-center justify-between p-4 led-panel rounded-lg">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-orange-500/20 border-2 border-orange-500 rounded-lg flex items-center justify-center">
+                <span class="text-xl">🔊</span>
+              </div>
+              <div>
+                <p class="display-font text-lg text-white">Crowd Sounds</p>
+                <p class="text-xs text-gray-500">Ambient stadium atmosphere</p>
+              </div>
+            </div>
+            <div class="toggle-track w-14 h-8 rounded-full relative">
+              <div class="toggle-knob absolute left-1 top-1 w-6 h-6 rounded-full"></div>
+            </div>
+          </div>
+
+          <div class="setting-row flex items-center justify-between p-4 led-panel rounded-lg">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-cyan-500/20 border-2 border-cyan-500 rounded-lg flex items-center justify-center">
+                <span class="text-xl">✨</span>
+              </div>
+              <div>
+                <p class="display-font text-lg text-white">LED Glow Effects</p>
+                <p class="text-xs text-gray-500">Scoreboard text glows</p>
+              </div>
+            </div>
+            <div class="toggle-track on w-14 h-8 rounded-full relative">
+              <div class="toggle-knob absolute right-1 top-1 w-6 h-6 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BROKERAGE CONNECTION -->
+      <div class="jumbotron p-6 mb-6 border-4 border-green-500">
+        <div class="display-font text-xl led-glow-green mb-6 border-b border-green-700 pb-3">BROKERAGE LINK</div>
+
+        <div class="flex items-center gap-4 p-5 led-panel rounded-lg border-2 border-green-500">
+          <div class="w-14 h-14 bg-green-500/30 border-2 border-green-400 rounded-lg flex items-center justify-center">
+            <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <p class="display-font text-xl text-white">ALPACA TRADING</p>
+            <div class="flex items-center gap-2 mt-1">
+              <div class="w-2 h-2 bg-green-500 rounded-full pulse"></div>
+              <span class="text-green-400 text-sm">Connected</span>
+              <span class="text-gray-600">•</span>
+              <span class="banner px-2 py-0.5 rounded display-font text-xs text-black">PAPER TRADING</span>
+            </div>
+          </div>
+          <button class="px-6 py-3 bg-red-500/20 border-2 border-red-500 text-red-400 display-font hover:bg-red-500/30 transition-colors rounded">
+            DISCONNECT
+          </button>
+        </div>
+
+        <div class="mt-4 p-4 led-panel rounded-lg">
+          <div class="grid grid-cols-3 gap-4 text-sm">
+            <div class="text-center">
+              <div class="text-gray-500">Account Status</div>
+              <div class="display-font text-lg led-glow-green">ACTIVE</div>
+            </div>
+            <div class="text-center">
+              <div class="text-gray-500">Trading Mode</div>
+              <div class="display-font text-lg led-glow-yellow">PAPER</div>
+            </div>
+            <div class="text-center">
+              <div class="text-gray-500">Last Sync</div>
+              <div class="display-font text-lg text-gray-400">2 MIN AGO</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SAVE BUTTON -->
+      <button class="w-full py-5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 rounded-lg display-font text-3xl text-white shadow-lg border-4 border-green-400 transition-all hover:scale-[1.01] mb-6">
+        💾 SAVE SETTINGS
+      </button>
+
+      <!-- DANGER ZONE -->
+      <div class="jumbotron p-6 border-4 border-red-500/50">
+        <div class="display-font text-xl led-glow-red mb-4 border-b border-red-700 pb-3">DANGER ZONE</div>
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="display-font text-lg text-gray-300">Delete Account</p>
+            <p class="text-xs text-gray-500">Permanently delete your account and all data</p>
+          </div>
+          <button class="px-6 py-3 border-2 border-red-500 text-red-400 display-font hover:bg-red-500/20 transition-colors rounded">
+            DELETE
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BOTTOM: Running Lights Bar -->
+    <div class="h-2 running-lights rounded-full mt-8"></div>
+
   </div>
-
-  <!-- Main Content -->
-  <main class="max-w-4xl mx-auto px-6 py-8 pt-24">
-
-    <!-- Header -->
-    <div class="text-center mb-12">
-      <h1 class="led-font text-4xl font-bold glow-blue mb-2">SETTINGS</h1>
-      <p class="text-gray-500">Configure your loadout</p>
-    </div>
-
-    <!-- Profile Section -->
-    <div class="bg-gray-900/80 rounded-2xl p-6 mb-6 section-glow">
-      <h2 class="led-font text-lg font-bold text-emerald-400 glow-green mb-6">PLAYER PROFILE</h2>
-
-      <div class="flex items-center gap-6 mb-6">
-        <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-2xl font-bold">
-          M
-        </div>
-        <div class="flex-1">
-          <input type="text" value="Matt G" class="w-full bg-black/50 border border-blue-500/30 rounded-lg px-4 py-3 text-white led-font focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-          <p class="text-xs text-gray-500 mt-2">Callsign</p>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="text-xs text-gray-500 block mb-2">Email</label>
-          <input type="email" value="matt@example.com" class="w-full bg-black/50 border border-gray-700 rounded-lg px-4 py-3 text-white focus:border-blue-500 focus:outline-none" />
-        </div>
-        <div>
-          <label class="text-xs text-gray-500 block mb-2">Rank</label>
-          <div class="bg-black/50 border border-emerald-500/30 rounded-lg px-4 py-3 text-emerald-400 led-font">
-            PRO SHOOTER
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- NPC Opponent Section -->
-    <div class="bg-gray-900/80 rounded-2xl p-6 mb-6 section-glow">
-      <h2 class="led-font text-lg font-bold text-emerald-400 glow-green mb-6">DEFAULT NPC OPPONENT</h2>
-
-      <div class="grid grid-cols-3 gap-4">
-        <label class="relative cursor-pointer">
-          <input type="radio" name="npc" class="peer sr-only" checked />
-          <div class="p-4 bg-black/50 border-2 border-blue-500 rounded-xl peer-checked:border-blue-500 peer-checked:bg-blue-500/10 transition-all">
-            <div class="text-center">
-              <div class="led-font text-2xl font-bold text-blue-400 mb-1">SPY</div>
-              <div class="text-xs text-gray-500">S&P 500</div>
-            </div>
-          </div>
-        </label>
-        <label class="relative cursor-pointer">
-          <input type="radio" name="npc" class="peer sr-only" />
-          <div class="p-4 bg-black/50 border-2 border-gray-700 rounded-xl hover:border-gray-600 peer-checked:border-blue-500 peer-checked:bg-blue-500/10 transition-all">
-            <div class="text-center">
-              <div class="led-font text-2xl font-bold text-gray-400 mb-1">QQQ</div>
-              <div class="text-xs text-gray-500">NASDAQ 100</div>
-            </div>
-          </div>
-        </label>
-        <label class="relative cursor-pointer">
-          <input type="radio" name="npc" class="peer sr-only" />
-          <div class="p-4 bg-black/50 border-2 border-gray-700 rounded-xl hover:border-gray-600 peer-checked:border-blue-500 peer-checked:bg-blue-500/10 transition-all">
-            <div class="text-center">
-              <div class="led-font text-2xl font-bold text-gray-400 mb-1">DIA</div>
-              <div class="text-xs text-gray-500">Dow Jones</div>
-            </div>
-          </div>
-        </label>
-      </div>
-    </div>
-
-    <!-- Notifications Section -->
-    <div class="bg-gray-900/80 rounded-2xl p-6 mb-6 section-glow">
-      <h2 class="led-font text-lg font-bold text-emerald-400 glow-green mb-6">ALERTS & NOTIFICATIONS</h2>
-
-      <div class="space-y-4">
-        <div class="flex items-center justify-between p-4 bg-black/30 rounded-xl">
-          <div>
-            <p class="font-medium text-white">Target Hit Alerts</p>
-            <p class="text-xs text-gray-500">Notify when aims reach price targets</p>
-          </div>
-          <button class="w-14 h-8 rounded-full toggle-on relative">
-            <div class="absolute right-1 top-1 w-6 h-6 bg-white rounded-full shadow-lg"></div>
-          </button>
-        </div>
-
-        <div class="flex items-center justify-between p-4 bg-black/30 rounded-xl">
-          <div>
-            <p class="font-medium text-white">Daily Scoreboard</p>
-            <p class="text-xs text-gray-500">Morning P&L summary</p>
-          </div>
-          <button class="w-14 h-8 rounded-full toggle-on relative">
-            <div class="absolute right-1 top-1 w-6 h-6 bg-white rounded-full shadow-lg"></div>
-          </button>
-        </div>
-
-        <div class="flex items-center justify-between p-4 bg-black/30 rounded-xl">
-          <div>
-            <p class="font-medium text-white">NPC Battle Updates</p>
-            <p class="text-xs text-gray-500">When you overtake or fall behind NPC</p>
-          </div>
-          <button class="w-14 h-8 rounded-full bg-gray-700 relative">
-            <div class="absolute left-1 top-1 w-6 h-6 bg-gray-500 rounded-full shadow-lg"></div>
-          </button>
-        </div>
-
-        <div class="flex items-center justify-between p-4 bg-black/30 rounded-xl">
-          <div>
-            <p class="font-medium text-white">Shot Execution Alerts</p>
-            <p class="text-xs text-gray-500">Confirm when trades fire</p>
-          </div>
-          <button class="w-14 h-8 rounded-full toggle-on relative">
-            <div class="absolute right-1 top-1 w-6 h-6 bg-white rounded-full shadow-lg"></div>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Display Section -->
-    <div class="bg-gray-900/80 rounded-2xl p-6 mb-6 section-glow">
-      <h2 class="led-font text-lg font-bold text-emerald-400 glow-green mb-6">DISPLAY</h2>
-
-      <div class="space-y-4">
-        <div class="flex items-center justify-between p-4 bg-black/30 rounded-xl">
-          <div>
-            <p class="font-medium text-white">Scanline Effect</p>
-            <p class="text-xs text-gray-500">Retro CRT overlay</p>
-          </div>
-          <button class="w-14 h-8 rounded-full toggle-on relative">
-            <div class="absolute right-1 top-1 w-6 h-6 bg-white rounded-full shadow-lg"></div>
-          </button>
-        </div>
-
-        <div class="flex items-center justify-between p-4 bg-black/30 rounded-xl">
-          <div>
-            <p class="font-medium text-white">Neon Glow Effects</p>
-            <p class="text-xs text-gray-500">LED text shadows</p>
-          </div>
-          <button class="w-14 h-8 rounded-full toggle-on relative">
-            <div class="absolute right-1 top-1 w-6 h-6 bg-white rounded-full shadow-lg"></div>
-          </button>
-        </div>
-
-        <div class="flex items-center justify-between p-4 bg-black/30 rounded-xl">
-          <div>
-            <p class="font-medium text-white">Sound Effects</p>
-            <p class="text-xs text-gray-500">UI interaction sounds</p>
-          </div>
-          <button class="w-14 h-8 rounded-full bg-gray-700 relative">
-            <div class="absolute left-1 top-1 w-6 h-6 bg-gray-500 rounded-full shadow-lg"></div>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Brokerage Connection -->
-    <div class="bg-gray-900/80 rounded-2xl p-6 mb-6 section-glow">
-      <h2 class="led-font text-lg font-bold text-emerald-400 glow-green mb-6">BROKERAGE LINK</h2>
-
-      <div class="flex items-center gap-4 p-4 bg-black/30 rounded-xl border border-emerald-500/30">
-        <div class="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center">
-          <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-          </svg>
-        </div>
-        <div class="flex-1">
-          <p class="font-medium text-white">Alpaca Trading</p>
-          <p class="text-xs text-emerald-400">Connected • Paper Trading</p>
-        </div>
-        <button class="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg text-sm hover:bg-red-500/30 transition-colors">
-          Disconnect
-        </button>
-      </div>
-    </div>
-
-    <!-- Save Button -->
-    <button class="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl led-font text-lg font-bold hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg shadow-purple-500/30">
-      SAVE LOADOUT
-    </button>
-
-  </main>
 
 </body>
 </html>

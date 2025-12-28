@@ -96,10 +96,50 @@ When the user indicates they are stepping away, going to sleep, or will be unava
 
 This project uses `/baton` for context management.
 
-- **After compaction:** Auto-reads TLDR summaries via post-compaction hook
+- **Before compaction:** PreCompact hook auto-saves state to `.claude/SUMMARY.md`
+- **After compaction:** READ `.claude/SUMMARY.md` IMMEDIATELY to restore context
 - **Manual control:** `/baton save`, `/baton load`, `/baton status`
 - **Token efficiency:** 25-100x compression (50K→1K tokens)
 - **Initialize:** Run `/baton init` if `.claude/` doesn't exist
+
+**CRITICAL: Post-Compaction Recovery**
+
+If you notice context has been compacted (conversation feels "reset" or you lost track of what was happening), IMMEDIATELY read these files:
+
+```bash
+cat .claude/SUMMARY.md        # Current state and blockers
+cat .claude/USER_FEEDBACK.md  # Pending questions for user
+cat .claude/DECISIONS.md      # Recent decisions made
+```
+
+This restores ~1,000 tokens of essential context vs 50,000+ tokens of raw history.
+
+### BMAD Agent Orchestration Model
+
+When operating as a BMAD persona (PM, UX Designer, etc.):
+
+**PM Layer (Coordinator):**
+
+- Maintains strategic oversight and project logistics
+- Manages epics, priorities, and decisions
+- CAN read: Planning artifacts (`_bmad-output/`), files user explicitly requests
+- CANNOT: Write code, execute shell commands, read implementation files directly
+- Dispatches sub-agents for all technical execution
+
+**Sub-Agent Layer (Execution):**
+
+- Handles ALL technical work: code, database, UI, testing
+- Has separate context window (doesn't bloat PM context)
+- Reports results back to PM for oversight
+
+**Why This Matters:**
+
+- PM context stays light → lasts 5-10x longer
+- Persona survives compaction (tracked in Baton SUMMARY.md)
+- Clean separation: PM thinks/decides, sub-agents execute
+- Mirrors real-world team dynamics
+
+**Rule:** When in BMAD persona, ALWAYS use Task tool for technical work. Never directly read code files or execute commands.
 
 ### Expectations
 

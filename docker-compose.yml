@@ -10,6 +10,8 @@ services:
     image: postgres:16-alpine
     container_name: outvestments-postgres
     restart: unless-stopped
+    ports:
+      - "5432:5432"  # Exposed for local development migrations
     environment:
       - POSTGRES_USER=outvestments
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-outvestments_dev}
@@ -24,6 +26,8 @@ services:
       retries: 5
     networks:
       - outvestments-internal
+    mem_limit: 1g
+    memswap_limit: 2g
 
   # Next.js Application
   app:
@@ -49,6 +53,8 @@ services:
       - ALPACA_API_SECRET=${ALPACA_API_SECRET}
       - ALPACA_BASE_URL=${ALPACA_BASE_URL:-https://paper-api.alpaca.markets}
       - TZ=America/New_York
+      # Memory management - prevent runaway heap
+      - NODE_OPTIONS=--max-old-space-size=1536
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
       interval: 30s
@@ -58,10 +64,17 @@ services:
     networks:
       - outvestments-internal
       - traefik-proxy
+    mem_limit: 2g
+    memswap_limit: 4g
     labels:
       # NLF Labels
       - "com.nextlevelfoundry.stack=outvestments"
       - "com.nextlevelfoundry.host=stark"
+      # Logging Labels (for Promtail/Loki)
+      - "logging=promtail"
+      - "logging_jobname=outvestments"
+      - "app=outvestments"
+      - "service=app"
       # Traefik Configuration
       - "traefik.enable=true"
       - "traefik.docker.network=traefik-proxy"
@@ -72,6 +85,48 @@ services:
       - "traefik.http.routers.outvestments.tls.certresolver=letsencrypt"
       # Service
       - "traefik.http.services.outvestments.loadbalancer.server.port=3000"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "app,service,logging_jobname"
+
+  # Background Job Worker (pg-boss)
+  # Handles scheduled jobs: EOD snapshots, cache cleanup, price alerts
+  worker:
+    image: mgerasolo/outvestments-worker:latest
+    container_name: outvestments-worker
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://outvestments:${POSTGRES_PASSWORD:-outvestments_dev}@postgres:5432/outvestments
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - ALPACA_BASE_URL=${ALPACA_BASE_URL:-https://paper-api.alpaca.markets}
+      - TZ=America/New_York
+      - NODE_OPTIONS=--max-old-space-size=512
+    networks:
+      - outvestments-internal
+    mem_limit: 768m
+    memswap_limit: 1g
+    labels:
+      - "com.nextlevelfoundry.stack=outvestments"
+      - "com.nextlevelfoundry.host=stark"
+      - "com.nextlevelfoundry.role=worker"
+      # Logging Labels (for Promtail/Loki)
+      - "logging=promtail"
+      - "logging_jobname=outvestments"
+      - "app=outvestments"
+      - "service=worker"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "app,service,logging_jobname"
 
 networks:
   outvestments-internal:

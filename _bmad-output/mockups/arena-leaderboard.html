@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OUTVESTMENTS | LEADERBOARD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-bg-arena: #0f1419;
+      --color-bg-crowdShadow: #0a0e13;
+      --color-border-gold: #d4af37;
+      --color-text-led: #ff9500;
+      --color-win: #00ff41;
+      --color-loss: #ff3333;
+      --color-alert: #00d4ff;
+      --color-accent: #b624ff;
+      --color-text-primary: #f5f5f5;
+      --color-text-secondary: #a0a0a0;
+      --color-gold-medal: #ffd700;
+      --color-silver-medal: #c0c0c0;
+      --color-bronze-medal: #cd7f32;
+      --font-led: 'IBM Plex Mono', monospace;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 12px;
+      --spacing-lg: 16px;
+      --spacing-xl: 24px;
+      --glow-win: 0 0 20px rgba(0, 255, 65, 0.4);
+      --glow-loss: 0 0 15px rgba(255, 51, 51, 0.3);
+      --glow-gold: 0 0 15px rgba(212, 175, 55, 0.3);
+      --glow-cyan: 0 0 15px rgba(0, 212, 255, 0.3);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--color-bg-arena);
+      color: var(--color-text-primary);
+      min-height: 100vh;
+    }
+
+    .arena-container {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: var(--color-bg-crowdShadow);
+      border-right: 2px solid var(--color-border-gold);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--spacing-md) 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 80px;
+      height: 100vh;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      width: 48px;
+      height: 48px;
+      border: 2px solid var(--color-border-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .sidebar-logo svg {
+      width: 28px;
+      height: 28px;
+      color: var(--color-border-gold);
+    }
+
+    .nav-icons {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      flex: 1;
+    }
+
+    .nav-icon {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s ease-out;
+    }
+
+    .nav-icon::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 0;
+      background: var(--color-border-gold);
+      transition: height 0.15s ease-out;
+    }
+
+    .nav-icon:hover {
+      color: var(--color-text-primary);
+      text-shadow: var(--glow-cyan);
+    }
+
+    .nav-icon.active {
+      color: var(--color-border-gold);
+    }
+
+    .nav-icon.active::before {
+      height: 32px;
+      box-shadow: var(--glow-gold);
+    }
+
+    .nav-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke-width: 2.5;
+    }
+
+    .nav-bottom {
+      margin-top: auto;
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 80px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Page Header */
+    .page-header {
+      background: linear-gradient(180deg, var(--color-bg-crowdShadow) 0%, var(--color-bg-arena) 100%);
+      border-bottom: 2px solid var(--color-border-gold);
+      padding: var(--spacing-xl);
+    }
+
+    .page-title {
+      font-family: var(--font-led);
+      font-size: 32px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      color: var(--color-text-led);
+      text-shadow: 0 0 30px rgba(255, 149, 0, 0.5);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .page-subtitle {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+      display: flex;
+      gap: var(--spacing-md);
+      padding: var(--spacing-lg) var(--spacing-xl);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    }
+
+    .filter-btn {
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: var(--spacing-sm) var(--spacing-lg);
+      border: 2px solid var(--color-text-secondary);
+      background: transparent;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease-out;
+    }
+
+    .filter-btn:hover {
+      border-color: var(--color-border-gold);
+      color: var(--color-border-gold);
+    }
+
+    .filter-btn.active {
+      border-color: var(--color-border-gold);
+      background: var(--color-border-gold);
+      color: var(--color-bg-arena);
+    }
+
+    /* Content Area */
+    .content-area {
+      padding: var(--spacing-xl);
+    }
+
+    /* Leaderboard Table */
+    .leaderboard-container {
+      background: var(--color-bg-crowdShadow);
+      border: 2px solid var(--color-border-gold);
+    }
+
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .leaderboard-table th {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-text-secondary);
+      text-align: left;
+      padding: var(--spacing-md) var(--spacing-lg);
+      border-bottom: 2px solid var(--color-border-gold);
+      background: var(--color-bg-crowdShadow);
+      position: sticky;
+      top: 0;
+    }
+
+    .leaderboard-table th.right {
+      text-align: right;
+    }
+
+    .leaderboard-table td {
+      padding: var(--spacing-md) var(--spacing-lg);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    .leaderboard-table td.right {
+      text-align: right;
+    }
+
+    .leaderboard-table tbody tr {
+      transition: background 0.1s ease-out;
+    }
+
+    .leaderboard-table tbody tr:hover {
+      background: rgba(212, 175, 55, 0.05);
+    }
+
+    /* Seed/Rank Column */
+    .rank-cell {
+      font-family: var(--font-led);
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--color-text-secondary);
+      width: 60px;
+    }
+
+    .rank-cell.gold {
+      color: var(--color-gold-medal);
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+
+    .rank-cell.silver {
+      color: var(--color-silver-medal);
+      text-shadow: 0 0 10px rgba(192, 192, 192, 0.5);
+    }
+
+    .rank-cell.bronze {
+      color: var(--color-bronze-medal);
+      text-shadow: 0 0 10px rgba(205, 127, 50, 0.5);
+    }
+
+    /* Trader Name */
+    .trader-cell {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    .trader-avatar {
+      width: 36px;
+      height: 36px;
+      border: 2px solid var(--color-text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-led);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      background: var(--color-bg-arena);
+    }
+
+    .trader-name {
+      font-family: var(--font-led);
+      font-weight: 600;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Top 3 styling */
+    tr.top-1 {
+      background: rgba(255, 215, 0, 0.05);
+    }
+
+    tr.top-1 .trader-avatar {
+      border-color: var(--color-gold-medal);
+      color: var(--color-gold-medal);
+    }
+
+    tr.top-2 {
+      background: rgba(192, 192, 192, 0.03);
+    }
+
+    tr.top-2 .trader-avatar {
+      border-color: var(--color-silver-medal);
+      color: var(--color-silver-medal);
+    }
+
+    tr.top-3 {
+      background: rgba(205, 127, 50, 0.03);
+    }
+
+    tr.top-3 .trader-avatar {
+      border-color: var(--color-bronze-medal);
+      color: var(--color-bronze-medal);
+    }
+
+    /* Current User Row */
+    tr.current-user {
+      border: 2px solid var(--color-border-gold);
+      background: rgba(212, 175, 55, 0.08);
+    }
+
+    tr.current-user .trader-avatar {
+      border-color: var(--color-border-gold);
+      color: var(--color-border-gold);
+    }
+
+    tr.current-user .trader-name {
+      color: var(--color-border-gold);
+    }
+
+    /* W/L Record */
+    .record-cell {
+      font-family: var(--font-led);
+      font-size: 13px;
+    }
+
+    .record-win {
+      color: var(--color-win);
+    }
+
+    .record-loss {
+      color: var(--color-loss);
+    }
+
+    /* Performance Metrics */
+    .metric-cell {
+      font-family: var(--font-led);
+      font-weight: 600;
+    }
+
+    .metric-cell.positive {
+      color: var(--color-win);
+    }
+
+    .metric-cell.negative {
+      color: var(--color-loss);
+    }
+
+    .metric-cell.led {
+      color: var(--color-text-led);
+    }
+
+    /* Streak */
+    .streak-cell {
+      display: flex;
+      gap: 2px;
+    }
+
+    .streak-dot {
+      width: 8px;
+      height: 8px;
+    }
+
+    .streak-dot.win {
+      background: var(--color-win);
+      box-shadow: var(--glow-win);
+    }
+
+    .streak-dot.loss {
+      background: var(--color-loss);
+      box-shadow: var(--glow-loss);
+    }
+
+    /* Trend Indicator */
+    .trend-cell {
+      font-size: 16px;
+    }
+
+    .trend-up {
+      color: var(--color-win);
+    }
+
+    .trend-down {
+      color: var(--color-loss);
+    }
+
+    .trend-flat {
+      color: var(--color-text-secondary);
+    }
+
+    /* Stats Summary */
+    .stats-summary {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .stat-card {
+      background: var(--color-bg-crowdShadow);
+      border: 2px solid var(--color-border-gold);
+      padding: var(--spacing-md);
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .stat-value {
+      font-family: var(--font-led);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--color-text-led);
+      text-shadow: 0 0 15px rgba(255, 149, 0, 0.4);
+    }
+
+    /* Your Position Card */
+    .your-position {
+      background: var(--color-bg-crowdShadow);
+      border: 3px solid var(--color-border-gold);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-xl);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: var(--spacing-xl);
+      align-items: center;
+      box-shadow: var(--glow-gold);
+    }
+
+    .your-rank {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .your-rank-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-text-secondary);
+    }
+
+    .your-rank-value {
+      font-family: var(--font-led);
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--color-text-led);
+      text-shadow: 0 0 25px rgba(255, 149, 0, 0.5);
+      line-height: 1;
+    }
+
+    .your-rank-change {
+      font-size: 12px;
+      margin-top: var(--spacing-xs);
+    }
+
+    .your-rank-change.up {
+      color: var(--color-win);
+    }
+
+    .your-rank-change.down {
+      color: var(--color-loss);
+    }
+
+    .your-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--spacing-lg);
+    }
+
+    .your-stat {
+      text-align: center;
+    }
+
+    .your-stat-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .your-stat-value {
+      font-family: var(--font-led);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+    }
+
+    .your-stat-value.positive {
+      color: var(--color-win);
+    }
+
+    .your-stat-value.negative {
+      color: var(--color-loss);
+    }
+
+    .your-stat-value.led {
+      color: var(--color-text-led);
+    }
+
+    .your-grade {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .your-grade-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--color-text-secondary);
+    }
+
+    .your-grade-value {
+      font-family: var(--font-led);
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--color-win);
+      text-shadow: var(--glow-win);
+      line-height: 1;
+    }
+
+    /* Mobile */
+    @media (max-width: 1024px) {
+      .stats-summary {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .your-position {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .your-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .leaderboard-table th:nth-child(n+5),
+      .leaderboard-table td:nth-child(n+5) {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .arena-container {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .stats-summary {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .leaderboard-table th:nth-child(n+4),
+      .leaderboard-table td:nth-child(n+4) {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="arena-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="12" cy="12" r="10" stroke-width="2"/>
+          <circle cx="12" cy="12" r="6" stroke-width="2"/>
+          <circle cx="12" cy="12" r="2" fill="currentColor"/>
+        </svg>
+      </div>
+
+      <nav class="nav-icons">
+        <div class="nav-icon" title="Arena">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect x="3" y="3" width="7" height="7"/>
+            <rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/>
+          </svg>
+        </div>
+        <div class="nav-icon" title="Targets">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"/>
+            <circle cx="12" cy="12" r="6"/>
+            <circle cx="12" cy="12" r="2"/>
+          </svg>
+        </div>
+        <div class="nav-icon" title="Shots">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        </div>
+        <div class="nav-icon" title="History">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="nav-icon active" title="Leaderboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M12 15l-2 5l-5-1l2-5"/>
+            <path d="M12 15l2 5l5-1l-2-5"/>
+            <circle cx="12" cy="9" r="6"/>
+          </svg>
+        </div>
+      </nav>
+
+      <div class="nav-bottom">
+        <div class="nav-icon" title="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+          </svg>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Page Header -->
+      <header class="page-header">
+        <h1 class="page-title">Leaderboard</h1>
+        <p class="page-subtitle">Season 2025 | Week 52 | 1,247 Active Traders</p>
+      </header>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <button class="filter-btn active">All Time</button>
+        <button class="filter-btn">This Year</button>
+        <button class="filter-btn">This Month</button>
+        <button class="filter-btn">This Week</button>
+        <button class="filter-btn">Following</button>
+      </div>
+
+      <!-- Content Area -->
+      <div class="content-area">
+
+        <!-- Stats Summary -->
+        <div class="stats-summary">
+          <div class="stat-card">
+            <div class="stat-label">Active Traders</div>
+            <div class="stat-value">1,247</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Targets</div>
+            <div class="stat-value">3,891</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Avg Accuracy</div>
+            <div class="stat-value">62%</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Avg PPD</div>
+            <div class="stat-value">0.34</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Top Alpha</div>
+            <div class="stat-value">+47%</div>
+          </div>
+        </div>
+
+        <!-- Your Position -->
+        <div class="your-position">
+          <div class="your-rank">
+            <div class="your-rank-label">Your Rank</div>
+            <div class="your-rank-value">#42</div>
+            <div class="your-rank-change up">+3 this week</div>
+          </div>
+          <div class="your-stats">
+            <div class="your-stat">
+              <div class="your-stat-label">W / L</div>
+              <div class="your-stat-value">12 / 3</div>
+            </div>
+            <div class="your-stat">
+              <div class="your-stat-label">Accuracy</div>
+              <div class="your-stat-value positive">80%</div>
+            </div>
+            <div class="your-stat">
+              <div class="your-stat-label">Performance</div>
+              <div class="your-stat-value positive">+24.8%</div>
+            </div>
+            <div class="your-stat">
+              <div class="your-stat-label">PPD</div>
+              <div class="your-stat-value led">1.24</div>
+            </div>
+          </div>
+          <div class="your-grade">
+            <div class="your-grade-label">Grade</div>
+            <div class="your-grade-value">A-</div>
+          </div>
+        </div>
+
+        <!-- Leaderboard Table -->
+        <div class="leaderboard-container">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th>Seed</th>
+                <th>Trader</th>
+                <th>W / L</th>
+                <th class="right">Accuracy</th>
+                <th class="right">Performance</th>
+                <th class="right">PPD</th>
+                <th class="right">Alpha</th>
+                <th>Streak</th>
+                <th class="right">Trend</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="top-1">
+                <td class="rank-cell gold">#1</td>
+                <td>
+                  <div class="trader-cell">
+                    <div class="trader-avatar">AK</div>
+                    <span class="trader-name">ALPHA_KING</span>
+                  </div>
+                </td>
+                <td class="record-cell">
+                  <span class="record-win">47</span> / <span class="record-loss">8</span>
+                </td>
+                <td class="right metric-cell positive">85%</td>
+                <td class="right metric-cell positive">+47.2%</td>
+                <td class="right metric-cell led">2.14</td>
+                <td class="right metric-cell positive">+18.4%</td>
+                <td>
+                  <div class="streak-cell">
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                  </div>
+                </td>
+                <td class="right trend-cell trend-up">&#9650;</td>
+              </tr>
+              <tr class="top-2">
+                <td class="rank-cell silver">#2</td>
+                <td>
+                  <div class="trader-cell">
+                    <div class="trader-avatar">TB</div>
+                    <span class="trader-name">THETA_BEAST</span>
+                  </div>
+                </td>
+                <td class="record-cell">
+                  <span class="record-win">39</span> / <span class="record-loss">11</span>
+                </td>
+                <td class="right metric-cell positive">78%</td>
+                <td class="right metric-cell positive">+38.9%</td>
+                <td class="right metric-cell led">1.87</td>
+                <td class="right metric-cell positive">+12.1%</td>
+                <td>
+                  <div class="streak-cell">
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot loss"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                  </div>
+                </td>
+                <td class="right trend-cell trend-flat">&#9644;</td>
+              </tr>
+              <tr class="top-3">
+                <td class="rank-cell bronze">#3</td>
+                <td>
+                  <div class="trader-cell">
+                    <div class="trader-avatar">VR</div>
+                    <span class="trader-name">VOL_RIDER</span>
+                  </div>
+                </td>
+                <td class="record-cell">
+                  <span class="record-win">35</span> / <span class="record-loss">9</span>
+                </td>
+                <td class="right metric-cell positive">80%</td>
+                <td class="right metric-cell positive">+35.4%</td>
+                <td class="right metric-cell led">1.62</td>
+                <td class="right metric-cell positive">+9.8%</td>
+                <td>
+                  <div class="streak-cell">
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot loss"></span>
+                    <span class="streak-dot win"></span>
+                  </div>
+                </td>
+                <td class="right trend-cell trend-up">&#9650;</td>
+              </tr>
+              <tr>
+                <td class="rank-cell">#4</td>
+                <td>
+                  <div class="trader-cell">
+                    <div class="trader-avatar">MM</div>
+                    <span class="trader-name">MOMENTUM_MAX</span>
+                  </div>
+                </td>
+                <td class="record-cell">
+                  <span class="record-win">32</span> / <span class="record-loss">12</span>
+                </td>
+                <td class="right metric-cell positive">73%</td>
+                <td class="right metric-cell positive">+31.2%</td>
+                <td class="right metric-cell led">1.41</td>
+                <td class="right metric-cell positive">+7.4%</td>
+                <td>
+                  <div class="streak-cell">
+                    <span class="streak-dot loss"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                  </div>
+                </td>
+                <td class="right trend-cell trend-up">&#9650;</td>
+              </tr>
+              <tr>
+                <td class="rank-cell">#5</td>
+                <td>
+                  <div class="trader-cell">
+                    <div class="trader-avatar">DW</div>
+                    <span class="trader-name">DELTA_WOLF</span>
+                  </div>
+                </td>
+                <td class="record-cell">
+                  <span class="record-win">28</span> / <span class="record-loss">8</span>
+                </td>
+                <td class="right metric-cell positive">78%</td>
+                <td class="right metric-cell positive">+28.7%</td>
+                <td class="right metric-cell led">1.38</td>
+                <td class="right metric-cell positive">+6.2%</td>
+                <td>
+                  <div class="streak-cell">
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot loss"></span>
+                  </div>
+                </td>
+                <td class="right trend-cell trend-down">&#9660;</td>
+              </tr>
+              <!-- More rows... -->
+              <tr>
+                <td class="rank-cell">#40</td>
+                <td>
+                  <div class="trader-cell">
+                    <div class="trader-avatar">SP</div>
+                    <span class="trader-name">SWING_PRO</span>
+                  </div>
+                </td>
+                <td class="record-cell">
+                  <span class="record-win">14</span> / <span class="record-loss">4</span>
+                </td>
+                <td class="right metric-cell positive">78%</td>
+                <td class="right metric-cell positive">+22.1%</td>
+                <td class="right metric-cell led">1.18</td>
+                <td class="right metric-cell positive">+3.8%</td>
+                <td>
+                  <div class="streak-cell">
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot loss"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                  </div>
+                </td>
+                <td class="right trend-cell trend-up">&#9650;</td>
+              </tr>
+              <tr>
+                <td class="rank-cell">#41</td>
+                <td>
+                  <div class="trader-cell">
+                    <div class="trader-avatar">GH</div>
+                    <span class="trader-name">GAMMA_HAWK</span>
+                  </div>
+                </td>
+                <td class="record-cell">
+                  <span class="record-win">13</span> / <span class="record-loss">4</span>
+                </td>
+                <td class="right metric-cell positive">76%</td>
+                <td class="right metric-cell positive">+21.4%</td>
+                <td class="right metric-cell led">1.16</td>
+                <td class="right metric-cell positive">+3.2%</td>
+                <td>
+                  <div class="streak-cell">
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot loss"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                  </div>
+                </td>
+                <td class="right trend-cell trend-flat">&#9644;</td>
+              </tr>
+              <tr class="current-user">
+                <td class="rank-cell">#42</td>
+                <td>
+                  <div class="trader-cell">
+                    <div class="trader-avatar">MG</div>
+                    <span class="trader-name">TRADER_42</span>
+                  </div>
+                </td>
+                <td class="record-cell">
+                  <span class="record-win">12</span> / <span class="record-loss">3</span>
+                </td>
+                <td class="right metric-cell positive">80%</td>
+                <td class="right metric-cell positive">+24.8%</td>
+                <td class="right metric-cell led">1.24</td>
+                <td class="right metric-cell positive">+4.2%</td>
+                <td>
+                  <div class="streak-cell">
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot loss"></span>
+                  </div>
+                </td>
+                <td class="right trend-cell trend-up">&#9650;</td>
+              </tr>
+              <tr>
+                <td class="rank-cell">#43</td>
+                <td>
+                  <div class="trader-cell">
+                    <div class="trader-avatar">VE</div>
+                    <span class="trader-name">VEGA_EDGE</span>
+                  </div>
+                </td>
+                <td class="record-cell">
+                  <span class="record-win">11</span> / <span class="record-loss">3</span>
+                </td>
+                <td class="right metric-cell positive">79%</td>
+                <td class="right metric-cell positive">+19.8%</td>
+                <td class="right metric-cell led">1.12</td>
+                <td class="right metric-cell positive">+2.9%</td>
+                <td>
+                  <div class="streak-cell">
+                    <span class="streak-dot loss"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                  </div>
+                </td>
+                <td class="right trend-cell trend-up">&#9650;</td>
+              </tr>
+              <tr>
+                <td class="rank-cell">#44</td>
+                <td>
+                  <div class="trader-cell">
+                    <div class="trader-avatar">RS</div>
+                    <span class="trader-name">RHO_SLAYER</span>
+                  </div>
+                </td>
+                <td class="record-cell">
+                  <span class="record-win">18</span> / <span class="record-loss">7</span>
+                </td>
+                <td class="right metric-cell positive">72%</td>
+                <td class="right metric-cell positive">+18.2%</td>
+                <td class="right metric-cell led">0.98</td>
+                <td class="right metric-cell positive">+1.4%</td>
+                <td>
+                  <div class="streak-cell">
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot loss"></span>
+                    <span class="streak-dot loss"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                  </div>
+                </td>
+                <td class="right trend-cell trend-down">&#9660;</td>
+              </tr>
+              <tr>
+                <td class="rank-cell">#45</td>
+                <td>
+                  <div class="trader-cell">
+                    <div class="trader-avatar">KS</div>
+                    <span class="trader-name">KAPPA_STORM</span>
+                  </div>
+                </td>
+                <td class="record-cell">
+                  <span class="record-win">9</span> / <span class="record-loss">2</span>
+                </td>
+                <td class="right metric-cell positive">82%</td>
+                <td class="right metric-cell positive">+17.6%</td>
+                <td class="right metric-cell led">1.08</td>
+                <td class="right metric-cell positive">+2.1%</td>
+                <td>
+                  <div class="streak-cell">
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                    <span class="streak-dot win"></span>
+                  </div>
+                </td>
+                <td class="right trend-cell trend-up">&#9650;</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</body>
+</html>

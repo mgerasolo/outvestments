@@ -8,7 +8,11 @@ export const metadata = {
   description: "Create a new investment target",
 };
 
-export default async function NewTargetPage() {
+interface PageProps {
+  searchParams: Promise<{ symbol?: string }>;
+}
+
+export default async function NewTargetPage({ searchParams }: PageProps) {
   const session = await auth();
 
   if (!session?.user?.dbId) {
@@ -20,16 +24,22 @@ export default async function NewTargetPage() {
     redirect("/targets?error=unauthorized");
   }
 
+  const params = await searchParams;
+  const prefillSymbol = params.symbol?.toUpperCase();
+
   return (
     <div className="container max-w-2xl space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">New Target</h1>
         <p className="text-muted-foreground">
-          Document a new investment thesis.
+          {prefillSymbol
+            ? `Create an investment thesis for ${prefillSymbol}.`
+            : "Document a new investment thesis."
+          }
         </p>
       </div>
 
-      <TargetForm />
+      <TargetForm prefillSymbol={prefillSymbol} />
     </div>
   );
 }

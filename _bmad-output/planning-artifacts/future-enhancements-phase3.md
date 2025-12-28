@@ -187,4 +187,40 @@ These features emerged from behavioral finance research conducted during BA anal
 
 ---
 
+## Phase 2: Technical Enhancements
+
+### 13. Hugging Face MCP Integration (Custom Graphics)
+
+**Category:** Tooling / Design
+**Target Phase:** Phase 2
+
+When we move beyond MVP and want to create a more immersive "basketball arena" experience with custom graphics:
+
+**Integration Options:**
+- [Official Hugging Face MCP Server](https://huggingface.co/docs/hub/en/hf-mcp-server) - Access to 1000s of models
+- [mcp-hfspace](https://github.com/evalstate/mcp-hfspace) - Direct FLUX.1-schnell integration
+
+**Use Cases:**
+- Generate custom hardwood floor textures
+- Create arena/stadium atmosphere backgrounds
+- Design unique trophy and achievement icons
+- Generate promotional/marketing assets
+- Create shareable Shot Card templates with custom art
+
+**Setup (when ready):**
+```bash
+# Option 1: HF Spaces with FLUX
+npx -y @anthropic-ai/mcp-installer install evalstate/mcp-hfspace
+
+# Option 2: Official HF Hub access
+# Add to MCP config: https://huggingface.co/mcp
+```
+
+**MVP Approach:** Stock textures + CSS + SVG scoreboard (sufficient for friends group)
+**Phase 2 Approach:** Custom AI-generated assets for unique brand identity
+
+**Notes:** Consider Figma MCP as complementary tool for design-to-code workflow.
+
+---
+
 *Document created during BA research phase. To be revisited after MVP validation.*

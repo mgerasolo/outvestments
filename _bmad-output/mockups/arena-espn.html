@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OUTVESTMENTS | ESPN Broadcast</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* ESPN Gold Theme */
+      --bg-arena: #0a0d12;
+      --bg-panel: rgba(8, 12, 18, 0.97);
+      --bg-card: rgba(15, 20, 28, 0.9);
+
+      /* Shiny Gold Palette - for beveled effect */
+      --gold-highlight: #fffae8;
+      --gold-light: #f7e8b0;
+      --gold-bright: #ecd066;
+      --gold-main: #d4af37;
+      --gold-mid: #c49a2c;
+      --gold-dark: #9a7820;
+      --gold-shadow: #6d5518;
+      --gold-deep: #4a3a10;
+      --gold-black: #2a2008;
+
+      /* Status */
+      --win: #00ff41;
+      --loss: #ff3333;
+      --led: #ff9500;
+      --cyan: #00d4ff;
+
+      /* Text */
+      --text-primary: #f5f5f5;
+      --text-secondary: #8a9aad;
+
+      /* Typography */
+      --font-led: 'IBM Plex Mono', monospace;
+      --font-display: 'Oswald', sans-serif;
+      --font-body: 'Inter', sans-serif;
+
+      /* Effects */
+      --glow-gold: 0 0 30px rgba(212, 175, 55, 0.6);
+      --glow-win: 0 0 20px rgba(0, 255, 65, 0.5);
+      --glow-loss: 0 0 20px rgba(255, 51, 51, 0.4);
+      --glow-led: 0 0 25px rgba(255, 149, 0, 0.5);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-arena);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Arena Background */
+    .arena-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 100% 60% at 50% 100%, rgba(139, 90, 43, 0.25) 0%, transparent 60%),
+        radial-gradient(ellipse 80% 40% at 50% 20%, rgba(255, 149, 0, 0.1) 0%, transparent 50%),
+        linear-gradient(180deg, #050810 0%, #0a0d12 50%, #12161d 100%);
+    }
+
+    .arena-bg::before {
+      content: '';
+      position: absolute;
+      top: 5%;
+      left: 5%;
+      right: 5%;
+      height: 25%;
+      background-image:
+        radial-gradient(circle 2px, rgba(255,200,100,0.2) 100%, transparent 100%),
+        radial-gradient(circle 1px, rgba(255,180,80,0.15) 100%, transparent 100%);
+      background-size: 30px 15px, 50px 20px;
+      opacity: 0.5;
+    }
+
+    .arena-bg::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 40%;
+      background: linear-gradient(180deg, transparent 0%, rgba(139, 90, 43, 0.15) 50%, rgba(139, 90, 43, 0.3) 100%);
+      transform: perspective(800px) rotateX(50deg);
+      transform-origin: bottom center;
+    }
+
+    /* === BEVELED GOLD FRAME - ENHANCED 3D METALLIC === */
+    .gold-frame {
+      position: relative;
+      background: var(--bg-panel);
+    }
+
+    /* Outer metallic frame - simulates brushed gold */
+    .gold-frame::before {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      background:
+        /* Top highlight strip */
+        linear-gradient(180deg, var(--gold-highlight) 0%, var(--gold-light) 10%, var(--gold-bright) 30%, var(--gold-main) 50%, var(--gold-dark) 70%, var(--gold-shadow) 90%, var(--gold-black) 100%);
+      clip-path: polygon(
+        0% 0%, 100% 0%, 100% 100%, 0% 100%,
+        0% 0%, 8px 8px, 8px calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) 8px, 8px 8px
+      );
+      filter: url(#goldBevel);
+    }
+
+    /* Inner groove */
+    .gold-frame::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 2px solid;
+      border-color: var(--gold-shadow) var(--gold-light) var(--gold-bright) var(--gold-dark);
+      box-shadow:
+        inset 0 0 0 1px var(--gold-deep),
+        inset 0 2px 4px rgba(0,0,0,0.5),
+        0 0 50px rgba(212, 175, 55, 0.4);
+      pointer-events: none;
+    }
+
+    /* Main Layout */
+    .dashboard {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 100vh;
+    }
+
+    /* === TOP HUD BAR - MODERN CLEAN === */
+    .hud-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg-panel);
+      /* Thin gold accent line on bottom */
+      border-bottom: 2px solid var(--gold-main);
+      box-shadow:
+        0 0 30px rgba(212, 175, 55, 0.3),
+        0 4px 20px rgba(0,0,0,0.5);
+    }
+
+    .hud-bar-inner {
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+    }
+
+    /* User Profile */
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 200px;
+    }
+
+    .user-avatar {
+      width: 52px;
+      height: 52px;
+      background: var(--bg-arena);
+      border: 2px solid var(--gold-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+    }
+
+    .user-avatar span {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gold-main);
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .user-name {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .user-record {
+      font-family: var(--font-led);
+      font-size: 13px;
+    }
+    .user-record .w { color: var(--win); text-shadow: var(--glow-win); }
+    .user-record .l { color: var(--loss); }
+
+    /* Center Stats */
+    .hud-stats {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .hud-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .hud-stat-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-secondary);
+    }
+
+    .hud-stat-value {
+      font-family: var(--font-led);
+      font-size: 48px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--led);
+      text-shadow:
+        0 0 20px rgba(255, 149, 0, 0.8),
+        0 0 40px rgba(255, 149, 0, 0.4),
+        0 2px 0 rgba(0,0,0,0.5);
+      letter-spacing: -2px;
+    }
+
+    .hud-stat-value.positive {
+      color: var(--win);
+      text-shadow:
+        0 0 20px rgba(0, 255, 65, 0.8),
+        0 0 40px rgba(0, 255, 65, 0.4),
+        0 2px 0 rgba(0,0,0,0.5);
+    }
+
+    .hud-stat-value.negative {
+      color: var(--loss);
+      text-shadow:
+        0 0 20px rgba(255, 51, 51, 0.8),
+        0 0 40px rgba(255, 51, 51, 0.4);
+    }
+
+    .hud-stat-sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .hud-divider {
+      width: 1px;
+      height: 48px;
+      background: linear-gradient(180deg, transparent 0%, var(--gold-main) 20%, var(--gold-main) 80%, transparent 100%);
+      opacity: 0.6;
+    }
+
+    /* Session Info */
+    .session-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      min-width: 160px;
+    }
+
+    .market-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(0, 255, 65, 0.15);
+      border: 2px solid var(--win);
+      box-shadow: var(--glow-win), inset 0 0 10px rgba(0, 255, 65, 0.1);
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--win);
+    }
+
+    .market-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--win);
+      box-shadow: var(--glow-win);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .session-time {
+      font-family: var(--font-led);
+      font-size: 15px;
+      color: var(--text-secondary);
+    }
+
+    /* === MAIN CONTENT === */
+    .main-content {
+      display: grid;
+      grid-template-columns: 260px 1fr 240px;
+      gap: 16px;
+      padding: 16px;
+    }
+
+    /* === PANEL BASE - CLEAN MODERN === */
+    .panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--gold-dark);
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
+    }
+
+    .panel-header {
+      padding: 14px 16px;
+      background: rgba(212, 175, 55, 0.1);
+      border-bottom: 1px solid var(--gold-dark);
+    }
+
+    .panel-title {
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--gold-main);
+    }
+
+    .panel-content {
+      padding: 12px;
+    }
+
+    /* === LEFT PANEL === */
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Theory Card */
+    .theory-card {
+      padding: 12px;
+      background: var(--bg-card);
+      border-left: 3px solid var(--gold-main);
+      margin-bottom: 8px;
+      transition: all 0.15s;
+    }
+
+    .theory-card:hover {
+      background: rgba(212, 175, 55, 0.08);
+    }
+
+    .theory-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .theory-name {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-primary);
+    }
+
+    .theory-count {
+      font-family: var(--font-led);
+      font-size: 11px;
+      color: var(--cyan);
+    }
+
+    .theory-bar {
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid var(--gold-dark);
+      margin-bottom: 6px;
+    }
+
+    .theory-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold-dark), var(--win));
+      box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+    }
+
+    .theory-bar-fill.negative {
+      background: linear-gradient(90deg, var(--gold-dark), var(--loss));
+      box-shadow: 0 0 10px rgba(255, 51, 51, 0.3);
+    }
+
+    .theory-accuracy {
+      font-family: var(--font-led);
+      font-size: 12px;
+    }
+    .theory-accuracy.positive { color: var(--win); }
+    .theory-accuracy.negative { color: var(--loss); }
+
+    /* Shot Row */
+    .shot-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--bg-card);
+      border: 2px solid var(--gold-dark);
+      margin-bottom: 4px;
+    }
+
+    .shot-ticker {
+      font-family: var(--font-led);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      min-width: 45px;
+    }
+
+    .shot-return {
+      font-family: var(--font-led);
+      font-size: 13px;
+      font-weight: 700;
+      margin-left: auto;
+    }
+    .shot-return.positive { color: var(--win); text-shadow: var(--glow-win); }
+    .shot-return.negative { color: var(--loss); }
+
+    .shot-accuracy {
+      font-family: var(--font-led);
+      font-size: 11px;
+      color: var(--led);
+    }
+
+    /* === CENTER PANEL === */
+    .center-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Chart Container */
+    .chart-panel {
+      flex: 1;
+    }
+
+    .chart-container {
+      height: 220px;
+      padding: 16px;
+      position: relative;
+    }
+
+    .chart-grid {
+      position: absolute;
+      inset: 16px;
+      background:
+        repeating-linear-gradient(90deg, rgba(212, 175, 55, 0.1) 0px, rgba(212, 175, 55, 0.1) 1px, transparent 1px, transparent 10%),
+        repeating-linear-gradient(0deg, rgba(212, 175, 55, 0.1) 0px, rgba(212, 175, 55, 0.1) 1px, transparent 1px, transparent 25%);
+    }
+
+    .chart-line {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      right: 16px;
+      height: 180px;
+      background: linear-gradient(180deg, rgba(0, 255, 65, 0.3) 0%, rgba(0, 255, 65, 0.05) 100%);
+      clip-path: polygon(0% 70%, 8% 65%, 15% 68%, 25% 45%, 35% 50%, 45% 35%, 55% 30%, 65% 18%, 75% 22%, 85% 12%, 100% 8%, 100% 100%, 0% 100%);
+    }
+
+    .chart-line::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      border-top: 3px solid var(--win);
+      box-shadow: 0 0 15px var(--win);
+      clip-path: polygon(0% 70%, 8% 65%, 15% 68%, 25% 45%, 35% 50%, 45% 35%, 55% 30%, 65% 18%, 75% 22%, 85% 12%, 100% 8%);
+    }
+
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .metric-card {
+      padding: 12px;
+      background: var(--bg-card);
+      border: 2px solid var(--gold-dark);
+      box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.2);
+      text-align: center;
+    }
+
+    .metric-label {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-family: var(--font-led);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--led);
+      text-shadow: var(--glow-led);
+      line-height: 1;
+    }
+
+    .metric-value.positive { color: var(--win); text-shadow: var(--glow-win); }
+
+    .metric-sub {
+      font-size: 10px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* Trend Row */
+    .trend-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .trend-card {
+      padding: 10px 12px;
+      background: var(--bg-card);
+      border: 2px solid var(--gold-dark);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .trend-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    .trend-value {
+      font-family: var(--font-led);
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .trend-value.positive { color: var(--win); }
+    .trend-value.negative { color: var(--loss); }
+
+    /* Mini bars */
+    .trend-bars {
+      display: flex;
+      gap: 2px;
+      align-items: flex-end;
+      height: 20px;
+    }
+
+    .trend-bar {
+      width: 4px;
+      background: var(--win);
+    }
+
+    .trend-bar.loss { background: var(--loss); }
+
+    /* === RIGHT PANEL - Leaderboard === */
+    .leaderboard-row {
+      display: grid;
+      grid-template-columns: 28px 1fr 45px 42px;
+      gap: 6px;
+      align-items: center;
+      padding: 6px 8px;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+      transition: all 0.1s;
+    }
+
+    .leaderboard-row:hover {
+      background: rgba(212, 175, 55, 0.1);
+    }
+
+    .leaderboard-row.you {
+      background: rgba(212, 175, 55, 0.2);
+      border: 2px solid var(--gold-main);
+      box-shadow: inset 0 0 10px rgba(212, 175, 55, 0.2);
+    }
+
+    .lb-rank {
+      font-family: var(--font-led);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gold-main);
+    }
+
+    .lb-rank.gold { color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+    .lb-rank.silver { color: #e0e0e0; }
+    .lb-rank.bronze { color: #cd7f32; }
+
+    .lb-name {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lb-score {
+      font-family: var(--font-led);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--led);
+      text-align: right;
+    }
+
+    .lb-record {
+      font-family: var(--font-led);
+      font-size: 10px;
+      text-align: right;
+    }
+
+    .lb-record .w { color: var(--win); }
+    .lb-record .l { color: var(--loss); }
+
+    .panel-footer {
+      padding: 10px 14px;
+      background: rgba(212, 175, 55, 0.08);
+      border-top: 1px solid var(--gold-dark);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--gold-main);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-align: center;
+      opacity: 0.7;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+      .hud-stats { flex-wrap: wrap; gap: 16px; }
+      .hud-stat-value { font-size: 28px; }
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="arena-bg"></div>
+
+  <div class="dashboard">
+    <!-- TOP HUD BAR -->
+    <header class="hud-bar">
+      <div class="hud-bar-inner">
+        <!-- User Profile -->
+        <div class="user-profile">
+          <div class="user-avatar">
+            <div class="user-avatar-inner">
+              <span>MG</span>
+            </div>
+          </div>
+          <div class="user-info">
+            <div class="user-name">TRADER_ELITE</div>
+            <div class="user-record">
+              <span class="w">34W</span> - <span class="l">12L</span> | 74%
+            </div>
+          </div>
+        </div>
+
+        <!-- Center Stats -->
+        <div class="hud-stats">
+          <div class="hud-stat">
+            <div class="hud-stat-label">Portfolio</div>
+            <div class="hud-stat-value">$127K</div>
+            <div class="hud-stat-sub">All positions</div>
+          </div>
+          <div class="hud-divider"></div>
+          <div class="hud-stat">
+            <div class="hud-stat-label">Skill Score</div>
+            <div class="hud-stat-value">78</div>
+            <div class="hud-stat-sub">/100</div>
+          </div>
+          <div class="hud-divider"></div>
+          <div class="hud-stat">
+            <div class="hud-stat-label">Today</div>
+            <div class="hud-stat-value positive">+$2.3K</div>
+            <div class="hud-stat-sub">+1.87%</div>
+          </div>
+          <div class="hud-divider"></div>
+          <div class="hud-stat">
+            <div class="hud-stat-label">Record</div>
+            <div class="hud-stat-value">34-12</div>
+            <div class="hud-stat-sub">This month</div>
+          </div>
+        </div>
+
+        <!-- Session Info -->
+        <div class="session-info">
+          <div class="market-badge">
+            <div class="market-dot"></div>
+            BULL MARKET
+          </div>
+          <div class="session-time">3:42 remaining</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <!-- LEFT PANEL -->
+      <div class="left-panel">
+        <!-- Theories -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Top Theories</div>
+          </div>
+          <div class="panel-content">
+            <div class="theory-card">
+              <div class="theory-header">
+                <span class="theory-name">AI Infrastructure</span>
+                <span class="theory-count">5 picks</span>
+              </div>
+              <div class="theory-bar">
+                <div class="theory-bar-fill" style="width: 78%;"></div>
+              </div>
+              <div class="theory-accuracy positive">+24.8% | 78%</div>
+            </div>
+            <div class="theory-card">
+              <div class="theory-header">
+                <span class="theory-name">Energy Trans.</span>
+                <span class="theory-count">4 picks</span>
+              </div>
+              <div class="theory-bar">
+                <div class="theory-bar-fill" style="width: 65%;"></div>
+              </div>
+              <div class="theory-accuracy positive">+12.1% | 65%</div>
+            </div>
+            <div class="theory-card">
+              <div class="theory-header">
+                <span class="theory-name">Fintech</span>
+                <span class="theory-count">3 picks</span>
+              </div>
+              <div class="theory-bar">
+                <div class="theory-bar-fill negative" style="width: 33%;"></div>
+              </div>
+              <div class="theory-accuracy negative">-4.2% | 33%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Shots -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Top Shots</div>
+          </div>
+          <div class="panel-content">
+            <div class="shot-row">
+              <span class="shot-ticker">NVDA</span>
+              <span class="shot-return positive">+15.2%</span>
+              <span class="shot-accuracy">82%</span>
+            </div>
+            <div class="shot-row">
+              <span class="shot-ticker">MSFT</span>
+              <span class="shot-return positive">+12.1%</span>
+              <span class="shot-accuracy">75%</span>
+            </div>
+            <div class="shot-row">
+              <span class="shot-ticker">AMD</span>
+              <span class="shot-return positive">+8.4%</span>
+              <span class="shot-accuracy">68%</span>
+            </div>
+            <div class="shot-row">
+              <span class="shot-ticker">PYPL</span>
+              <span class="shot-return negative">-9.2%</span>
+              <span class="shot-accuracy">45%</span>
+            </div>
+            <div class="shot-row">
+              <span class="shot-ticker">GOOGL</span>
+              <span class="shot-return positive">+6.8%</span>
+              <span class="shot-accuracy">62%</span>
+            </div>
+          </div>
+          <div class="panel-footer">Sorted by Return</div>
+        </div>
+      </div>
+
+      <!-- CENTER -->
+      <div class="center-panel">
+        <!-- Chart -->
+        <div class="panel chart-panel">
+          <div class="panel-header">
+            <div class="panel-title">Account Trajectory</div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-grid"></div>
+            <div class="chart-line"></div>
+          </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="metrics-grid">
+          <div class="panel metric-card">
+            <div class="metric-label">Prediction Accuracy</div>
+            <div class="metric-value positive">78%</div>
+            <div class="metric-sub">+3% vs last month</div>
+          </div>
+          <div class="panel metric-card">
+            <div class="metric-label">Pattern Strength</div>
+            <div class="metric-value">157%</div>
+            <div class="metric-sub">Edge over NPC</div>
+          </div>
+          <div class="panel metric-card">
+            <div class="metric-label">Discipline</div>
+            <div class="metric-value positive">89%</div>
+            <div class="metric-sub">Execution quality</div>
+          </div>
+        </div>
+
+        <!-- Trend Row -->
+        <div class="trend-row">
+          <div class="panel trend-card">
+            <div>
+              <div class="trend-label">Win Rate Trend</div>
+              <div class="trend-value positive">+12%</div>
+            </div>
+            <div class="trend-bars">
+              <div class="trend-bar" style="height: 8px;"></div>
+              <div class="trend-bar" style="height: 12px;"></div>
+              <div class="trend-bar loss" style="height: 6px;"></div>
+              <div class="trend-bar" style="height: 14px;"></div>
+              <div class="trend-bar" style="height: 18px;"></div>
+              <div class="trend-bar" style="height: 16px;"></div>
+              <div class="trend-bar" style="height: 20px;"></div>
+            </div>
+          </div>
+          <div class="panel trend-card">
+            <div>
+              <div class="trend-label">Accuracy Trend</div>
+              <div class="trend-value positive">+8%</div>
+            </div>
+            <div class="trend-bars">
+              <div class="trend-bar" style="height: 10px;"></div>
+              <div class="trend-bar loss" style="height: 8px;"></div>
+              <div class="trend-bar" style="height: 12px;"></div>
+              <div class="trend-bar" style="height: 14px;"></div>
+              <div class="trend-bar loss" style="height: 10px;"></div>
+              <div class="trend-bar" style="height: 16px;"></div>
+              <div class="trend-bar" style="height: 18px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT - Leaderboard -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Leaderboard</div>
+        </div>
+        <div class="panel-content" style="padding: 0;">
+          <div class="leaderboard-row">
+            <span class="lb-rank gold">1</span>
+            <span class="lb-name">TradeMaster</span>
+            <span class="lb-score">94</span>
+            <span class="lb-record"><span class="w">52</span>-<span class="l">8</span></span>
+          </div>
+          <div class="leaderboard-row">
+            <span class="lb-rank silver">2</span>
+            <span class="lb-name">AlphaSeeker</span>
+            <span class="lb-score">91</span>
+            <span class="lb-record"><span class="w">48</span>-<span class="l">11</span></span>
+          </div>
+          <div class="leaderboard-row">
+            <span class="lb-rank bronze">3</span>
+            <span class="lb-name">BullRunner</span>
+            <span class="lb-score">88</span>
+            <span class="lb-record"><span class="w">45</span>-<span class="l">14</span></span>
+          </div>
+          <div class="leaderboard-row">
+            <span class="lb-rank">4</span>
+            <span class="lb-name">ChartWizard</span>
+            <span class="lb-score">85</span>
+            <span class="lb-record"><span class="w">41</span>-<span class="l">16</span></span>
+          </div>
+          <div class="leaderboard-row">
+            <span class="lb-rank">5</span>
+            <span class="lb-name">TrendHunter</span>
+            <span class="lb-score">82</span>
+            <span class="lb-record"><span class="w">39</span>-<span class="l">18</span></span>
+          </div>
+          <div class="leaderboard-row">
+            <span class="lb-rank">6</span>
+            <span class="lb-name">ValueKing</span>
+            <span class="lb-score">80</span>
+            <span class="lb-record"><span class="w">37</span>-<span class="l">19</span></span>
+          </div>
+          <div class="leaderboard-row">
+            <span class="lb-rank">7</span>
+            <span class="lb-name">SwingPro</span>
+            <span class="lb-score">79</span>
+            <span class="lb-record"><span class="w">36</span>-<span class="l">20</span></span>
+          </div>
+          <div class="leaderboard-row">
+            <span class="lb-rank">8</span>
+            <span class="lb-name">MomentumX</span>
+            <span class="lb-score">77</span>
+            <span class="lb-record"><span class="w">35</span>-<span class="l">21</span></span>
+          </div>
+          <div class="leaderboard-row">
+            <span class="lb-rank">9</span>
+            <span class="lb-name">DipBuyer</span>
+            <span class="lb-score">76</span>
+            <span class="lb-record"><span class="w">34</span>-<span class="l">22</span></span>
+          </div>
+          <div class="leaderboard-row">
+            <span class="lb-rank">10</span>
+            <span class="lb-name">RiskMaster</span>
+            <span class="lb-score">75</span>
+            <span class="lb-record"><span class="w">33</span>-<span class="l">23</span></span>
+          </div>
+          <div class="leaderboard-row you">
+            <span class="lb-rank">47</span>
+            <span class="lb-name">You</span>
+            <span class="lb-score">78</span>
+            <span class="lb-record"><span class="w">34</span>-<span class="l">12</span></span>
+          </div>
+        </div>
+        <div class="panel-footer">Skill Score Ranking</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

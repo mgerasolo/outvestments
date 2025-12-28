@@ -13,8 +13,11 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { SymbolSearchInput } from "@/components/ui/symbol-search-input";
 import { createAim, updateAim, type AimFormData } from "@/app/actions/aims";
 import type { Aim } from "@/lib/db/schema";
+import type { SymbolSearchResult } from "@/app/actions/symbols";
 
 interface AimFormProps {
   targetId: string;
@@ -27,6 +30,7 @@ export function AimForm({ targetId, aim, onSuccess }: AimFormProps) {
   const [isPending, startTransition] = useTransition();
 
   const [symbol, setSymbol] = useState(aim?.symbol || "");
+  const [companyName, setCompanyName] = useState("");
   const [targetPriceRealistic, setTargetPriceRealistic] = useState(
     aim?.targetPriceRealistic ? Number(aim.targetPriceRealistic) : ""
   );
@@ -38,6 +42,14 @@ export function AimForm({ targetId, aim, onSuccess }: AimFormProps) {
       ? new Date(aim.targetDate).toISOString().split("T")[0]
       : ""
   );
+  // Trading discipline fields
+  const [stopLossPrice, setStopLossPrice] = useState(
+    aim?.stopLossPrice ? Number(aim.stopLossPrice) : ""
+  );
+  const [takeProfitPrice, setTakeProfitPrice] = useState(
+    aim?.takeProfitPrice ? Number(aim.takeProfitPrice) : ""
+  );
+  const [exitConditions, setExitConditions] = useState(aim?.exitConditions || "");
 
   const isEditing = !!aim;
 
@@ -50,6 +62,10 @@ export function AimForm({ targetId, aim, onSuccess }: AimFormProps) {
       targetPriceRealistic: Number(targetPriceRealistic),
       targetPriceReach: targetPriceReach ? Number(targetPriceReach) : undefined,
       targetDate: new Date(targetDate),
+      // Trading discipline fields
+      stopLossPrice: stopLossPrice ? Number(stopLossPrice) : undefined,
+      takeProfitPrice: takeProfitPrice ? Number(takeProfitPrice) : undefined,
+      exitConditions: exitConditions || undefined,
     };
 
     startTransition(async () => {
@@ -59,6 +75,9 @@ export function AimForm({ targetId, aim, onSuccess }: AimFormProps) {
             targetPriceRealistic: formData.targetPriceRealistic,
             targetPriceReach: formData.targetPriceReach,
             targetDate: formData.targetDate,
+            stopLossPrice: formData.stopLossPrice,
+            takeProfitPrice: formData.takeProfitPrice,
+            exitConditions: formData.exitConditions,
           })
         : await createAim(formData);
 
@@ -90,18 +109,27 @@ export function AimForm({ targetId, aim, onSuccess }: AimFormProps) {
           {/* Symbol */}
           <div className="space-y-2">
             <Label htmlFor="symbol">Symbol *</Label>
-            <Input
-              id="symbol"
-              placeholder="e.g., AAPL, MSFT, TSLA"
+            <SymbolSearchInput
               value={symbol}
-              onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-              className="uppercase"
-              required
-              maxLength={10}
+              onChange={(sym, result) => {
+                setSymbol(sym);
+                if (result) {
+                  setCompanyName(result.name);
+                }
+              }}
+              placeholder="Search stock symbol..."
+              disabled={isPending}
             />
-            <p className="text-sm text-muted-foreground">
-              The stock ticker symbol.
-            </p>
+            {companyName && (
+              <p className="text-sm text-muted-foreground">
+                {companyName}
+              </p>
+            )}
+            {!companyName && (
+              <p className="text-sm text-muted-foreground">
+                Search for a stock or ETF symbol.
+              </p>
+            )}
           </div>
 
           {/* Target Prices */}
@@ -166,6 +194,77 @@ export function AimForm({ targetId, aim, onSuccess }: AimFormProps) {
             <p className="text-sm text-muted-foreground">
               When do you expect this target to be reached?
             </p>
+          </div>
+
+          {/* Trading Discipline Section */}
+          <div className="border-t pt-6 mt-6">
+            <h3 className="text-lg font-medium mb-4">Risk Management</h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              Define your exit strategy before entering the trade.
+            </p>
+
+            {/* Stop Loss and Take Profit */}
+            <div className="grid gap-4 sm:grid-cols-2 mb-6">
+              <div className="space-y-2">
+                <Label htmlFor="stopLossPrice">Stop Loss Price</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    $
+                  </span>
+                  <Input
+                    id="stopLossPrice"
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    placeholder="140.00"
+                    value={stopLossPrice}
+                    onChange={(e) => setStopLossPrice(e.target.value)}
+                    className="pl-7"
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  At what price would you cut your losses?
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="takeProfitPrice">Take Profit Price</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    $
+                  </span>
+                  <Input
+                    id="takeProfitPrice"
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    placeholder="175.00"
+                    value={takeProfitPrice}
+                    onChange={(e) => setTakeProfitPrice(e.target.value)}
+                    className="pl-7"
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  At what price would you lock in profits?
+                </p>
+              </div>
+            </div>
+
+            {/* Exit Conditions */}
+            <div className="space-y-2">
+              <Label htmlFor="exitConditions">Exit Conditions</Label>
+              <Textarea
+                id="exitConditions"
+                placeholder="Describe additional exit conditions beyond price targets. e.g., 'Exit if earnings miss by more than 10%', 'Close if volume drops significantly'..."
+                value={exitConditions}
+                onChange={(e) => setExitConditions(e.target.value)}
+                rows={3}
+                className="resize-none"
+              />
+              <p className="text-sm text-muted-foreground">
+                What other conditions would trigger an exit? Think beyond just price.
+              </p>
+            </div>
           </div>
 
           {/* Submit */}
