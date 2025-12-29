@@ -11,7 +11,7 @@ import {
   type ShotType,
   type ShotState,
 } from "@/lib/db/schema";
-import { eq, and, isNull, desc } from "drizzle-orm";
+import { eq, and, isNull, desc, inArray } from "drizzle-orm";
 import { auth } from "@/auth";
 import { logAudit, AuditActions, AuditEntityTypes } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
@@ -910,6 +910,101 @@ export async function syncShotOrderStatus(shotId: string): Promise<ShotResult> {
 }
 
 // ============================================================================
+// Scoring Calculation Types and Helpers
+// ============================================================================
+
+interface PositionMetrics {
+  daysHeld: number;
+  returnPercentage: number;
+  annualizedReturnPercentage: number;
+  difficultyMultiplier: number;
+  accuracyScore: number;
+  performanceScore: number;
+  compositeScore: number;
+}
+
+/**
+ * Calculate difficulty multiplier based on target return percentage
+ * <5% -> 0.5, 5-15% -> 1.0, 15-30% -> 1.5, 30-50% -> 2.0, >50% -> 2.5
+ */
+function calculateDifficultyMultiplier(targetReturnPercentage: number): number {
+  const absReturn = Math.abs(targetReturnPercentage);
+  if (absReturn < 5) return 0.5;
+  if (absReturn < 15) return 1.0;
+  if (absReturn < 30) return 1.5;
+  if (absReturn < 50) return 2.0;
+  return 2.5;
+}
+
+/**
+ * Calculate all position metrics when closing a position
+ */
+function calculatePositionMetrics(
+  entryPrice: number,
+  exitPrice: number,
+  entryDate: Date,
+  exitDate: Date,
+  direction: "buy" | "sell",
+  targetPrice: number | null
+): PositionMetrics {
+  // Calculate days held (minimum 1 to prevent division by zero)
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const daysHeld = Math.max(1, Math.floor((exitDate.getTime() - entryDate.getTime()) / msPerDay));
+
+  // Calculate return percentage
+  // For longs (buy): profit when exit > entry
+  // For shorts (sell): profit when entry > exit
+  let returnPercentage: number;
+  if (direction === "buy") {
+    returnPercentage = ((exitPrice - entryPrice) / entryPrice) * 100;
+  } else {
+    returnPercentage = ((entryPrice - exitPrice) / entryPrice) * 100;
+  }
+
+  // Calculate annualized return percentage
+  // Formula: ((1 + return/100)^(365/daysHeld) - 1) * 100
+  const annualizedReturnPercentage =
+    (Math.pow(1 + returnPercentage / 100, 365 / daysHeld) - 1) * 100;
+
+  // Calculate target return percentage for difficulty and accuracy
+  let targetReturnPercentage = 0;
+  if (targetPrice !== null && targetPrice > 0) {
+    if (direction === "buy") {
+      targetReturnPercentage = ((targetPrice - entryPrice) / entryPrice) * 100;
+    } else {
+      targetReturnPercentage = ((entryPrice - targetPrice) / entryPrice) * 100;
+    }
+  }
+
+  // Calculate difficulty multiplier
+  const difficultyMultiplier = calculateDifficultyMultiplier(targetReturnPercentage);
+
+  // Calculate accuracy score = (actualReturn / targetReturn) * 100
+  // If targetReturn is 0 or null, treat denominator as 1
+  const safeTargetReturn = targetReturnPercentage === 0 ? 1 : targetReturnPercentage;
+  const accuracyScore = (returnPercentage / safeTargetReturn) * 100;
+
+  // Calculate performance score = (actualReturn / expectedMarketReturn) * 67
+  // expectedMarketReturn = 10% * (daysHeld / 365)
+  const expectedMarketReturn = 10 * (daysHeld / 365);
+  const safeExpectedMarketReturn = expectedMarketReturn === 0 ? 1 : expectedMarketReturn;
+  const performanceScore = (returnPercentage / safeExpectedMarketReturn) * 67;
+
+  // Calculate composite score = accuracyScore * difficultyMultiplier
+  const compositeScore = accuracyScore * difficultyMultiplier;
+
+  return {
+    daysHeld,
+    returnPercentage,
+    annualizedReturnPercentage,
+    difficultyMultiplier,
+    accuracyScore,
+    performanceScore,
+    compositeScore,
+  };
+}
+
+// ============================================================================
 // Partial Close / Lot Splitting Functions
 // ============================================================================
 
@@ -1096,6 +1191,27 @@ export async function closePartialPosition(
         ? (exitPrice - entryPrice) * data.quantity
         : (entryPrice - exitPrice) * data.quantity;
 
+    // Calculate position metrics for scoring
+    // Use fillTimestamp as entry date if available, otherwise entryDate
+    const effectiveEntryDate = shot.fillTimestamp || shot.entryDate;
+    const exitDate = new Date();
+
+    // Get target price from aim for difficulty/accuracy calculations
+    const targetPrice = aim.targetPriceRealistic
+      ? Number(aim.targetPriceRealistic)
+      : aim.targetPriceReach
+        ? Number(aim.targetPriceReach)
+        : null;
+
+    const metrics = calculatePositionMetrics(
+      entryPrice,
+      exitPrice,
+      effectiveEntryDate,
+      exitDate,
+      shot.direction,
+      targetPrice
+    );
+
     let remainderShot: Shot | undefined;
 
     if (isPartialClose) {
@@ -1132,16 +1248,25 @@ export async function closePartialPosition(
         symbol: aim.symbol,
       });
 
-      // Update original shot to partially_closed
+      // Update original shot to partially_closed with metrics
       const [updatedShot] = await db
         .update(shots)
         .set({
           state: "partially_closed",
           exitPrice: exitPrice.toString(),
-          exitDate: new Date(),
+          exitDate: exitDate,
           closedQuantity: data.quantity.toString(),
           realizedPL: realizedPL.toString(),
           alpacaCloseOrderId: order.id,
+          // Raw facts
+          daysHeld: metrics.daysHeld,
+          returnPercentage: metrics.returnPercentage.toString(),
+          annualizedReturnPercentage: metrics.annualizedReturnPercentage.toString(),
+          // Scoring metrics
+          difficultyMultiplier: metrics.difficultyMultiplier.toString(),
+          accuracyScore: metrics.accuracyScore.toString(),
+          performanceScore: metrics.performanceScore.toString(),
+          compositeScore: metrics.compositeScore.toString(),
           updatedAt: new Date(),
         })
         .where(eq(shots.id, shot.id))
@@ -1159,6 +1284,14 @@ export async function closePartialPosition(
           alpacaCloseOrderId: order.id,
           symbol: aim.symbol,
           remainderShotId: newRemainderShot.id,
+          // Metrics
+          daysHeld: metrics.daysHeld,
+          returnPercentage: metrics.returnPercentage,
+          annualizedReturnPercentage: metrics.annualizedReturnPercentage,
+          difficultyMultiplier: metrics.difficultyMultiplier,
+          accuracyScore: metrics.accuracyScore,
+          performanceScore: metrics.performanceScore,
+          compositeScore: metrics.compositeScore,
         }
       );
 
@@ -1180,10 +1313,19 @@ export async function closePartialPosition(
         .set({
           state: "closed",
           exitPrice: exitPrice.toString(),
-          exitDate: new Date(),
+          exitDate: exitDate,
           closedQuantity: data.quantity.toString(),
           realizedPL: realizedPL.toString(),
           alpacaCloseOrderId: order.id,
+          // Raw facts
+          daysHeld: metrics.daysHeld,
+          returnPercentage: metrics.returnPercentage.toString(),
+          annualizedReturnPercentage: metrics.annualizedReturnPercentage.toString(),
+          // Scoring metrics
+          difficultyMultiplier: metrics.difficultyMultiplier.toString(),
+          accuracyScore: metrics.accuracyScore.toString(),
+          performanceScore: metrics.performanceScore.toString(),
+          compositeScore: metrics.compositeScore.toString(),
           updatedAt: new Date(),
         })
         .where(eq(shots.id, shot.id))
@@ -1195,6 +1337,14 @@ export async function closePartialPosition(
         realizedPL,
         alpacaCloseOrderId: order.id,
         symbol: aim.symbol,
+        // Metrics
+        daysHeld: metrics.daysHeld,
+        returnPercentage: metrics.returnPercentage,
+        annualizedReturnPercentage: metrics.annualizedReturnPercentage,
+        difficultyMultiplier: metrics.difficultyMultiplier,
+        accuracyScore: metrics.accuracyScore,
+        performanceScore: metrics.performanceScore,
+        compositeScore: metrics.compositeScore,
       });
 
       revalidatePath(`/targets/${target.id}`);
@@ -1310,4 +1460,217 @@ export async function getShotPositionDetails(shotId: string): Promise<{
     averageEntryPrice: avgEntryPrice,
     childShots,
   };
+}
+
+// ============================================================================
+// Closed Shots Query Functions
+// ============================================================================
+
+/**
+ * Closed shot with related aim and target information
+ */
+export interface ClosedShotWithContext {
+  id: string;
+  symbol: string;
+  targetThesis: string;
+  targetId: string;
+  aimId: string;
+  direction: Direction;
+  entryPrice: string;
+  exitPrice: string | null;
+  entryDate: Date;
+  exitDate: Date | null;
+  daysHeld: number | null;
+  realizedPL: string | null;
+  returnPercentage: string | null;
+  annualizedReturnPercentage: string | null;
+  accuracyScore: string | null;
+  performanceScore: string | null;
+  difficultyMultiplier: string | null;
+  compositeScore: string | null;
+  positionSize: string | null;
+  filledQty: string | null;
+  closedAt: Date;
+}
+
+export interface ClosedShotsResult {
+  success: boolean;
+  error?: string;
+  shots?: ClosedShotWithContext[];
+  stats?: {
+    totalTrades: number;
+    winCount: number;
+    lossCount: number;
+    winRate: number;
+    totalPL: number;
+    avgReturn: number;
+    bestReturn: number;
+    worstReturn: number;
+    avgDaysHeld: number;
+    avgCompositeScore: number;
+  };
+}
+
+/**
+ * Get all closed shots for the current user with aim and target context
+ */
+export async function getClosedShots(): Promise<ClosedShotsResult> {
+  const session = await auth();
+
+  if (!session?.user?.dbId) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  try {
+    // Get all user's targets first
+    const userTargets = await db
+      .select({ id: targets.id, thesis: targets.thesis })
+      .from(targets)
+      .where(
+        and(
+          eq(targets.userId, session.user.dbId),
+          isNull(targets.deletedAt)
+        )
+      );
+
+    const targetIds = userTargets.map((t) => t.id);
+    const targetMap = new Map(userTargets.map((t) => [t.id, t.thesis]));
+
+    if (targetIds.length === 0) {
+      return {
+        success: true,
+        shots: [],
+        stats: {
+          totalTrades: 0,
+          winCount: 0,
+          lossCount: 0,
+          winRate: 0,
+          totalPL: 0,
+          avgReturn: 0,
+          bestReturn: 0,
+          worstReturn: 0,
+          avgDaysHeld: 0,
+          avgCompositeScore: 0,
+        },
+      };
+    }
+
+    // Get aims for those targets
+    const userAims = await db
+      .select()
+      .from(aims)
+      .where(
+        and(
+          inArray(aims.targetId, targetIds),
+          isNull(aims.deletedAt)
+        )
+      );
+
+    const aimIds = userAims.map((a) => a.id);
+    const aimMap = new Map(userAims.map((a) => [a.id, a]));
+
+    if (aimIds.length === 0) {
+      return {
+        success: true,
+        shots: [],
+        stats: {
+          totalTrades: 0,
+          winCount: 0,
+          lossCount: 0,
+          winRate: 0,
+          totalPL: 0,
+          avgReturn: 0,
+          bestReturn: 0,
+          worstReturn: 0,
+          avgDaysHeld: 0,
+          avgCompositeScore: 0,
+        },
+      };
+    }
+
+    // Get all closed shots for those aims
+    const closedShots = await db
+      .select()
+      .from(shots)
+      .where(
+        and(
+          inArray(shots.aimId, aimIds),
+          eq(shots.state, "closed"),
+          isNull(shots.deletedAt)
+        )
+      )
+      .orderBy(desc(shots.exitDate), desc(shots.updatedAt));
+
+    // Transform to ClosedShotWithContext
+    const shotsWithContext: ClosedShotWithContext[] = closedShots
+      .filter((shot) => shot.aimId !== null)
+      .map((shot) => {
+        const aim = aimMap.get(shot.aimId!);
+        const targetThesis = aim ? targetMap.get(aim.targetId) || "" : "";
+
+        return {
+          id: shot.id,
+          symbol: aim?.symbol || "Unknown",
+          targetThesis,
+          targetId: aim?.targetId || "",
+          aimId: shot.aimId!,
+          direction: shot.direction,
+          entryPrice: shot.fillPrice || shot.entryPrice,
+          exitPrice: shot.exitPrice,
+          entryDate: shot.fillTimestamp || shot.entryDate,
+          exitDate: shot.exitDate,
+          daysHeld: shot.daysHeld,
+          realizedPL: shot.realizedPL,
+          returnPercentage: shot.returnPercentage,
+          annualizedReturnPercentage: shot.annualizedReturnPercentage,
+          accuracyScore: shot.accuracyScore,
+          performanceScore: shot.performanceScore,
+          difficultyMultiplier: shot.difficultyMultiplier,
+          compositeScore: shot.compositeScore,
+          positionSize: shot.positionSize,
+          filledQty: shot.filledQty,
+          closedAt: shot.exitDate || shot.updatedAt,
+        };
+      });
+
+    // Calculate aggregate stats
+    const shotsWithReturns = shotsWithContext.filter(
+      (s) => s.returnPercentage !== null
+    );
+    const returns = shotsWithReturns.map((s) => Number(s.returnPercentage));
+    const compositeScores = shotsWithContext
+      .filter((s) => s.compositeScore !== null)
+      .map((s) => Number(s.compositeScore));
+    const daysHeldArray = shotsWithContext
+      .filter((s) => s.daysHeld !== null)
+      .map((s) => s.daysHeld!);
+
+    const winCount = returns.filter((r) => r > 0).length;
+    const lossCount = returns.filter((r) => r <= 0).length;
+    const totalPL = shotsWithContext
+      .filter((s) => s.realizedPL !== null)
+      .reduce((sum, s) => sum + Number(s.realizedPL), 0);
+
+    const stats = {
+      totalTrades: shotsWithContext.length,
+      winCount,
+      lossCount,
+      winRate: shotsWithContext.length > 0 ? (winCount / shotsWithContext.length) * 100 : 0,
+      totalPL,
+      avgReturn: returns.length > 0 ? returns.reduce((a, b) => a + b, 0) / returns.length : 0,
+      bestReturn: returns.length > 0 ? Math.max(...returns) : 0,
+      worstReturn: returns.length > 0 ? Math.min(...returns) : 0,
+      avgDaysHeld: daysHeldArray.length > 0 ? daysHeldArray.reduce((a, b) => a + b, 0) / daysHeldArray.length : 0,
+      avgCompositeScore: compositeScores.length > 0 ? compositeScores.reduce((a, b) => a + b, 0) / compositeScores.length : 0,
+    };
+
+    return {
+      success: true,
+      shots: shotsWithContext,
+      stats,
+    };
+  } catch (error) {
+    console.error("Error fetching closed shots:", error);
+    return { success: false, error: "Failed to fetch closed shots" };
+  }
 }

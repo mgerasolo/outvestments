@@ -9,6 +9,7 @@ import {
   index,
   boolean,
   varchar,
+  integer,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -207,6 +208,15 @@ export const shots = pgTable(
     closedQuantity: decimal("closed_quantity", { precision: 12, scale: 4 }), // Quantity that was closed (for partial closes)
     realizedPL: decimal("realized_pl", { precision: 14, scale: 4 }), // Realized profit/loss for this close
     alpacaCloseOrderId: text("alpaca_close_order_id"), // Alpaca order ID for the close order
+    // Raw transaction facts (calculated when position closes)
+    daysHeld: integer("days_held"), // Number of days position was held
+    returnPercentage: decimal("return_percentage", { precision: 10, scale: 4 }), // % return at close
+    annualizedReturnPercentage: decimal("annualized_return_percentage", { precision: 10, scale: 4 }), // Annualized % return
+    // Scoring metrics (original 3-metric system)
+    accuracyScore: decimal("accuracy_score", { precision: 10, scale: 2 }), // (Actual Return / Target Return) × 100
+    performanceScore: decimal("performance_score", { precision: 10, scale: 2 }), // (Your Return / Expected Market Return) × 67
+    difficultyMultiplier: decimal("difficulty_multiplier", { precision: 3, scale: 2 }), // 0.5x to 2.5x based on target return range
+    compositeScore: decimal("composite_score", { precision: 10, scale: 2 }), // Accuracy × Difficulty Multiplier
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

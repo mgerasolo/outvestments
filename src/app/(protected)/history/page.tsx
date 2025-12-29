@@ -22,7 +22,8 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TradeHistoryTable } from "./trade-history-table";
-import { Loader2 } from "lucide-react";
+import { Loader2, ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 export const metadata = {
   title: "Trade History - Outvestments",
@@ -187,12 +188,17 @@ async function LocalShotsTable({ userId }: LocalShotsTableProps) {
             <CardTitle className="text-2xl">{pendingShots.length + firedShots.length}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Closed Trades</CardDescription>
-            <CardTitle className="text-2xl">{closedShots.length}</CardTitle>
-          </CardHeader>
-        </Card>
+        <Link href="/history/closed-trades" className="block">
+          <Card className="hover:border-primary transition-colors cursor-pointer">
+            <CardHeader className="pb-2">
+              <CardDescription className="flex items-center justify-between">
+                Closed Trades
+                <ExternalLink className="w-3 h-3" />
+              </CardDescription>
+              <CardTitle className="text-2xl">{closedShots.length}</CardTitle>
+            </CardHeader>
+          </Card>
+        </Link>
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Win Rate</CardDescription>

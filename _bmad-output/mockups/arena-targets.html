@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OUTVESTMENTS | Targets</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Arena Theme */
+      --bg-arena: #0a0d12;
+      --bg-panel: rgba(8, 12, 18, 0.97);
+      --bg-card: rgba(15, 20, 28, 0.9);
+      --bg-row: rgba(12, 16, 22, 0.95);
+      --bg-row-hover: rgba(20, 26, 35, 0.95);
+      --bg-child: rgba(8, 12, 18, 0.8);
+
+      /* Gold Palette */
+      --gold-highlight: #fffae8;
+      --gold-light: #f7e8b0;
+      --gold-bright: #ecd066;
+      --gold-main: #d4af37;
+      --gold-mid: #c49a2c;
+      --gold-dark: #9a7820;
+      --gold-shadow: #6d5518;
+      --gold-deep: #4a3a10;
+
+      /* Status Colors */
+      --win: #00ff41;
+      --loss: #ff3333;
+      --led: #ff9500;
+      --cyan: #00d4ff;
+      --purple: #a855f7;
+
+      /* Text */
+      --text-primary: #f5f5f5;
+      --text-secondary: #8a9aad;
+      --text-muted: #5a6a7a;
+
+      /* Typography */
+      --font-led: 'IBM Plex Mono', monospace;
+      --font-display: 'Oswald', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-arena);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* Arena Background */
+    .arena-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 100% 60% at 50% 100%, rgba(139, 90, 43, 0.2) 0%, transparent 60%),
+        radial-gradient(ellipse 80% 40% at 50% 20%, rgba(255, 149, 0, 0.08) 0%, transparent 50%),
+        linear-gradient(180deg, #050810 0%, #0a0d12 50%, #12161d 100%);
+    }
+
+    .arena-bg::before {
+      content: '';
+      position: absolute;
+      top: 5%;
+      left: 5%;
+      right: 5%;
+      height: 20%;
+      background-image:
+        radial-gradient(circle 2px, rgba(255,200,100,0.15) 100%, transparent 100%);
+      background-size: 40px 20px;
+      opacity: 0.4;
+    }
+
+    /* Main Layout */
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* === TOP HUD BAR === */
+    .hud-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg-panel);
+      border-bottom: 2px solid var(--gold-main);
+      box-shadow: 0 0 30px rgba(212, 175, 55, 0.3), 0 4px 20px rgba(0,0,0,0.5);
+    }
+
+    .hud-bar-inner {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+    }
+
+    .page-title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      color: var(--gold-main);
+    }
+
+    .hud-stats {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .hud-stat {
+      text-align: center;
+    }
+
+    .hud-stat-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+      margin-bottom: 2px;
+    }
+
+    .hud-stat-value {
+      font-family: var(--font-led);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--led);
+      text-shadow: 0 0 15px rgba(255, 149, 0, 0.6);
+    }
+
+    .hud-stat-value.positive { color: var(--win); text-shadow: 0 0 15px rgba(0, 255, 65, 0.6); }
+
+    /* === MAIN CONTENT === */
+    .main-content {
+      flex: 1;
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 24px 32px;
+      width: 100%;
+    }
+
+    /* Table Header */
+    .table-header {
+      display: grid;
+      grid-template-columns: 320px repeat(5, 80px) 100px 40px;
+      gap: 12px;
+      padding: 12px 20px;
+      background: rgba(212, 175, 55, 0.1);
+      border: 1px solid var(--gold-dark);
+      border-bottom: 2px solid var(--gold-main);
+      margin-bottom: 8px;
+    }
+
+    .th {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--gold-main);
+      text-align: center;
+    }
+
+    .th:first-child {
+      text-align: left;
+    }
+
+    /* === TARGET ROW (Madden Player Card Style) === */
+    .target-row {
+      background: var(--bg-row);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      margin-bottom: 4px;
+      transition: all 0.15s;
+    }
+
+    .target-row:hover {
+      background: var(--bg-row-hover);
+      border-color: var(--gold-main);
+      box-shadow: 0 0 25px rgba(212, 175, 55, 0.2);
+    }
+
+    .target-row.expanded {
+      border-color: var(--gold-main);
+      box-shadow: 0 0 25px rgba(212, 175, 55, 0.3);
+    }
+
+    .target-main {
+      display: grid;
+      grid-template-columns: 320px repeat(5, 80px) 100px 40px;
+      gap: 12px;
+      padding: 16px 20px;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    /* Target Info */
+    .target-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .target-name {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-primary);
+    }
+
+    .target-summary {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.3;
+      max-width: 300px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .target-meta {
+      display: flex;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .target-tag {
+      font-family: var(--font-led);
+      font-size: 10px;
+      padding: 2px 8px;
+      background: rgba(212, 175, 55, 0.15);
+      border: 1px solid var(--gold-dark);
+      color: var(--gold-main);
+    }
+
+    .target-tag.active {
+      background: rgba(0, 255, 65, 0.15);
+      border-color: var(--win);
+      color: var(--win);
+    }
+
+    /* === RADIAL STAT GAUGE === */
+    .stat-gauge {
+      width: 64px;
+      height: 64px;
+      position: relative;
+      margin: 0 auto;
+    }
+
+    .stat-gauge svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .stat-gauge-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.1);
+      stroke-width: 6;
+    }
+
+    .stat-gauge-fill {
+      fill: none;
+      stroke-width: 6;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.5s ease;
+    }
+
+    .stat-gauge-fill.excellent { stroke: var(--win); filter: drop-shadow(0 0 4px rgba(0, 255, 65, 0.5)); }
+    .stat-gauge-fill.good { stroke: var(--cyan); filter: drop-shadow(0 0 4px rgba(0, 212, 255, 0.5)); }
+    .stat-gauge-fill.average { stroke: var(--led); filter: drop-shadow(0 0 4px rgba(255, 149, 0, 0.5)); }
+    .stat-gauge-fill.poor { stroke: var(--loss); filter: drop-shadow(0 0 4px rgba(255, 51, 51, 0.5)); }
+
+    .stat-gauge-value {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-led);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .stat-gauge-label {
+      position: absolute;
+      bottom: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 8px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* Overall Score */
+    .overall-score {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .overall-value {
+      font-family: var(--font-led);
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .overall-value.excellent { color: var(--win); text-shadow: 0 0 20px rgba(0, 255, 65, 0.6); }
+    .overall-value.good { color: var(--cyan); text-shadow: 0 0 20px rgba(0, 212, 255, 0.6); }
+    .overall-value.average { color: var(--led); text-shadow: 0 0 20px rgba(255, 149, 0, 0.6); }
+    .overall-value.poor { color: var(--loss); text-shadow: 0 0 20px rgba(255, 51, 51, 0.6); }
+
+    .overall-label {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+    }
+
+    /* Expand Icon */
+    .expand-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold-main);
+      transition: transform 0.2s;
+    }
+
+    .target-row.expanded .expand-icon {
+      transform: rotate(180deg);
+    }
+
+    /* === CHILD ROWS (Positions) === */
+    .child-rows {
+      display: none;
+      background: var(--bg-child);
+      border-top: 1px solid rgba(212, 175, 55, 0.15);
+    }
+
+    .target-row.expanded .child-rows {
+      display: block;
+    }
+
+    .child-header {
+      display: grid;
+      grid-template-columns: 60px 120px repeat(8, 1fr);
+      gap: 8px;
+      padding: 10px 20px 10px 40px;
+      background: rgba(212, 175, 55, 0.05);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+    }
+
+    .child-th {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    .child-th:nth-child(1),
+    .child-th:nth-child(2) {
+      text-align: left;
+    }
+
+    .position-row {
+      display: grid;
+      grid-template-columns: 60px 120px repeat(8, 1fr);
+      gap: 8px;
+      padding: 12px 20px 12px 40px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      transition: background 0.1s;
+    }
+
+    .position-row:hover {
+      background: rgba(212, 175, 55, 0.05);
+    }
+
+    .position-row:last-child {
+      border-bottom: none;
+    }
+
+    .pos-ticker {
+      font-family: var(--font-led);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+
+    .pos-status {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .pos-status.active {
+      color: var(--win);
+    }
+
+    .pos-status.closed {
+      color: var(--text-muted);
+    }
+
+    .pos-value {
+      font-family: var(--font-led);
+      font-size: 13px;
+      text-align: right;
+      color: var(--text-primary);
+    }
+
+    .pos-value.positive { color: var(--win); }
+    .pos-value.negative { color: var(--loss); }
+    .pos-value.muted { color: var(--text-secondary); }
+
+    /* Summary Row */
+    .child-summary {
+      display: grid;
+      grid-template-columns: 60px 120px repeat(8, 1fr);
+      gap: 8px;
+      padding: 12px 20px 12px 40px;
+      background: rgba(212, 175, 55, 0.08);
+      border-top: 1px solid var(--gold-dark);
+    }
+
+    .child-summary .pos-value {
+      font-weight: 700;
+    }
+
+    .summary-label {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--gold-main);
+      grid-column: span 2;
+    }
+
+    /* Responsive */
+    @media (max-width: 1400px) {
+      .table-header,
+      .target-main {
+        grid-template-columns: 280px repeat(5, 70px) 90px 36px;
+      }
+      .stat-gauge {
+        width: 56px;
+        height: 56px;
+      }
+      .stat-gauge-value {
+        font-size: 14px;
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .table-header,
+      .target-main {
+        grid-template-columns: 1fr;
+      }
+      .target-main {
+        gap: 16px;
+      }
+      .stat-gauges {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="arena-bg"></div>
+
+  <div class="page">
+    <!-- TOP HUD BAR -->
+    <header class="hud-bar">
+      <div class="hud-bar-inner">
+        <h1 class="page-title">Targets</h1>
+        <div class="hud-stats">
+          <div class="hud-stat">
+            <div class="hud-stat-label">Active Targets</div>
+            <div class="hud-stat-value">7</div>
+          </div>
+          <div class="hud-stat">
+            <div class="hud-stat-label">Win Rate</div>
+            <div class="hud-stat-value positive">74%</div>
+          </div>
+          <div class="hud-stat">
+            <div class="hud-stat-label">Avg Score</div>
+            <div class="hud-stat-value">78</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <!-- Table Header -->
+      <div class="table-header">
+        <div class="th">Target / Thesis</div>
+        <div class="th">Direction</div>
+        <div class="th">Magnitude</div>
+        <div class="th">Validity</div>
+        <div class="th">Alpha</div>
+        <div class="th">Difficulty</div>
+        <div class="th">Overall</div>
+        <div class="th"></div>
+      </div>
+
+      <!-- Target Row 1 - Expanded -->
+      <div class="target-row expanded" onclick="this.classList.toggle('expanded')">
+        <div class="target-main">
+          <div class="target-info">
+            <div class="target-name">AI Infrastructure Boom</div>
+            <div class="target-summary">Datacenter buildout and GPU demand will drive semiconductor and cloud infrastructure stocks through 2025</div>
+            <div class="target-meta">
+              <span class="target-tag active">5 Positions</span>
+              <span class="target-tag">Bull Market</span>
+            </div>
+          </div>
+
+          <!-- Radial Gauges -->
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill excellent" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="18.84"></circle>
+            </svg>
+            <div class="stat-gauge-value">92</div>
+            <div class="stat-gauge-label">Direction</div>
+          </div>
+
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill good" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="28.26"></circle>
+            </svg>
+            <div class="stat-gauge-value">78</div>
+            <div class="stat-gauge-label">Magnitude</div>
+          </div>
+
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill excellent" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="15.71"></circle>
+            </svg>
+            <div class="stat-gauge-value">95</div>
+            <div class="stat-gauge-label">Validity</div>
+          </div>
+
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill good" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="25.43"></circle>
+            </svg>
+            <div class="stat-gauge-value">82</div>
+            <div class="stat-gauge-label">Alpha</div>
+          </div>
+
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill average" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="37.68"></circle>
+            </svg>
+            <div class="stat-gauge-value">1.5x</div>
+            <div class="stat-gauge-label">Difficulty</div>
+          </div>
+
+          <div class="overall-score">
+            <div class="overall-value excellent">87</div>
+            <div class="overall-label">Overall</div>
+          </div>
+
+          <div class="expand-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 11L3 6h10l-5 5z"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Child Rows (Positions) -->
+        <div class="child-rows">
+          <div class="child-header">
+            <div class="child-th">Ticker</div>
+            <div class="child-th">Status</div>
+            <div class="child-th">Gain %</div>
+            <div class="child-th">Gain $</div>
+            <div class="child-th">Max Pot %</div>
+            <div class="child-th">Max Pot $</div>
+            <div class="child-th">Days</div>
+            <div class="child-th">Gain/Day</div>
+            <div class="child-th">Cost Basis</div>
+            <div class="child-th">Current</div>
+          </div>
+
+          <div class="position-row">
+            <div class="pos-ticker">NVDA</div>
+            <div class="pos-status active">Active</div>
+            <div class="pos-value positive">+24.8%</div>
+            <div class="pos-value positive">+$3,720</div>
+            <div class="pos-value muted">32.1%</div>
+            <div class="pos-value muted">$4,815</div>
+            <div class="pos-value">45</div>
+            <div class="pos-value positive">+0.55%</div>
+            <div class="pos-value">$15,000</div>
+            <div class="pos-value">$18,720</div>
+          </div>
+
+          <div class="position-row">
+            <div class="pos-ticker">AMD</div>
+            <div class="pos-status active">Active</div>
+            <div class="pos-value positive">+18.2%</div>
+            <div class="pos-value positive">+$1,820</div>
+            <div class="pos-value muted">25.4%</div>
+            <div class="pos-value muted">$2,540</div>
+            <div class="pos-value">38</div>
+            <div class="pos-value positive">+0.48%</div>
+            <div class="pos-value">$10,000</div>
+            <div class="pos-value">$11,820</div>
+          </div>
+
+          <div class="position-row">
+            <div class="pos-ticker">MSFT</div>
+            <div class="pos-status closed">Closed</div>
+            <div class="pos-value positive">+12.1%</div>
+            <div class="pos-value positive">+$2,420</div>
+            <div class="pos-value muted">15.8%</div>
+            <div class="pos-value muted">$3,160</div>
+            <div class="pos-value">62</div>
+            <div class="pos-value positive">+0.20%</div>
+            <div class="pos-value">$20,000</div>
+            <div class="pos-value">$22,420</div>
+          </div>
+
+          <div class="position-row">
+            <div class="pos-ticker">AVGO</div>
+            <div class="pos-status active">Active</div>
+            <div class="pos-value positive">+31.5%</div>
+            <div class="pos-value positive">+$3,150</div>
+            <div class="pos-value muted">38.2%</div>
+            <div class="pos-value muted">$3,820</div>
+            <div class="pos-value">52</div>
+            <div class="pos-value positive">+0.61%</div>
+            <div class="pos-value">$10,000</div>
+            <div class="pos-value">$13,150</div>
+          </div>
+
+          <div class="position-row">
+            <div class="pos-ticker">SMCI</div>
+            <div class="pos-status active">Active</div>
+            <div class="pos-value negative">-8.4%</div>
+            <div class="pos-value negative">-$420</div>
+            <div class="pos-value muted">45.2%</div>
+            <div class="pos-value muted">$2,260</div>
+            <div class="pos-value">28</div>
+            <div class="pos-value negative">-0.30%</div>
+            <div class="pos-value">$5,000</div>
+            <div class="pos-value">$4,580</div>
+          </div>
+
+          <div class="child-summary">
+            <div class="summary-label">Target Total</div>
+            <div class="pos-value positive">+20.3%</div>
+            <div class="pos-value positive">+$10,690</div>
+            <div class="pos-value muted">28.9%</div>
+            <div class="pos-value muted">$16,595</div>
+            <div class="pos-value">45 avg</div>
+            <div class="pos-value positive">+0.45%</div>
+            <div class="pos-value">$60,000</div>
+            <div class="pos-value">$70,690</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Target Row 2 -->
+      <div class="target-row" onclick="this.classList.toggle('expanded')">
+        <div class="target-main">
+          <div class="target-info">
+            <div class="target-name">Energy Transition</div>
+            <div class="target-summary">Renewable energy and EV infrastructure will see accelerated investment as policy incentives expand</div>
+            <div class="target-meta">
+              <span class="target-tag active">4 Positions</span>
+              <span class="target-tag">Bull Market</span>
+            </div>
+          </div>
+
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill good" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="32.97"></circle>
+            </svg>
+            <div class="stat-gauge-value">72</div>
+            <div class="stat-gauge-label">Direction</div>
+          </div>
+
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill average" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="37.68"></circle>
+            </svg>
+            <div class="stat-gauge-value">65</div>
+            <div class="stat-gauge-label">Magnitude</div>
+          </div>
+
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill good" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="28.26"></circle>
+            </svg>
+            <div class="stat-gauge-value">78</div>
+            <div class="stat-gauge-label">Validity</div>
+          </div>
+
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill average" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="42.39"></circle>
+            </svg>
+            <div class="stat-gauge-value">58</div>
+            <div class="stat-gauge-label">Alpha</div>
+          </div>
+
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill average" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="47.1"></circle>
+            </svg>
+            <div class="stat-gauge-value">1.2x</div>
+            <div class="stat-gauge-label">Difficulty</div>
+          </div>
+
+          <div class="overall-score">
+            <div class="overall-value good">68</div>
+            <div class="overall-label">Overall</div>
+          </div>
+
+          <div class="expand-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 11L3 6h10l-5 5z"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="child-rows">
+          <div class="child-header">
+            <div class="child-th">Ticker</div>
+            <div class="child-th">Status</div>
+            <div class="child-th">Gain %</div>
+            <div class="child-th">Gain $</div>
+            <div class="child-th">Max Pot %</div>
+            <div class="child-th">Max Pot $</div>
+            <div class="child-th">Days</div>
+            <div class="child-th">Gain/Day</div>
+            <div class="child-th">Cost Basis</div>
+            <div class="child-th">Current</div>
+          </div>
+
+          <div class="position-row">
+            <div class="pos-ticker">TSLA</div>
+            <div class="pos-status active">Active</div>
+            <div class="pos-value positive">+15.2%</div>
+            <div class="pos-value positive">+$2,280</div>
+            <div class="pos-value muted">22.8%</div>
+            <div class="pos-value muted">$3,420</div>
+            <div class="pos-value">34</div>
+            <div class="pos-value positive">+0.45%</div>
+            <div class="pos-value">$15,000</div>
+            <div class="pos-value">$17,280</div>
+          </div>
+
+          <div class="position-row">
+            <div class="pos-ticker">ENPH</div>
+            <div class="pos-status active">Active</div>
+            <div class="pos-value negative">-12.4%</div>
+            <div class="pos-value negative">-$1,240</div>
+            <div class="pos-value muted">18.5%</div>
+            <div class="pos-value muted">$1,850</div>
+            <div class="pos-value">28</div>
+            <div class="pos-value negative">-0.44%</div>
+            <div class="pos-value">$10,000</div>
+            <div class="pos-value">$8,760</div>
+          </div>
+
+          <div class="position-row">
+            <div class="pos-ticker">NEE</div>
+            <div class="pos-status closed">Closed</div>
+            <div class="pos-value positive">+8.1%</div>
+            <div class="pos-value positive">+$648</div>
+            <div class="pos-value muted">12.2%</div>
+            <div class="pos-value muted">$976</div>
+            <div class="pos-value">45</div>
+            <div class="pos-value positive">+0.18%</div>
+            <div class="pos-value">$8,000</div>
+            <div class="pos-value">$8,648</div>
+          </div>
+
+          <div class="position-row">
+            <div class="pos-ticker">RIVN</div>
+            <div class="pos-status active">Active</div>
+            <div class="pos-value positive">+22.8%</div>
+            <div class="pos-value positive">+$1,140</div>
+            <div class="pos-value muted">35.2%</div>
+            <div class="pos-value muted">$1,760</div>
+            <div class="pos-value">21</div>
+            <div class="pos-value positive">+1.09%</div>
+            <div class="pos-value">$5,000</div>
+            <div class="pos-value">$6,140</div>
+          </div>
+
+          <div class="child-summary">
+            <div class="summary-label">Target Total</div>
+            <div class="pos-value positive">+7.4%</div>
+            <div class="pos-value positive">+$2,828</div>
+            <div class="pos-value muted">18.7%</div>
+            <div class="pos-value muted">$8,006</div>
+            <div class="pos-value">32 avg</div>
+            <div class="pos-value positive">+0.23%</div>
+            <div class="pos-value">$38,000</div>
+            <div class="pos-value">$40,828</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Target Row 3 -->
+      <div class="target-row" onclick="this.classList.toggle('expanded')">
+        <div class="target-main">
+          <div class="target-info">
+            <div class="target-name">Fintech Disruption</div>
+            <div class="target-summary">Digital payments and neobanks will continue taking share from traditional financial institutions</div>
+            <div class="target-meta">
+              <span class="target-tag">3 Positions</span>
+              <span class="target-tag">Flat Market</span>
+            </div>
+          </div>
+
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill poor" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="62.81"></circle>
+            </svg>
+            <div class="stat-gauge-value">33</div>
+            <div class="stat-gauge-label">Direction</div>
+          </div>
+
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill poor" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="72.93"></circle>
+            </svg>
+            <div class="stat-gauge-value">22</div>
+            <div class="stat-gauge-label">Magnitude</div>
+          </div>
+
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill average" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="51.81"></circle>
+            </svg>
+            <div class="stat-gauge-value">45</div>
+            <div class="stat-gauge-label">Validity</div>
+          </div>
+
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill poor" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="75.36"></circle>
+            </svg>
+            <div class="stat-gauge-value">18</div>
+            <div class="stat-gauge-label">Alpha</div>
+          </div>
+
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill good" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="28.26"></circle>
+            </svg>
+            <div class="stat-gauge-value">2.0x</div>
+            <div class="stat-gauge-label">Difficulty</div>
+          </div>
+
+          <div class="overall-score">
+            <div class="overall-value poor">38</div>
+            <div class="overall-label">Overall</div>
+          </div>
+
+          <div class="expand-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 11L3 6h10l-5 5z"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="child-rows">
+          <div class="child-header">
+            <div class="child-th">Ticker</div>
+            <div class="child-th">Status</div>
+            <div class="child-th">Gain %</div>
+            <div class="child-th">Gain $</div>
+            <div class="child-th">Max Pot %</div>
+            <div class="child-th">Max Pot $</div>
+            <div class="child-th">Days</div>
+            <div class="child-th">Gain/Day</div>
+            <div class="child-th">Cost Basis</div>
+            <div class="child-th">Current</div>
+          </div>
+
+          <div class="position-row">
+            <div class="pos-ticker">PYPL</div>
+            <div class="pos-status closed">Closed</div>
+            <div class="pos-value negative">-18.2%</div>
+            <div class="pos-value negative">-$2,730</div>
+            <div class="pos-value muted">8.4%</div>
+            <div class="pos-value muted">$1,260</div>
+            <div class="pos-value">72</div>
+            <div class="pos-value negative">-0.25%</div>
+            <div class="pos-value">$15,000</div>
+            <div class="pos-value">$12,270</div>
+          </div>
+
+          <div class="position-row">
+            <div class="pos-ticker">SQ</div>
+            <div class="pos-status closed">Closed</div>
+            <div class="pos-value negative">-9.4%</div>
+            <div class="pos-value negative">-$940</div>
+            <div class="pos-value muted">12.1%</div>
+            <div class="pos-value muted">$1,210</div>
+            <div class="pos-value">58</div>
+            <div class="pos-value negative">-0.16%</div>
+            <div class="pos-value">$10,000</div>
+            <div class="pos-value">$9,060</div>
+          </div>
+
+          <div class="position-row">
+            <div class="pos-ticker">SOFI</div>
+            <div class="pos-status active">Active</div>
+            <div class="pos-value positive">+5.2%</div>
+            <div class="pos-value positive">+$260</div>
+            <div class="pos-value muted">22.4%</div>
+            <div class="pos-value muted">$1,120</div>
+            <div class="pos-value">18</div>
+            <div class="pos-value positive">+0.29%</div>
+            <div class="pos-value">$5,000</div>
+            <div class="pos-value">$5,260</div>
+          </div>
+
+          <div class="child-summary">
+            <div class="summary-label">Target Total</div>
+            <div class="pos-value negative">-11.4%</div>
+            <div class="pos-value negative">-$3,410</div>
+            <div class="pos-value muted">11.9%</div>
+            <div class="pos-value muted">$3,590</div>
+            <div class="pos-value">49 avg</div>
+            <div class="pos-value negative">-0.23%</div>
+            <div class="pos-value">$30,000</div>
+            <div class="pos-value">$26,590</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Target Row 4 -->
+      <div class="target-row" onclick="this.classList.toggle('expanded')">
+        <div class="target-main">
+          <div class="target-info">
+            <div class="target-name">Healthcare AI</div>
+            <div class="target-summary">AI-driven drug discovery and diagnostic tools will transform healthcare efficiency and outcomes</div>
+            <div class="target-meta">
+              <span class="target-tag active">2 Positions</span>
+              <span class="target-tag">Bull Market</span>
+            </div>
+          </div>
+
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill excellent" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="9.42"></circle>
+            </svg>
+            <div class="stat-gauge-value">100</div>
+            <div class="stat-gauge-label">Direction</div>
+          </div>
+
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill excellent" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="14.13"></circle>
+            </svg>
+            <div class="stat-gauge-value">88</div>
+            <div class="stat-gauge-label">Magnitude</div>
+          </div>
+
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill excellent" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="11.3"></circle>
+            </svg>
+            <div class="stat-gauge-value">92</div>
+            <div class="stat-gauge-label">Validity</div>
+          </div>
+
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill excellent" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="16.56"></circle>
+            </svg>
+            <div class="stat-gauge-value">85</div>
+            <div class="stat-gauge-label">Alpha</div>
+          </div>
+
+          <div class="stat-gauge">
+            <svg viewBox="0 0 36 36">
+              <circle class="stat-gauge-bg" cx="18" cy="18" r="15"></circle>
+              <circle class="stat-gauge-fill good" cx="18" cy="18" r="15"
+                stroke-dasharray="94.2" stroke-dashoffset="23.55"></circle>
+            </svg>
+            <div class="stat-gauge-value">2.2x</div>
+            <div class="stat-gauge-label">Difficulty</div>
+          </div>
+
+          <div class="overall-score">
+            <div class="overall-value excellent">94</div>
+            <div class="overall-label">Overall</div>
+          </div>
+
+          <div class="expand-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 11L3 6h10l-5 5z"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="child-rows">
+          <div class="child-header">
+            <div class="child-th">Ticker</div>
+            <div class="child-th">Status</div>
+            <div class="child-th">Gain %</div>
+            <div class="child-th">Gain $</div>
+            <div class="child-th">Max Pot %</div>
+            <div class="child-th">Max Pot $</div>
+            <div class="child-th">Days</div>
+            <div class="child-th">Gain/Day</div>
+            <div class="child-th">Cost Basis</div>
+            <div class="child-th">Current</div>
+          </div>
+
+          <div class="position-row">
+            <div class="pos-ticker">ISRG</div>
+            <div class="pos-status active">Active</div>
+            <div class="pos-value positive">+42.1%</div>
+            <div class="pos-value positive">+$8,420</div>
+            <div class="pos-value muted">48.5%</div>
+            <div class="pos-value muted">$9,700</div>
+            <div class="pos-value">89</div>
+            <div class="pos-value positive">+0.47%</div>
+            <div class="pos-value">$20,000</div>
+            <div class="pos-value">$28,420</div>
+          </div>
+
+          <div class="position-row">
+            <div class="pos-ticker">DXCM</div>
+            <div class="pos-status active">Active</div>
+            <div class="pos-value positive">+28.4%</div>
+            <div class="pos-value positive">+$2,840</div>
+            <div class="pos-value muted">35.2%</div>
+            <div class="pos-value muted">$3,520</div>
+            <div class="pos-value">76</div>
+            <div class="pos-value positive">+0.37%</div>
+            <div class="pos-value">$10,000</div>
+            <div class="pos-value">$12,840</div>
+          </div>
+
+          <div class="child-summary">
+            <div class="summary-label">Target Total</div>
+            <div class="pos-value positive">+37.5%</div>
+            <div class="pos-value positive">+$11,260</div>
+            <div class="pos-value muted">44.1%</div>
+            <div class="pos-value muted">$13,220</div>
+            <div class="pos-value">83 avg</div>
+            <div class="pos-value positive">+0.45%</div>
+            <div class="pos-value">$30,000</div>
+            <div class="pos-value">$41,260</div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</body>
+</html>

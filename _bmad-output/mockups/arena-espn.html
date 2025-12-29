@@ -94,41 +94,6 @@
       transform-origin: bottom center;
     }
 
-    /* === BEVELED GOLD FRAME - ENHANCED 3D METALLIC === */
-    .gold-frame {
-      position: relative;
-      background: var(--bg-panel);
-    }
-
-    /* Outer metallic frame - simulates brushed gold */
-    .gold-frame::before {
-      content: '';
-      position: absolute;
-      inset: -8px;
-      background:
-        /* Top highlight strip */
-        linear-gradient(180deg, var(--gold-highlight) 0%, var(--gold-light) 10%, var(--gold-bright) 30%, var(--gold-main) 50%, var(--gold-dark) 70%, var(--gold-shadow) 90%, var(--gold-black) 100%);
-      clip-path: polygon(
-        0% 0%, 100% 0%, 100% 100%, 0% 100%,
-        0% 0%, 8px 8px, 8px calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) 8px, 8px 8px
-      );
-      filter: url(#goldBevel);
-    }
-
-    /* Inner groove */
-    .gold-frame::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border: 2px solid;
-      border-color: var(--gold-shadow) var(--gold-light) var(--gold-bright) var(--gold-dark);
-      box-shadow:
-        inset 0 0 0 1px var(--gold-deep),
-        inset 0 2px 4px rgba(0,0,0,0.5),
-        0 0 50px rgba(212, 175, 55, 0.4);
-      pointer-events: none;
-    }
-
     /* Main Layout */
     .dashboard {
       position: relative;
@@ -391,21 +356,18 @@
     }
 
     .theory-bar {
-      height: 8px;
+      height: 4px;
       background: rgba(255,255,255,0.1);
-      border: 1px solid var(--gold-dark);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .theory-bar-fill {
       height: 100%;
-      background: linear-gradient(90deg, var(--gold-dark), var(--win));
-      box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+      background: var(--win);
     }
 
     .theory-bar-fill.negative {
-      background: linear-gradient(90deg, var(--gold-dark), var(--loss));
-      box-shadow: 0 0 10px rgba(255, 51, 51, 0.3);
+      background: var(--loss);
     }
 
     .theory-accuracy {
@@ -419,11 +381,14 @@
     .shot-row {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
+      gap: 10px;
+      padding: 10px 12px;
       background: var(--bg-card);
-      border: 2px solid var(--gold-dark);
-      margin-bottom: 4px;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+    }
+
+    .shot-row:last-child {
+      border-bottom: none;
     }
 
     .shot-ticker {
@@ -505,10 +470,9 @@
     }
 
     .metric-card {
-      padding: 12px;
+      padding: 16px 12px;
       background: var(--bg-card);
-      border: 2px solid var(--gold-dark);
-      box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.2);
+      border: 1px solid rgba(212, 175, 55, 0.2);
       text-align: center;
     }
 
@@ -546,9 +510,9 @@
     }
 
     .trend-card {
-      padding: 10px 12px;
+      padding: 14px 16px;
       background: var(--bg-card);
-      border: 2px solid var(--gold-dark);
+      border: 1px solid rgba(212, 175, 55, 0.2);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -589,21 +553,20 @@
     .leaderboard-row {
       display: grid;
       grid-template-columns: 28px 1fr 45px 42px;
-      gap: 6px;
+      gap: 8px;
       align-items: center;
-      padding: 6px 8px;
-      border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-      transition: all 0.1s;
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      transition: background 0.1s;
     }
 
     .leaderboard-row:hover {
-      background: rgba(212, 175, 55, 0.1);
+      background: rgba(212, 175, 55, 0.05);
     }
 
     .leaderboard-row.you {
-      background: rgba(212, 175, 55, 0.2);
-      border: 2px solid var(--gold-main);
-      box-shadow: inset 0 0 10px rgba(212, 175, 55, 0.2);
+      background: rgba(212, 175, 55, 0.1);
+      border-left: 3px solid var(--gold-main);
     }
 
     .lb-rank {
@@ -679,9 +642,7 @@
         <!-- User Profile -->
         <div class="user-profile">
           <div class="user-avatar">
-            <div class="user-avatar-inner">
-              <span>MG</span>
-            </div>
+            <span>MG</span>
           </div>
           <div class="user-info">
             <div class="user-name">TRADER_ELITE</div>
