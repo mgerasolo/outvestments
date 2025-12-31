@@ -15,6 +15,13 @@
       "when": 1767004836190,
       "tag": "0001_outstanding_quasar",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1767163815291,
+      "tag": "0002_glamorous_colossus",
+      "breakpoints": true
     }
   ]
 }

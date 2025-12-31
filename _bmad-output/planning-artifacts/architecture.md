@@ -2,15 +2,19 @@
 stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8]
 status: complete
 completedAt: '2025-12-27'
+updatedAt: '2025-12-30'
 inputDocuments:
   - prd-outvestments-2025-12-27.md
   - product-brief-outvestments-2025-12-26.md
   - business-analysis-report-2025-12-27.md
   - paper-trading-api-research.md
+  - pricing-tiers.md
+  - target-theory-system-v2.md
 workflowType: 'architecture'
 project_name: 'outvestments'
 user_name: 'Matt'
 date: '2025-12-27'
+version: '1.1'
 ---
 
 # Architecture Decision Document
@@ -22,7 +26,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 ### Requirements Overview
 
 **Functional Requirements:**
-~71 core FRs spanning Target/Aim/Shot management, scoring calculations (Accuracy, Performance, Difficulty, Trajectory), Alpaca paper trading integration, multi-view visualization (scoreboard, charts, heatmaps), and role-based user management. The thesis-first approach (Target → Aim → Shot hierarchy) and PPD scoring are the key differentiators requiring careful implementation.
+~71 core FRs spanning Target/Aim/Shot management, 4-level hierarchical scoring (User → Target → Aim → Shot with centered -50 to +50 scale), Alpaca paper trading integration, multi-view visualization (scoreboard, charts, heatmaps), and role-based user management. The thesis-first approach (Target → Aim → Shot hierarchy) and time-normalized profit metrics are the key differentiators requiring careful implementation.
 
 **Non-Functional Requirements:**
 - Multi-tenant data isolation from day 1
@@ -95,12 +99,15 @@ With 20-30 min cache TTL, effective capacity is ~4,000 calls per refresh window 
 
 ### Architectural Implications
 
-**Scoring Engine:**
-The scoring system (Accuracy, Performance, Difficulty, Trajectory) is the core IP. It must be:
-- Deterministic and reproducible
-- 100% test covered
-- Isolated as a pure function layer (no side effects)
-- Documented for AI agent implementation consistency
+**Scoring Engine (4-Level Hierarchical System):**
+The scoring system implements a 4-level hierarchy (User → Target → Aim → Shot) with centered -50 to +50 scale where 0 = market baseline (C grade). Key characteristics:
+- **Aim Level (PRIMARY):** 4 metrics (Directional 20%, Magnitude 30%, Forecast Edge 35%, Thesis Validity 15%) + Difficulty displayed independently
+- **Shot Level:** 4 metrics (Performance 45%, Forecast Edge 35%, PSC 20%) + Risk multiplier (0.70× to 1.10×) + Adaptability bonus
+- **Target Level:** Dual scores (Prediction Quality + Performance), P&L summary, capital metrics, market comparison
+- **User Level:** Career rollups of prediction and performance scores
+- Letter grades: FFF → AAA (16 tiers)
+- Thesis Validity capped at 0 if risks not documented
+- Deterministic, 100% test covered, isolated as pure functions
 
 **External API Strategy:**
 Alpaca is the single external dependency for MVP. Mitigation:
@@ -247,14 +254,56 @@ outvestments/
 
 | Entity | Purpose | Key Fields |
 |--------|---------|------------|
-| `users` | Authentik-linked user profiles | `id`, `authentik_sub`, `role`, `created_at` |
-| `targets` | Investment thesis containers | `id`, `user_id`, `thesis`, `target_type`, `catalyst`, `tags`, `status` |
-| `aims` | Specific ticker + price + date predictions | `id`, `target_id`, `symbol`, `target_price_realistic`, `target_price_reach`, `target_date` |
-| `shots` | Individual trades/orders | `id`, `aim_id`, `direction`, `entry_price`, `entry_date`, `position_size`, `trigger_type`, `shot_type`, `state` |
-| `scores` | Calculated performance metrics | `id`, `shot_id`, `accuracy`, `performance`, `difficulty`, `trajectory`, `ppd`, `calculated_at` |
+| `users` | Authentik-linked user profiles | `id`, `authentik_sub`, `role`, `tier`, `tier_source`, `tier_expires_at`, `referral_code`, `referred_by_user_id`, `created_at` |
+| `targets` | Investment thesis containers | `id`, `user_id`, `thesis`, `target_type`, `catalyst`, `tags`, `status`, `conviction_level`, `risks_identified`, `abort_trigger`, `abort_triggered`, `abort_triggered_at` |
+| `aims` | Specific ticker + price + date predictions | `id`, `target_id`, `symbol`, `aim_type` (playable/monitor), `target_price_realistic`, `target_price_reach`, `target_date`, `rationale`, `monitor_entry_price`, `monitor_outcome`, `ai_suggested` |
+| `shots` | Individual trades/orders | `id`, `aim_id`, `direction`, `entry_price`, `entry_date`, `position_size`, `trigger_type`, `shot_type`, `state`, `stop_loss_price`, `stop_loss_percent`, `profit_target_price`, `profit_target_percent`, `exit_trigger`, `max_loss_amount`, `exit_reason`, `stop_loss_honored`, `profit_target_honored` |
+| `aim_scores` | Aim-level scoring (4 metrics + difficulty) | `id`, `aim_id`, `directional_accuracy`, `magnitude_accuracy`, `forecast_edge`, `thesis_validity`, `difficulty_multiplier`, `aim_final_score`, `letter_grade`, `risks_documented`, `calculated_at` |
+| `shot_scores` | Shot-level scoring (4 metrics + risk) | `id`, `shot_id`, `performance_score`, `shot_forecast_edge`, `perfect_shot_capture`, `risk_mitigation_score`, `risk_grade`, `risk_multiplier`, `adaptability_score`, `final_shot_score`, `letter_grade`, `calculated_at` |
+| `target_scores` | Target-level aggregation | `id`, `target_id`, `prediction_score`, `prediction_grade`, `performance_score`, `performance_grade`, `total_pnl_dollars`, `total_pnl_percent`, `win_ratio`, `calculated_at` |
+| `user_career_scores` | User career rollups | `id`, `user_id`, `prediction_quality_score`, `performance_score`, `prediction_grade`, `performance_grade`, `total_aims_scored`, `total_shots_scored`, `total_pnl_dollars`, `calculated_at` |
 | `audit_logs` | Immutable financial action log | `id`, `user_id`, `action`, `entity_type`, `entity_id`, `payload`, `created_at` |
 | `price_cache` | Cached market data | `symbol`, `price`, `fetched_at`, `source` |
 | `alpaca_credentials` | Encrypted API keys | `id`, `user_id`, `encrypted_key`, `encrypted_secret`, `iv` |
+
+**Phase 2 Monetization Tables (New):**
+
+| Entity | Purpose | Key Fields |
+|--------|---------|------------|
+| `user_acquisition` | Track how users were acquired | `id`, `user_id`, `source`, `utm_source`, `utm_medium`, `utm_campaign`, `referral_code_used`, `affiliate_code_used`, `landing_page`, `created_at` |
+| `promo_codes` | Promotional code definitions | `id`, `code`, `type` (tier_grant/trial_extension/percent_off/etc), `value`, `tier_to_grant`, `days_to_grant`, `valid_from`, `valid_until`, `max_uses`, `max_uses_per_user`, `new_users_only`, `min_tier`, `is_active` |
+| `promo_redemptions` | Track code usage | `id`, `promo_code_id`, `user_id`, `redeemed_at`, `applied_until`, `discount_amount` |
+| `referrals` | Referral tracking | `id`, `referrer_user_id`, `referred_user_id`, `code_used`, `referred_at`, `converted_at`, `reward_granted_at`, `reward_type` |
+| `affiliates` | Affiliate partner accounts | `id`, `user_id`, `affiliate_code`, `commission_rate`, `payout_method`, `tier`, `is_active`, `created_at` |
+| `affiliate_conversions` | Track affiliate sales | `id`, `affiliate_id`, `referred_user_id`, `conversion_type`, `revenue_generated`, `commission_earned`, `payout_status`, `created_at` |
+| `global_config` | System-wide configuration | `key`, `value`, `updated_at`, `updated_by` |
+| `user_discipline_stats` | Trading discipline metrics | `id`, `user_id`, `total_shots`, `stop_loss_honored_count`, `stop_loss_ignored_count`, `profit_target_honored_count`, `profit_target_ignored_count`, `abort_trigger_honored_count`, `abort_trigger_ignored_count`, `updated_at` |
+
+**User Tier System:**
+
+```sql
+-- Tier resolution order: global_override > admin > subscription > promo > trial > 'free'
+tier ENUM('free', 'premium', 'premium_plus') DEFAULT 'free'
+tier_source ENUM('default', 'subscription', 'trial', 'promo', 'admin', 'affiliate', 'global_override') DEFAULT 'default'
+tier_expires_at TIMESTAMP NULL  -- When current tier expires
+trial_started_at TIMESTAMP NULL
+trial_ends_at TIMESTAMP NULL
+```
+
+**Conviction Levels (Targets):**
+
+```sql
+conviction_level ENUM('high', 'medium', 'low') DEFAULT 'medium'
+conviction_updated_at TIMESTAMP NULL
+```
+
+**Aim Types:**
+
+```sql
+aim_type ENUM('playable', 'monitor') DEFAULT 'playable'
+-- Monitor aims: no shots allowed, no scoring impact, no leaderboard
+-- Used for thesis validation without capital commitment
+```
 
 **Soft Delete Strategy:** `deleted_at` timestamp column on `targets`, `aims`, and `shots`. Null = active.
 
@@ -675,13 +724,16 @@ outvestments/
 │   │   │   ├── types.ts              # Alpaca response types
 │   │   │   └── errors.ts             # Alpaca-specific error handling
 │   │   ├── scoring/
-│   │   │   ├── index.ts              # Main scoring exports
-│   │   │   ├── accuracy.ts           # Accuracy calculation
-│   │   │   ├── performance.ts        # Performance calculation
-│   │   │   ├── difficulty.ts         # Difficulty calculation
-│   │   │   ├── trajectory.ts         # Trajectory calculation
-│   │   │   ├── ppd.ts                # Performance Per Day
-│   │   │   └── types.ts              # Scoring types
+│   │   │   ├── index.ts              # Module exports
+│   │   │   ├── types.ts              # TypeScript interfaces for scoring
+│   │   │   ├── constants.ts          # Weights, grade mappings, interpolation points
+│   │   │   ├── grade-mapper.ts       # Score to letter grade (FFF→AAA, 16 tiers)
+│   │   │   ├── interpolators.ts      # Smooth interpolation for magnitude/forecast
+│   │   │   ├── risk-assessor.ts      # Risk plan + execution discipline scoring
+│   │   │   ├── aim-scorer.ts         # 4 metrics + difficulty calculation
+│   │   │   ├── shot-scorer.ts        # 4 metrics + risk multiplier + adaptability
+│   │   │   ├── target-scorer.ts      # Aggregation with P&L metrics
+│   │   │   └── user-scorer.ts        # Career-level aggregation
 │   │   ├── encryption.ts             # AES-256 encrypt/decrypt
 │   │   ├── audit.ts                  # Audit logging helper
 │   │   ├── query-keys.ts             # React Query key factory
@@ -779,9 +831,12 @@ outvestments/
 - Pages: `src/app/(protected)/targets/[id]/aims/[aimId]/shots/`
 - Tests: `src/actions/shots.test.ts`, `tests/e2e/shots.spec.ts`
 
-**Epic: Scoring Engine**
-- Core Logic: `src/lib/scoring/` (pure functions)
-- Components: `src/components/features/scores/`
+**Epic: Scoring Engine (4-Level Hierarchical System) ✅ IMPLEMENTED**
+- Core Logic: `src/lib/scoring/` (pure functions - types, constants, grade-mapper, interpolators, risk-assessor, aim-scorer, shot-scorer, target-scorer, user-scorer)
+- Server Actions: `src/app/actions/scoring.ts` (calculateAndStoreAimScore, calculateAndStoreShotScore, recalculateTargetScore, recalculateUserCareerScores)
+- Components: `src/components/scoring/` (ScoreBadge, DifficultyBadge, MetricBar, AimScorecard, ShotScorecard, TargetScorecard, UserScorecard)
+- Database: 4 tables (aim_scores, shot_scores, target_scores, user_career_scores) + 4 enums (letter_grade, risk_grade, risk_plan_quality, execution_discipline)
+- Integration: Scoring triggers in `shots.ts` and `aims.ts` close actions
 - Jobs: `src/jobs/handlers/score-refresh.ts`
 - Tests: `src/lib/scoring/*.test.ts` (100% coverage required)
 

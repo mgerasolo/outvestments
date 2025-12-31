@@ -70,6 +70,31 @@ export const aimStatusEnum = pgEnum("aim_status", [
   "rolled_over", // Extended to a new target date
 ]);
 
+// Scoring system enums
+export const riskGradeEnum = pgEnum("risk_grade", ["A", "B", "C", "D", "F"]);
+
+export const riskPlanQualityEnum = pgEnum("risk_plan_quality", [
+  "none",
+  "very_liberal",
+  "reasonable",
+  "structured",
+]);
+
+export const executionDisciplineEnum = pgEnum("execution_discipline", [
+  "followed_cleanly",
+  "minor_delay",
+  "clear_violation",
+  "severe_neglect",
+]);
+
+export const letterGradeEnum = pgEnum("letter_grade", [
+  "AAA", "AA+", "AA", "A+", "A", "A-",
+  "B+", "B", "B-",
+  "C+", "C", "C-",
+  "D",
+  "F", "FF", "FFF",
+]);
+
 // ============================================================================
 // Tables
 // ============================================================================
@@ -235,7 +260,7 @@ export const shots = pgTable(
 );
 
 /**
- * Scores table - performance metrics for completed shots
+ * Scores table - performance metrics for completed shots (LEGACY - kept for migration)
  */
 export const scores = pgTable(
   "scores",
@@ -255,6 +280,223 @@ export const scores = pgTable(
       .notNull(),
   },
   (table) => [index("scores_shot_id_idx").on(table.shotId)]
+);
+
+// ============================================================================
+// New 4-Level Scoring System Tables
+// ============================================================================
+
+/**
+ * Aim Scores - PRIMARY SCORING UNIT
+ * Measures prediction quality (thinking skill)
+ *
+ * 4 metrics (-50 to +50):
+ * - Directional Accuracy (20%)
+ * - Magnitude Accuracy (30%)
+ * - Forecast Edge (35%)
+ * - Thesis Validity (15%)
+ *
+ * Difficulty shown independently (1.0 to 5.0)
+ */
+export const aimScores = pgTable(
+  "aim_scores",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    aimId: uuid("aim_id")
+      .references(() => aims.id, { onDelete: "cascade" })
+      .unique()
+      .notNull(),
+
+    // Individual metrics (-50 to +50)
+    directionalAccuracy: decimal("directional_accuracy", { precision: 6, scale: 2 }).notNull(),
+    magnitudeAccuracy: decimal("magnitude_accuracy", { precision: 6, scale: 2 }).notNull(),
+    forecastEdge: decimal("forecast_edge", { precision: 6, scale: 2 }).notNull(),
+    thesisValidity: decimal("thesis_validity", { precision: 6, scale: 2 }).notNull(),
+
+    // Difficulty (displayed independently, TBD if multiplied)
+    difficultyMultiplier: decimal("difficulty_multiplier", { precision: 4, scale: 2 }).notNull(),
+
+    // Final weighted average score (-50 to +50)
+    finalScore: decimal("final_score", { precision: 6, scale: 2 }).notNull(),
+    letterGrade: letterGradeEnum("letter_grade").notNull(),
+
+    // Discipline tracking
+    risksDocumented: boolean("risks_documented").default(false).notNull(),
+    thesisValidityCapped: boolean("thesis_validity_capped").default(false).notNull(),
+
+    // Self-reflection (optional)
+    selfRating: integer("self_rating"), // 1-5
+    selfReflectionNotes: text("self_reflection_notes"),
+
+    // Time-normalized returns (Predicted)
+    predictedProfitPerDay: decimal("predicted_profit_per_day", { precision: 10, scale: 6 }),
+    predictedProfitPerMonth: decimal("predicted_profit_per_month", { precision: 10, scale: 4 }),
+    predictedProfitPerYear: decimal("predicted_profit_per_year", { precision: 10, scale: 4 }),
+
+    // Time-normalized returns (Actual)
+    actualProfitPerDay: decimal("actual_profit_per_day", { precision: 10, scale: 6 }),
+    actualProfitPerMonth: decimal("actual_profit_per_month", { precision: 10, scale: 4 }),
+    actualProfitPerYear: decimal("actual_profit_per_year", { precision: 10, scale: 4 }),
+
+    calculatedAt: timestamp("calculated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index("aim_scores_aim_id_idx").on(table.aimId)]
+);
+
+/**
+ * Shot Scores - Execution quality scoring
+ *
+ * 4 metrics (-50 to +50):
+ * - Performance Score (45%)
+ * - Shot Forecast Edge (35%)
+ * - Perfect Shot Capture (20%)
+ * - Risk Mitigation (converted to multiplier)
+ *
+ * Risk Grade: A=1.10×, B=1.05×, C=1.00×, D=0.85×, F=0.70×
+ * Adaptability: Pro-only bonus (±5)
+ */
+export const shotScores = pgTable(
+  "shot_scores",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    shotId: uuid("shot_id")
+      .references(() => shots.id, { onDelete: "cascade" })
+      .unique()
+      .notNull(),
+
+    // Individual metrics (-50 to +50)
+    performanceScore: decimal("performance_score", { precision: 6, scale: 2 }).notNull(),
+    shotForecastEdge: decimal("shot_forecast_edge", { precision: 6, scale: 2 }).notNull(),
+    perfectShotCapture: decimal("perfect_shot_capture", { precision: 6, scale: 2 }).notNull(),
+    riskMitigationScore: decimal("risk_mitigation_score", { precision: 6, scale: 2 }).notNull(),
+
+    // Risk assessment
+    riskGrade: riskGradeEnum("risk_grade").notNull(),
+    riskMultiplier: decimal("risk_multiplier", { precision: 4, scale: 2 }).notNull(),
+
+    // Adaptability (Pro tier only)
+    adaptabilityScore: decimal("adaptability_score", { precision: 6, scale: 2 }),
+    adaptabilityBonus: decimal("adaptability_bonus", { precision: 4, scale: 2 }).default("0"),
+    adaptabilityLocked: boolean("adaptability_locked").default(true).notNull(),
+
+    // Final computed score (-50 to +50 range, after risk multiplier + adaptability bonus)
+    finalScore: decimal("final_score", { precision: 6, scale: 2 }).notNull(),
+    letterGrade: letterGradeEnum("letter_grade").notNull(),
+
+    // Capital tracking for aggregation
+    capitalTimeWeight: decimal("capital_time_weight", { precision: 10, scale: 4 }),
+
+    // Time-normalized returns
+    profitPerDay: decimal("profit_per_day", { precision: 10, scale: 6 }),
+    profitPerMonth: decimal("profit_per_month", { precision: 10, scale: 4 }),
+    profitPerYear: decimal("profit_per_year", { precision: 10, scale: 4 }),
+
+    calculatedAt: timestamp("calculated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index("shot_scores_shot_id_idx").on(table.shotId)]
+);
+
+/**
+ * Target Scores - Aggregated from Aims and Shots
+ *
+ * Dual scores:
+ * - Prediction Score (from Aims - thinking quality)
+ * - Performance Score (from Shots - execution quality)
+ *
+ * Plus comprehensive P&L and capital metrics
+ */
+export const targetScores = pgTable(
+  "target_scores",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    targetId: uuid("target_id")
+      .references(() => targets.id, { onDelete: "cascade" })
+      .unique()
+      .notNull(),
+
+    // Dual scores
+    predictionScore: decimal("prediction_score", { precision: 6, scale: 2 }),
+    predictionGrade: letterGradeEnum("prediction_grade"),
+    performanceScore: decimal("performance_score", { precision: 6, scale: 2 }),
+    performanceGrade: letterGradeEnum("performance_grade"),
+
+    // Financial results
+    totalPnlDollars: decimal("total_pnl_dollars", { precision: 14, scale: 2 }),
+    totalPnlPercent: decimal("total_pnl_percent", { precision: 10, scale: 4 }),
+    maxPossibleReturnPercent: decimal("max_possible_return_percent", { precision: 10, scale: 4 }),
+
+    // Capital metrics
+    totalCapitalInvested: decimal("total_capital_invested", { precision: 14, scale: 2 }),
+    peakCapitalAtOnce: decimal("peak_capital_at_once", { precision: 14, scale: 2 }),
+    capitalEfficiency: decimal("capital_efficiency", { precision: 6, scale: 4 }),
+
+    // Time & completion
+    targetDurationDays: integer("target_duration_days"),
+    heldUntilEnd: boolean("held_until_end"),
+    avgHoldingPeriodDays: integer("avg_holding_period_days"),
+
+    // Prediction accuracy
+    predictedReturnPercent: decimal("predicted_return_percent", { precision: 10, scale: 4 }),
+    actualReturnPercent: decimal("actual_return_percent", { precision: 10, scale: 4 }),
+    predictionAccuracyRatio: decimal("prediction_accuracy_ratio", { precision: 6, scale: 4 }),
+
+    // Win/Loss stats
+    winningAimsCount: integer("winning_aims_count"),
+    totalAimsCount: integer("total_aims_count"),
+    winRatio: decimal("win_ratio", { precision: 4, scale: 2 }),
+
+    // Market comparison
+    marketReturnPercent: decimal("market_return_percent", { precision: 10, scale: 4 }),
+    alphaVsMarket: decimal("alpha_vs_market", { precision: 10, scale: 4 }),
+
+    // Time-normalized returns (weighted average across shots)
+    avgProfitPerDay: decimal("avg_profit_per_day", { precision: 10, scale: 6 }),
+    avgProfitPerMonth: decimal("avg_profit_per_month", { precision: 10, scale: 4 }),
+    avgProfitPerYear: decimal("avg_profit_per_year", { precision: 10, scale: 4 }),
+
+    calculatedAt: timestamp("calculated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index("target_scores_target_id_idx").on(table.targetId)]
+);
+
+/**
+ * User Career Scores - Aggregated from all Targets
+ *
+ * Two distinct career scores:
+ * - Prediction Quality (from Aims - how good are your ideas)
+ * - Performance (from Shots - how well do you execute)
+ */
+export const userCareerScores = pgTable(
+  "user_career_scores",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .unique()
+      .notNull(),
+
+    // Two distinct career scores
+    predictionQualityScore: decimal("prediction_quality_score", { precision: 6, scale: 2 }),
+    predictionGrade: letterGradeEnum("prediction_grade"),
+    performanceScore: decimal("performance_score", { precision: 6, scale: 2 }),
+    performanceGrade: letterGradeEnum("performance_grade"),
+
+    // Aggregate stats
+    totalAimsScored: integer("total_aims_scored").default(0),
+    totalShotsScored: integer("total_shots_scored").default(0),
+    totalPnlDollars: decimal("total_pnl_dollars", { precision: 14, scale: 2 }),
+
+    calculatedAt: timestamp("calculated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [index("user_career_scores_user_id_idx").on(table.userId)]
 );
 
 /**
@@ -472,6 +714,35 @@ export const scoresRelations = relations(scores, ({ one }) => ({
   }),
 }));
 
+// New scoring system relations
+export const aimScoresRelations = relations(aimScores, ({ one }) => ({
+  aim: one(aims, {
+    fields: [aimScores.aimId],
+    references: [aims.id],
+  }),
+}));
+
+export const shotScoresRelations = relations(shotScores, ({ one }) => ({
+  shot: one(shots, {
+    fields: [shotScores.shotId],
+    references: [shots.id],
+  }),
+}));
+
+export const targetScoresRelations = relations(targetScores, ({ one }) => ({
+  target: one(targets, {
+    fields: [targetScores.targetId],
+    references: [targets.id],
+  }),
+}));
+
+export const userCareerScoresRelations = relations(userCareerScores, ({ one }) => ({
+  user: one(users, {
+    fields: [userCareerScores.userId],
+    references: [users.id],
+  }),
+}));
+
 export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
   user: one(users, {
     fields: [auditLogs.userId],
@@ -533,6 +804,19 @@ export type NewSymbol = typeof symbols.$inferInsert;
 export type WatchlistItem = typeof watchlist.$inferSelect;
 export type NewWatchlistItem = typeof watchlist.$inferInsert;
 
+// New scoring system types
+export type AimScore = typeof aimScores.$inferSelect;
+export type NewAimScore = typeof aimScores.$inferInsert;
+
+export type ShotScore = typeof shotScores.$inferSelect;
+export type NewShotScore = typeof shotScores.$inferInsert;
+
+export type TargetScore = typeof targetScores.$inferSelect;
+export type NewTargetScore = typeof targetScores.$inferInsert;
+
+export type UserCareerScore = typeof userCareerScores.$inferSelect;
+export type NewUserCareerScore = typeof userCareerScores.$inferInsert;
+
 // Enum type exports for use in application code
 export type UserRole = (typeof userRoleEnum.enumValues)[number];
 export type TargetType = (typeof targetTypeEnum.enumValues)[number];
@@ -543,3 +827,9 @@ export type ShotType = (typeof shotTypeEnum.enumValues)[number];
 export type ShotState = (typeof shotStateEnum.enumValues)[number];
 export type MarketType = (typeof marketTypeEnum.enumValues)[number];
 export type AimStatus = (typeof aimStatusEnum.enumValues)[number];
+
+// Scoring system enum exports
+export type RiskGrade = (typeof riskGradeEnum.enumValues)[number];
+export type RiskPlanQuality = (typeof riskPlanQualityEnum.enumValues)[number];
+export type ExecutionDiscipline = (typeof executionDisciplineEnum.enumValues)[number];
+export type LetterGrade = (typeof letterGradeEnum.enumValues)[number];

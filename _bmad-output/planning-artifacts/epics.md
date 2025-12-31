@@ -1,9 +1,13 @@
 ---
 stepsCompleted: [1, 2, 3]
+updatedAt: '2025-12-30'
+version: '1.1'
 inputDocuments:
   - prd-outvestments-2025-12-27.md
   - architecture.md
   - ux-design-specification.md
+  - pricing-tiers.md
+  - target-theory-system-v2.md
 terminology:
   - Target: The thesis/theme level prediction (e.g., "AI stocks will surge")
   - Aim: Specific ticker + price + date (e.g., "NVDA +20% by Dec 2025")
@@ -879,111 +883,139 @@ Implement Shot (trade/order) configuration, execution, and lifecycle management.
 
 ---
 
-### Epic 7: Scoring Engine
-**Priority:** P0 | **Dependencies:** E6
+### Epic 7: Scoring Engine ✅ COMPLETE
+**Priority:** P0 | **Dependencies:** E6 | **Completed:** 2025-12-30
 
-Implement the three-tier scoring system as a pure function layer.
+Implement the **four-level hierarchical scoring system** as a pure function layer.
+
+**Implementation Summary:**
+- 4 levels: User → Target → Aim (PRIMARY) → Shot
+- Centered scale: -50 to +50 (0 = market baseline)
+- Letter grades: FFF → AAA (16 tiers)
+- Database tables: `aim_scores`, `shot_scores`, `target_scores`, `user_career_scores`
+- Automatic cascade on close: Shot/Aim close → Target recalc → User recalc
 
 **Stories:**
 
-#### E7-S1: Scoring Engine Architecture
+#### E7-S1: Scoring Engine Architecture ✅
 **As a** developer, **I want** a pure function scoring engine **so that** calculations are testable and predictable.
 
 **Acceptance Criteria:**
-- [ ] Isolated in src/lib/scoring/
-- [ ] Pure functions, no side effects
-- [ ] All inputs passed explicitly
-- [ ] 100% unit test coverage
+- [x] Isolated in `src/lib/scoring/`
+- [x] Pure functions, no side effects
+- [x] All inputs passed explicitly
+- [ ] 100% unit test coverage (pending)
+
+**Files Created:**
+- `src/lib/scoring/types.ts` — TypeScript interfaces
+- `src/lib/scoring/constants.ts` — Weights, grade mappings
+- `src/lib/scoring/grade-mapper.ts` — Score → letter grade
+- `src/lib/scoring/interpolators.ts` — Smooth interpolation
+- `src/lib/scoring/risk-assessor.ts` — Risk plan scoring
+- `src/lib/scoring/aim-scorer.ts` — Aim calculations
+- `src/lib/scoring/shot-scorer.ts` — Shot calculations
+- `src/lib/scoring/target-scorer.ts` — Target aggregation
+- `src/lib/scoring/user-scorer.ts` — Career rollups
+- `src/lib/scoring/index.ts` — Module exports
 
 **Requirements:** AR17, AR18, NFR18
 
 ---
 
-#### E7-S2: PPD (Performance Per Day) Calculation
-**As a** user, **I want** PPD calculated for all positions **so that** I can compare across holding periods.
+#### E7-S2: Time-Normalized Returns (PPD/PPM/PPY) ✅
+**As a** user, **I want** time-normalized returns **so that** I can compare across holding periods.
 
 **Acceptance Criteria:**
-- [ ] PPD = Total Return % / Days Held
-- [ ] Calculate for each Shot
-- [ ] Aggregate for Aims and Targets
-- [ ] Primary sort metric for leaderboards
+- [x] PPD = Total Return % / Days Held
+- [x] PPM = PPD × 30, PPY = PPD × 365
+- [x] Calculate for each Shot, Aim, and Target
+- [x] Stored in database for all levels
 
 **Requirements:** FR34
 
 ---
 
-#### E7-S3: Accuracy Score Calculation
-**As a** user, **I want** accuracy scores **so that** I know how close I came to my target.
+#### E7-S3: Aim-Level Scoring (PRIMARY) ✅
+**As a** user, **I want** aim scores with 4 weighted metrics **so that** I know prediction quality.
 
 **Acceptance Criteria:**
-- [ ] Accuracy = (Actual Return / Target Return) × 100
-- [ ] Cap at 100 for exceeding target
-- [ ] Handle negative targets (bearish predictions)
-- [ ] Score even if target not hit
+- [x] Directional Accuracy (20%) — Did price move in predicted direction?
+- [x] Magnitude Accuracy (30%) — How close to target price?
+- [x] Forecast Edge (35%) — Your return vs market
+- [x] Thesis Validity (15%) — Was reasoning sound? (capped at 0 if no risks)
+- [x] Final score = weighted average (stays on -50 to +50 scale)
+- [x] Difficulty displayed independently (1.0× to 5.0×)
 
 **Requirements:** FR35
 
 ---
 
-#### E7-S4: Performance Score (Raw)
-**As a** user, **I want** raw performance scores **so that** I can see absolute performance.
+#### E7-S4: Shot-Level Scoring ✅
+**As a** user, **I want** shot scores with execution metrics **so that** I know trade quality.
 
 **Acceptance Criteria:**
-- [ ] Raw = (Your Return / Expected Market Return) × 67
-- [ ] Expected market return = 10%/year normalized to holding period
-- [ ] Score above 67 = beat expected market
+- [x] Performance Score (45%) — Actual vs expected market return
+- [x] Forecast Edge (35%) — Your return vs actual market
+- [x] Perfect Shot Capture (20%) — Peak-to-entry runway captured
+- [x] Risk Multiplier (0.70× to 1.10×) — Based on plan quality + execution
+- [x] Adaptability Bonus (Pro only) — ±5 points
 
-**Requirements:** FR36
+**Requirements:** FR36, FR37
 
 ---
 
-#### E7-S5: Performance Score (Delta/Alpha)
-**As a** user, **I want** delta performance scores **so that** I can see alpha vs actual market.
+#### E7-S5: Target-Level Aggregation ✅
+**As a** user, **I want** target scores with P&L summary **so that** I see thesis performance.
 
 **Acceptance Criteria:**
-- [ ] Fetch actual S&P return (SPY) for holding period
-- [ ] Delta = Your Return - S&P Return
-- [ ] Display as "Alpha" in UI
-- [ ] Positive = outperformed, Negative = underperformed
+- [x] Prediction Score — Weighted mean of Aim scores
+- [x] Performance Score — Weighted mean of Shot scores
+- [x] Total P&L ($ and %)
+- [x] Win Ratio — Winning aims / Total aims
+- [x] Alpha vs Market — Your return - SPY return
 
-**Requirements:** FR37
+**Requirements:** FR33
 
 ---
 
-#### E7-S6: Difficulty Multiplier
-**As a** user, **I want** difficulty multipliers **so that** ambitious predictions are rewarded.
+#### E7-S6: User Career Scoring ✅
+**As a** user, **I want** two career scores **so that** I see overall skill.
 
 **Acceptance Criteria:**
-- [ ] 0.5x for targets <5%
-- [ ] 1.0x for 5-15%
-- [ ] 1.5x for 15-30%
-- [ ] 2.0x for 30-50%
-- [ ] 2.5x for >50%
-
-**Requirements:** FR38
-
----
-
-#### E7-S7: Composite Shot Score
-**As a** user, **I want** a composite Shot score **so that** I have one number for each trade.
-
-**Acceptance Criteria:**
-- [ ] Shot Score = Accuracy × Difficulty Multiplier
-- [ ] Display on Shot cards
-- [ ] Used for leaderboard ranking (along with PPD)
+- [x] Prediction Quality Score — From target prediction scores
+- [x] Execution Performance Score — From target performance scores
+- [x] Total aims and shots scored
+- [x] Total career P&L
 
 **Requirements:** FR39
 
 ---
 
-#### E7-S8: Three-Tier Score Rollup
-**As a** user, **I want** scores at Target, Aim, and Shot levels **so that** I can see performance at each level.
+#### E7-S7: Letter Grade System ✅
+**As a** user, **I want** letter grades (FFF to AAA) **so that** scores are intuitive.
 
 **Acceptance Criteria:**
-- [ ] Shot Score: individual trade performance
-- [ ] Aim Score: aggregate of Shots under Aim
-- [ ] Target Score: aggregate thesis performance
-- [ ] Each level shows vs NPC opponent
+- [x] 16-tier scale from FFF (-50) to AAA (+50)
+- [x] C grade = 0 = market baseline
+- [x] Positive grades = outperformed market
+- [x] Displayed alongside numeric score
+
+**Requirements:** FR38
+
+---
+
+#### E7-S8: Scoring Triggers ✅
+**As a** developer, **I want** automatic score calculation on close **so that** scores stay current.
+
+**Acceptance Criteria:**
+- [x] Shot close triggers `calculateAndStoreShotScore()`
+- [x] Aim close triggers `calculateAndStoreAimScore()`
+- [x] Cascades to target and user career scores
+- [x] Non-blocking (errors don't fail the close)
+
+**Files Modified:**
+- `src/app/actions/shots.ts` — Added scoring trigger
+- `src/app/actions/aims.ts` — Added scoring trigger
 
 **Requirements:** FR33
 
@@ -1607,23 +1639,333 @@ Implement comprehensive testing and monitoring infrastructure.
 
 ---
 
+### Epic 13: User Tier System (Phase 2A)
+**Priority:** P2 | **Dependencies:** E2
+**Phase:** 2A - Monetization Foundation
+
+Implement the user tier system with Free, Premium, and Premium Plus levels.
+
+**Stories:**
+
+#### E13-S1: Add Tier Fields to Users Table
+**As a** developer, **I want** tier-related fields on the users table **so that** we can track user subscription status.
+
+**Acceptance Criteria:**
+- [ ] tier ENUM('free', 'premium', 'premium_plus') with default 'free'
+- [ ] tier_source ENUM tracking how tier was acquired
+- [ ] tier_expires_at, trial_started_at, trial_ends_at timestamps
+- [ ] referral_code unique per user (auto-generated)
+- [ ] referred_by_user_id foreign key
+- [ ] stripe_customer_id for payment integration
+
+**Requirements:** PRD Section 9
+
+---
+
+#### E13-S2: Implement Tier Resolution Logic
+**As a** developer, **I want** tier resolution following priority order **so that** users get correct access.
+
+**Acceptance Criteria:**
+- [ ] Resolution order: global_override > admin > subscription > promo > trial > free
+- [ ] getCurrentTier() utility function
+- [ ] Tier changes logged to audit table
+- [ ] Expiration check on each request
+
+**Requirements:** PRD Section 9
+
+---
+
+#### E13-S3: Create Global Config System
+**As an** admin, **I want** global configuration overrides **so that** we can run promotions like "everyone gets Premium this week."
+
+**Acceptance Criteria:**
+- [ ] global_config key-value table
+- [ ] tier_override key for global tier grant
+- [ ] tier_override_expires for automatic rollback
+- [ ] default_trial_days and default_trial_tier configs
+- [ ] Admin UI to manage global config
+
+**Requirements:** PRD Section 9
+
+---
+
+#### E13-S4: Implement Feature Flags Per Tier
+**As a** developer, **I want** feature flags tied to tiers **so that** we can gate features appropriately.
+
+**Acceptance Criteria:**
+- [ ] tier_features table mapping features to tiers
+- [ ] hasFeature(userId, featureName) utility
+- [ ] Feature list: full_scoring, live_grading, per_shot_metrics, monitor_aims, ai_suggestions, ai_coaching, benchmarks, exports
+- [ ] UI components respect feature flags (show locked state)
+
+**Requirements:** PRD Section 9
+
+---
+
+### Epic 14: Promo & Trial System (Phase 2B)
+**Priority:** P2 | **Dependencies:** E13
+**Phase:** 2B - Acquisition Tools
+
+Implement promotional codes and trial system for user acquisition.
+
+**Stories:**
+
+#### E14-S1: Create Promo Code Management
+**As an** admin, **I want** to create and manage promo codes **so that** we can run promotions.
+
+**Acceptance Criteria:**
+- [ ] promo_codes table with all code types (tier_grant, trial_extension, percent_off, etc.)
+- [ ] Code constraints: valid_from, valid_until, max_uses, max_uses_per_user
+- [ ] new_users_only and min_tier flags
+- [ ] Admin UI for code creation/management
+
+**Requirements:** PRD Section 9
+
+---
+
+#### E14-S2: Implement Promo Code Redemption
+**As a** user, **I want** to redeem promo codes **so that** I can get discounts or extended trials.
+
+**Acceptance Criteria:**
+- [ ] Promo code entry field in settings/signup
+- [ ] Validation against all constraints
+- [ ] promo_redemptions tracking table
+- [ ] Tier upgrade applied immediately
+- [ ] Success/error feedback to user
+
+**Requirements:** PRD Section 9
+
+---
+
+#### E14-S3: Implement Trial System
+**As a** new user, **I want** a free trial of Premium **so that** I can experience full features before paying.
+
+**Acceptance Criteria:**
+- [ ] Default 14-day Premium trial for new signups
+- [ ] Trial countdown visible in UI
+- [ ] Email notifications at 3 days remaining
+- [ ] Automatic downgrade to Free when trial expires
+- [ ] Trial extension via promo codes
+
+**Requirements:** PRD Section 9
+
+---
+
+### Epic 15: Referral System (Phase 2C)
+**Priority:** P2 | **Dependencies:** E14
+**Phase:** 2C - Viral Growth
+
+Implement referral tracking and rewards.
+
+**Stories:**
+
+#### E15-S1: Generate User Referral Codes
+**As a** user, **I want** a unique referral code **so that** I can invite friends.
+
+**Acceptance Criteria:**
+- [ ] Auto-generated code on signup (e.g., MATT7X2K)
+- [ ] One-time vanity code customization
+- [ ] Shareable link: outvestments.com/r/CODE
+- [ ] Copy-to-clipboard functionality
+- [ ] Referral code visible in settings
+
+**Requirements:** PRD Section 9
+
+---
+
+#### E15-S2: Track Referral Signups
+**As a** referrer, **I want** to see who signed up with my code **so that** I can track my referrals.
+
+**Acceptance Criteria:**
+- [ ] referrals table tracking referrer/referee
+- [ ] Capture referral code during signup
+- [ ] user_acquisition table for UTM/source tracking
+- [ ] Referral dashboard showing count and status
+
+**Requirements:** PRD Section 9
+
+---
+
+#### E15-S3: Implement Referral Rewards
+**As a** referrer, **I want** rewards when my referrals convert **so that** I'm incentivized to share.
+
+**Acceptance Criteria:**
+- [ ] Referee gets: 14-day Premium trial (vs standard)
+- [ ] Referrer gets: 1 free month when referee converts to paid
+- [ ] Bonus month if referee stays 3+ months
+- [ ] reward_granted_at tracking
+- [ ] Notification when rewards earned
+
+**Requirements:** PRD Section 9
+
+---
+
+### Epic 16: Trading Discipline Features (Phase 2)
+**Priority:** P1 | **Dependencies:** E4, E5, E6
+**Phase:** 2 - Core Enhancement
+
+Add conviction levels, monitor aims, and shot risk parameters.
+
+**Stories:**
+
+#### E16-S1: Add Conviction Level to Targets
+**As a** trader, **I want** to mark my conviction level on targets **so that** I can distinguish exploratory ideas from high-conviction calls.
+
+**Acceptance Criteria:**
+- [ ] conviction_level ENUM('high', 'medium', 'low') on targets table
+- [ ] Default to 'medium'
+- [ ] UI selector during target creation
+- [ ] conviction_updated_at timestamp
+- [ ] Filter targets by conviction level
+
+**Requirements:** PRD Section 3.1
+
+---
+
+#### E16-S2: Add Abort Triggers to Targets
+**As a** trader, **I want** to document abort triggers **so that** I have clear exit criteria.
+
+**Acceptance Criteria:**
+- [ ] abort_trigger text field on targets
+- [ ] abort_triggered boolean flag
+- [ ] abort_triggered_at timestamp
+- [ ] risks_identified text array field
+- [ ] UI prompts to encourage risk documentation
+
+**Requirements:** PRD Section 3.1
+
+---
+
+#### E16-S3: Implement Monitor Aims
+**As a** trader, **I want** monitor-only aims **so that** I can track related assets without capital commitment.
+
+**Acceptance Criteria:**
+- [ ] aim_type ENUM('playable', 'monitor') on aims table
+- [ ] Monitor aims cannot have shots
+- [ ] Monitor aims excluded from scoring/leaderboards
+- [ ] monitor_entry_price, monitor_outcome fields
+- [ ] ai_suggested boolean for AI-suggested monitors
+- [ ] UI clearly distinguishes monitor vs playable
+
+**Requirements:** PRD Section 3.3
+
+---
+
+#### E16-S4: Add Shot Risk Parameters
+**As a** trader, **I want** to document stop loss and profit targets **so that** I trade with discipline.
+
+**Acceptance Criteria:**
+- [ ] stop_loss_price, stop_loss_percent on shots
+- [ ] profit_target_price, profit_target_percent on shots
+- [ ] exit_trigger text field
+- [ ] max_loss_amount field
+- [ ] exit_reason tracked on close
+- [ ] stop_loss_honored, profit_target_honored booleans
+
+**Requirements:** PRD Section 3.4
+
+---
+
+#### E16-S5: Track Discipline Statistics
+**As a** trader, **I want** to see my discipline stats **so that** I can improve.
+
+**Acceptance Criteria:**
+- [ ] user_discipline_stats table
+- [ ] Track: stop_loss_honored_count, stop_loss_ignored_count
+- [ ] Track: profit_target_honored_count, profit_target_ignored_count
+- [ ] Track: abort_trigger_honored_count, abort_trigger_ignored_count
+- [ ] Display in settings/dashboard
+
+**Requirements:** PRD Section 9
+
+---
+
+### Epic 17: Stripe Integration (Phase 2D)
+**Priority:** P2 | **Dependencies:** E13, E14
+**Phase:** 2D - Payment Processing
+
+Integrate Stripe for subscription billing.
+
+**Stories:**
+
+#### E17-S1: Configure Stripe Products
+**As an** admin, **I want** Stripe products configured **so that** users can subscribe.
+
+**Acceptance Criteria:**
+- [ ] Premium and Premium Plus products in Stripe
+- [ ] Monthly and annual pricing variants
+- [ ] Stripe API keys in environment
+- [ ] Test mode for development
+
+**Requirements:** PRD Section 9
+
+---
+
+#### E17-S2: Implement Checkout Flow
+**As a** user, **I want** to upgrade to paid tier **so that** I get full features.
+
+**Acceptance Criteria:**
+- [ ] Upgrade button in settings/paywall
+- [ ] Stripe Checkout session creation
+- [ ] Success/cancel redirect handling
+- [ ] stripe_customer_id stored on user
+- [ ] Tier updated on successful payment
+
+**Requirements:** PRD Section 9
+
+---
+
+#### E17-S3: Handle Subscription Webhooks
+**As a** developer, **I want** webhook handling **so that** tier status stays in sync.
+
+**Acceptance Criteria:**
+- [ ] Webhook endpoint for Stripe events
+- [ ] Handle: checkout.session.completed
+- [ ] Handle: customer.subscription.updated
+- [ ] Handle: customer.subscription.deleted
+- [ ] Signature verification for security
+
+**Requirements:** PRD Section 9
+
+---
+
+#### E17-S4: Implement Billing Portal
+**As a** user, **I want** to manage my subscription **so that** I can update payment or cancel.
+
+**Acceptance Criteria:**
+- [ ] Link to Stripe Customer Portal
+- [ ] Portal accessible from settings
+- [ ] Cancel flow with confirmation
+- [ ] Downgrade handling on cancellation
+
+**Requirements:** PRD Section 9
+
+---
+
 ## Summary
 
-| Epic | Stories | Priority | Est. Complexity |
-|------|---------|----------|-----------------|
-| E1: Foundation | 6 | P0 | Medium |
-| E2: Auth & Users | 5 | P0 | Medium |
-| E3: Alpaca Integration | 7 | P0 | High |
-| E4: Target Management | 7 | P0 | Medium |
-| E5: Aim Management | 9 | P0 | Medium |
-| E6: Shot Management | 11 | P0 | High |
-| E7: Scoring Engine | 12 | P0 | High |
-| E8: Dashboard & Viz | 13 | P0 | High |
-| E9: History & Reporting | 6 | P1 | Medium |
-| E10: Background Jobs | 8 | P1 | Medium |
-| E11: Orphan Handling | 3 | P1 | Low |
-| E12: Testing & Quality | 8 | P0 | Medium |
-| **Total** | **95** | - | - |
+| Epic | Stories | Priority | Phase | Est. Complexity |
+|------|---------|----------|-------|-----------------|
+| E1: Foundation | 6 | P0 | 1 | Medium |
+| E2: Auth & Users | 5 | P0 | 1 | Medium |
+| E3: Alpaca Integration | 7 | P0 | 1 | High |
+| E4: Target Management | 7 | P0 | 1 | Medium |
+| E5: Aim Management | 9 | P0 | 1 | Medium |
+| E6: Shot Management | 11 | P0 | 1 | High |
+| E7: Scoring Engine | 12 | P0 | 1 | High |
+| E8: Dashboard & Viz | 13 | P0 | 1 | High |
+| E9: History & Reporting | 6 | P1 | 1 | Medium |
+| E10: Background Jobs | 8 | P1 | 1 | Medium |
+| E11: Orphan Handling | 3 | P1 | 1 | Low |
+| E12: Testing & Quality | 8 | P0 | 1 | Medium |
+| **Phase 1 Subtotal** | **95** | - | - | - |
+| E13: User Tier System | 4 | P2 | 2A | Medium |
+| E14: Promo & Trial System | 3 | P2 | 2B | Medium |
+| E15: Referral System | 3 | P2 | 2C | Medium |
+| E16: Trading Discipline | 5 | P1 | 2 | Medium |
+| E17: Stripe Integration | 4 | P2 | 2D | High |
+| **Phase 2 Subtotal** | **19** | - | - | - |
+| **Total** | **114** | - | - | - |
 
 ---
 

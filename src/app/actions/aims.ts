@@ -14,6 +14,7 @@ import {
   type AimWithExpiryInfo,
   type ExpiringAimsResult,
 } from "@/lib/aim-lifecycle";
+import { calculateAndStoreAimScore } from "./scoring";
 
 export interface AimFormData {
   targetId: string;
@@ -498,6 +499,14 @@ export async function closeAimAction(
     revalidatePath(`/targets/${existingAim.targetId}`);
     revalidatePath(`/targets/${existingAim.targetId}/aims/${aimId}`);
     revalidatePath("/dashboard");
+
+    // Calculate and store aim score (cascades to target and user scores)
+    try {
+      await calculateAndStoreAimScore(aimId);
+    } catch (scoreError) {
+      console.error("Error calculating aim score:", scoreError);
+      // Don't fail the close operation if scoring fails
+    }
 
     return { success: true, aim: closedAim };
   } catch (error) {

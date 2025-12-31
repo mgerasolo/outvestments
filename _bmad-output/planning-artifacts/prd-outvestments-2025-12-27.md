@@ -1,6 +1,6 @@
 ---
-version: 1.7
-date: 2025-12-27
+version: 2.0
+date: 2025-12-30
 author: Matt (with Claude)
 status: approved
 related: product-brief-outvestments-2025-12-26.md
@@ -197,8 +197,25 @@ TARGET (The Thesis)
 | Thesis | WHY you believe this will happen | Yes |
 | Target Type | Stock, Sector, Market, Theme, or Event | Yes |
 | Catalyst | TYPE of play (see categories below) | Yes |
+| **Conviction Level** | High, Medium, or Low/Exploratory | Yes |
+| **Risks Identified** | Unique risks to this thesis | Recommended |
+| **Abort Trigger** | What would invalidate this thesis? | Recommended |
 | Tags | User-defined labels | Optional |
 | Broad Timeframe | General timeframe for thesis (optional) | Optional |
+
+### Conviction Levels (Metadata Only)
+
+| Level | Description | Typical Use |
+|-------|-------------|-------------|
+| **High** | Would allocate significant capital | Strong thesis, high confidence |
+| **Medium** | Leaning toward this thesis | Moderate confidence |
+| **Low/Exploratory** | Track-only hypothesis | Testing an idea |
+
+**Important:** Conviction level is metadata only. It does NOT affect scoring or leaderboards. Used for:
+- Filtering views
+- Analytics segmentation
+- Coaching tone adjustment
+- Post-mortem insights
 
 ### Aim Components (The Prediction)
 
@@ -206,9 +223,31 @@ TARGET (The Thesis)
 |-------|-------------|----------|
 | Target | Parent target | Yes |
 | Ticker | The asset (e.g., TSLA, AAPL) | Yes |
+| **Aim Type** | Playable or Monitor | Yes |
 | Target Price (Realistic) | Expected asset price | Yes |
 | Target Price (Reach) | Stretch goal price | Optional |
 | Target Date | Calendar date for prediction | Yes |
+| Rationale | Why this symbol for this thesis? | Recommended |
+
+### Aim Types: Playable vs Monitor
+
+| Type | Description | Shots Allowed | Scoring | Leaderboard |
+|------|-------------|:-------------:|:-------:|:-----------:|
+| **Playable** | Full execution eligible - real predictions | Yes | Full | Yes |
+| **Monitor** | Paper tracking only - thesis validation | No | None | No |
+
+**Monitor Aims track:**
+- Directional outcome (was thesis correct?)
+- Magnitude vs market
+- Relative performance vs benchmark
+- Correlation to main playable aim(s)
+- "What if" theoretical P&L (Premium feature)
+
+**Key Rules:**
+- Monitor Aims do NOT affect leaderboards
+- They contribute to Thesis Validity analysis and learning insights
+- Users can track predictions without risking capital
+- Encourages hypothesis testing before committing money
 
 ### Shot Components (The Trade)
 
@@ -222,6 +261,25 @@ TARGET (The Thesis)
 | Trigger Type | Market or Limit | Yes |
 | Type | Stock or Option | Yes |
 | [Options] Strike, Expiration, Premium | If option type | Conditional |
+
+### Shot Risk Parameters (Trading Discipline)
+
+| Field | Description | Required |
+|-------|-------------|----------|
+| **Stop Loss Price** | Exit if price drops to $X | Strongly Recommended |
+| **Stop Loss %** | Exit if down X% (alternative) | Strongly Recommended |
+| **Profit Target Price** | Take profits at $X | Recommended |
+| **Profit Target %** | Take profits at X% gain | Recommended |
+| **Exit Trigger** | Condition that triggers exit (free text) | Recommended |
+| **Max Loss Amount** | Maximum $ willing to lose on this shot | Optional |
+| **Position Size Rationale** | Why this many shares? | Optional |
+
+**Purpose:** Enforce trading discipline. Most losses come from:
+- No exit plan
+- Ignoring stop losses
+- Holding losers hoping for recovery
+
+**Tracking:** System tracks whether user honored their stop loss and profit targets. This feeds into discipline analytics (Premium feature).
 
 ### Shot States
 
@@ -265,86 +323,134 @@ TARGET (The Thesis)
 
 ## 4. Scoring System
 
-### Three-Level Scoring
+### Four-Level Hierarchical Scoring
 
-| Level | Measures | Question Answered |
-|-------|----------|-------------------|
-| **Target Score** | Was your thesis correct? | Did your overall prediction thesis prove accurate? |
-| **Aim Score** | Did the ticker hit target? | Did the specific asset reach your price target? |
-| **Shot Score** | How well-timed was your entry? | Did you capture the runway effectively? |
+**Implementation Status:** ✅ COMPLETE (2025-12-30)
 
-**Example:**
-- Target: "AI infrastructure will boom in 2025" ✓ Correct thesis → Target Grade: A
-- Aim: NVDA → $200 (from $134) ✓ Hit target → Aim Grade: A
-- Shot 1: Bought @ $134 → Full runway captured → Shot Grade: A+
-- Shot 2: Bought @ $150 → 76% runway captured → Shot Grade: B+
-- Shot 3: Bought @ $160 → 61% runway captured → Shot Grade: B
+| Level | Measures | Rollup Path |
+|-------|----------|-------------|
+| **User Career Score** | Overall prediction quality + execution | ← Target Scores |
+| **Target Score** | Thesis quality + P&L summary | ← Aim Scores + Shot Scores |
+| **Aim Score** | PRIMARY UNIT: How accurate was your prediction? | ← Individual metrics |
+| **Shot Score** | How well did you execute the trade? | ← Individual metrics |
 
-Your thesis was RIGHT, and NVDA hit target, but Shot 2 and 3 were less optimal entries.
+**Scoring Scale:** Centered at 0 on a -50 to +50 scale where:
+- 0 = Market baseline (C grade)
+- Positive = Outperformed market
+- Negative = Underperformed market
+
+**Letter Grades (16-tier):**
+
+| Score Range | Grade | Meaning |
+|-------------|-------|---------|
+| +50 | AAA | Legendary |
+| +45 to +49 | AA+ | Exceptional |
+| +40 to +44 | AA | Outstanding |
+| +35 to +39 | A+ | Excellent |
+| +30 to +34 | A | Very Good |
+| +25 to +29 | A- | Good |
+| +20 to +24 | B+ | Above Average |
+| +15 to +19 | B | Solid |
+| +10 to +14 | B- | Decent |
+| +5 to +9 | C+ | Slightly Above Baseline |
+| -4 to +4 | **C** | **Baseline (Market Average)** |
+| -9 to -5 | C- | Slightly Below Baseline |
+| -19 to -10 | D | Below Average |
+| -29 to -20 | F | Poor |
+| -39 to -30 | FF | Very Poor |
+| -50 to -40 | FFF | Failing |
+
+### Aim-Level Scoring (PRIMARY)
+
+Aims are the primary scoring unit. Four weighted metrics:
+
+| Metric | Weight | Description |
+|--------|--------|-------------|
+| **Directional Accuracy** | 20% | Did price move in predicted direction? |
+| **Magnitude Accuracy** | 30% | How close to target price? |
+| **Forecast Edge** | 35% | Your return vs market return over same period |
+| **Thesis Validity** | 15% | Was thesis reasoning sound? (Capped at 0 if risks not documented) |
+
+**Final Aim Score** = Weighted average of the 4 metrics (stays on -50 to +50 scale)
+
+**Difficulty Multiplier** (1.0× to 5.0×): Displayed independently, NOT multiplied into final score.
+- Formula: `1.0 + (alpha_target / 2.0)`, capped at 5.0×
+- Example: Targeting +100% return → 5× difficulty shown as badge
 
 ### Shot-Level Scoring
 
-Each shot is evaluated on three dimensions:
+Each shot (trade execution) is evaluated on:
 
-| Dimension | What It Measures | Scale |
-|-----------|------------------|-------|
-| **Accuracy** | Did you hit your target? | 0-100+ (percentage of target achieved) |
-| **Performance** | How much did you make vs benchmarks? | 67 = market, 100 = 1.5x market |
-| **Difficulty** | How bold was your prediction? | 0.5x - 2.5x multiplier |
+| Metric | Weight | Description |
+|--------|--------|-------------|
+| **Performance Score** | 45% | Actual return vs expected market return |
+| **Forecast Edge** | 35% | Your return vs actual market during holding period |
+| **Perfect Shot Capture** | 20% | How much of the peak-to-entry runway did you capture? |
 
-**Composite Shot Score** = Accuracy x Difficulty Multiplier
+**Risk Multiplier** (0.70× to 1.10×): Based on risk plan quality + execution discipline
 
-### Accuracy Scoring
+| Risk Grade | Multiplier | Criteria |
+|------------|------------|----------|
+| A | 1.10× | Structured plan, followed cleanly |
+| B | 1.05× | Reasonable plan, minor deviations |
+| C | 1.00× | Basic plan, followed |
+| D | 0.85× | Very liberal plan or clear violations |
+| F | 0.70× | No plan or severe neglect |
 
-Formula: `(Actual Return / Target Return) x 100`
+**Adaptability Bonus** (Pro tier only): ±5 points based on in-trade adjustments
 
-| Result | Score |
-|--------|-------|
-| Hit target exactly | 100 |
-| Exceeded by 50% | 150 |
-| Doubled target | 200 |
-| Got 80% of target | 80 |
-| Broke even | 0 |
-| Wrong direction | Negative (no floor) |
+**Final Shot Score** = (Base Score × Risk Multiplier) + Adaptability Bonus
 
-**Edge Cases:**
+### Target-Level Scoring
 
-- If Target Return = 0: Treat as 1 (your actual return becomes the score)
-- Negative scores have NO floor (can go -400, -1000, etc. if badly wrong)
+Targets aggregate from aims and shots:
 
-### Performance Scoring
+| Metric | Source |
+|--------|--------|
+| **Prediction Score** | Weighted mean of Aim Final Scores |
+| **Performance Score** | Weighted mean of Shot Final Scores |
+| **Total P&L ($)** | Sum of shot realized P&L |
+| **Total P&L (%)** | Weighted average return |
+| **Win Ratio** | Winning aims / Total aims |
+| **Alpha vs Market** | Your return - SPY return over target duration |
 
-Formula: `(Your Return / Expected Market Return) x 67`
+### User Career Scoring
 
-Where: `Expected Market Return = 10% x (Days Held / 365)`
+Two distinct career scores:
 
-| Performance Level | Score | Grade |
-|-------------------|-------|-------|
-| Matched market | 67 | C |
-| 20% better | 80 | B- |
-| 1.5x market | 100 | A |
-| Doubled market | 134 | A+ |
-| Below market | <67 | D/F |
+| Score | Source | Meaning |
+|-------|--------|---------|
+| **Prediction Quality** | Aggregated from Target Prediction Scores | How good are your investment ideas? |
+| **Execution Performance** | Aggregated from Target Performance Scores | How well do you execute trades? |
 
-**Delta Performance**: Same formula but using actual S&P return (SPY proxy) during holding period instead of expected 10%/year.
+### Time-Normalized Returns
 
-**Edge Cases:**
+All levels track profit per time unit for fair comparison:
 
-- If Expected Market Return = 0 (flat market): Treat as 1, your return × 67
-- Same-day trades: Count as 1 day minimum (prevents division by zero)
-- If S&P data unavailable: Fallback to 10%/year prorated
+| Metric | Formula |
+|--------|---------|
+| **Profit Per Day (PPD)** | Return % / Days Held |
+| **Profit Per Month (PPM)** | PPD × 30 |
+| **Profit Per Year (PPY)** | PPD × 365 (annualized) |
 
-**Scoring Timing**: Scores calculated at EOD or at position close (whichever comes first). Not real-time.
+**Why This Matters:**
+- 8% in 14 days = 208% annualized
+- 25% in 180 days = 51% annualized
+- The short trade was 4× more efficient
 
-### Difficulty Multiplier
+### Database Tables (Implemented)
 
-| Range | Target Return | Multiplier |
-|-------|---------------|------------|
-| Point Blank | <5% | 0.5x |
-| Close Range | 5-15% | 1.0x |
-| Mid Range | 15-30% | 1.5x |
-| Long Range | 30-50% | 2.0x |
-| Extreme Range | >50% | 2.5x |
+| Table | Purpose |
+|-------|---------|
+| `aim_scores` | Stores 4 aim metrics + difficulty + letter grade |
+| `shot_scores` | Stores 4 shot metrics + risk grade + adaptability |
+| `target_scores` | Dual scores + P&L summary + win ratio |
+| `user_career_scores` | Two career scores + totals |
+
+### Scoring Triggers
+
+- **Shot Close** → `calculateAndStoreShotScore()` → cascades to target → user
+- **Aim Close** → `calculateAndStoreAimScore()` → cascades to target → user
 
 ### Trajectory Tracking
 
@@ -608,6 +714,14 @@ Search ticker
 - colorblind_mode (boolean)
 - alpaca_api_key (encrypted, nullable)
 - alpaca_api_secret (encrypted, nullable)
+- **tier** (free/premium/premium_plus)
+- **tier_source** (default/subscription/trial/promo/admin/affiliate)
+- **tier_expires_at** (nullable timestamp)
+- **trial_started_at** (nullable)
+- **trial_ends_at** (nullable)
+- **referral_code** (unique code for sharing)
+- **referred_by_user_id** (FK, nullable)
+- **stripe_customer_id** (nullable)
 - created_at
 - updated_at
 
@@ -627,8 +741,13 @@ Search ticker
 - thesis (WHY you believe this)
 - target_type (stock/sector/market/theme/event)
 - catalyst_category
+- **conviction_level** (high/medium/low)
+- **risks_identified** (text array)
+- **abort_trigger** (text - what would invalidate this thesis?)
+- **abort_triggered** (boolean)
+- **abort_triggered_at** (nullable timestamp)
 - broad_timeframe (nullable)
-- status (active/closed/expired)
+- status (active/closed/expired/aborted)
 - created_at
 
 ### Target Tags (junction)
@@ -650,11 +769,18 @@ Search ticker
 - user_id
 - target_id (nullable - null = orphan aim)
 - ticker (the asset, e.g., NVDA)
+- **aim_type** (playable/monitor)
+- **rationale** (text - why this symbol for this thesis?)
 - target_price_realistic
 - target_price_reach (nullable)
 - target_date
 - pace_required (calculated %/month)
-- status (active/closed/expired)
+- **monitor_entry_price** (nullable - for "what if" tracking)
+- **monitor_entry_date** (nullable)
+- **monitor_outcome** (pending/correct/incorrect/partial)
+- **monitor_vs_market_percent** (nullable - performance vs benchmark)
+- **ai_suggested** (boolean - was this suggested by AI?)
+- status (active/closed/expired/watching/monitor)
 - created_at
 
 ### Aim Scores (aggregate of all shots under aim)
@@ -680,6 +806,16 @@ Search ticker
 - exit_price (nullable)
 - exit_date (nullable)
 - position_size (nullable)
+- **stop_loss_price** (nullable)
+- **stop_loss_percent** (nullable)
+- **profit_target_price** (nullable)
+- **profit_target_percent** (nullable)
+- **exit_trigger** (text - condition that triggers exit)
+- **max_loss_amount** (nullable - max $ willing to lose)
+- **position_size_rationale** (text, nullable)
+- **exit_reason** (profit_target/stop_loss/exit_trigger/thesis_abort/manual/expired)
+- **stop_loss_honored** (boolean, nullable - did they follow their plan?)
+- **profit_target_honored** (boolean, nullable)
 - is_paper_trade (boolean)
 - is_manually_entered (boolean, default false)
 - alpaca_order_id (nullable)
@@ -739,6 +875,78 @@ Search ticker
 - close
 - volume
 
+### User Acquisition (new)
+
+- id
+- user_id
+- source (organic/google/twitter/podcast)
+- medium (cpc/referral/affiliate/organic)
+- campaign (launch_week_2025, black_friday)
+- referral_code (code used at signup)
+- affiliate_code
+- referred_by_user_id
+- landing_page
+- created_at
+
+### Promo Codes (new)
+
+- id
+- code (unique)
+- effect_type (tier_grant/trial_extension/percent_off/free_months)
+- effect_value
+- tier_granted (nullable)
+- valid_from
+- valid_until
+- max_uses
+- max_uses_per_user
+- uses_count
+- new_users_only
+- affiliate_id (nullable)
+- created_at
+
+### Promo Redemptions (new)
+
+- id
+- user_id
+- promo_code_id
+- redeemed_at
+- effect_applied
+- expires_at
+
+### Referrals (new)
+
+- id
+- referrer_id
+- referee_id
+- code_used
+- status (signed_up/activated/converted/retained_90d/churned)
+- signed_up_at
+- converted_at
+- referrer_reward_type
+- referrer_reward_issued_at
+- referee_reward_type
+- referee_reward_issued_at
+
+### Global Config (new)
+
+- key (primary key)
+- value
+- value_type (string/number/boolean/json)
+- description
+- updated_at
+
+### User Discipline Stats (new)
+
+- user_id
+- total_stop_losses_set
+- stop_losses_honored
+- stop_losses_violated
+- avg_loss_when_violated
+- total_profit_targets_set
+- profit_targets_honored
+- discipline_score
+- updated_at
+
 ### Orphaned Positions
 
 - id
@@ -780,7 +988,145 @@ Search ticker
 
 ---
 
-## 9. Background Jobs
+## 9. Pricing Tiers & Monetization
+
+### Tier Overview
+
+| Tier | Price | Target User |
+|------|-------|-------------|
+| **Free** | $0 | New users, casual traders, leads |
+| **Premium** | TBD | Active traders wanting full analytics |
+| **Premium Plus** | TBD | Serious traders wanting AI coaching |
+
+### Usage Limits
+
+| Limit | Free | Premium | Premium Plus |
+|-------|------|---------|--------------|
+| Active Targets | 3 | 25 | Unlimited |
+| Aims per Target | 3 | 10 | Unlimited |
+| Active Shots | 5 | 50 | Unlimited |
+| Monitor Aims | 3 | Unlimited | Unlimited |
+| Historical data | 90 days | 2 years | Unlimited |
+
+### Free Tier Features
+
+| Category | Feature |
+|----------|---------|
+| Core Workflow | Target → Aim → Shot workflow |
+| Targets | Thesis, conviction level, abort triggers |
+| Aims | Playable + Monitor types (manual only) |
+| Shots | Position tracking, risk parameter fields |
+| Dashboard | Basic dashboard, P&L display |
+| Scoring | 2-3 metrics only (Win Rate + Basic PPD) |
+| Referrals | Personal referral code |
+
+**Limitations (Upgrade Drivers):**
+- Scoring after trade closes only (no live grading)
+- Aggregate metrics only (no per-shot breakdown)
+- No "what if" P&L for Monitor Aims
+- No AI features
+- No benchmark comparisons
+
+### Premium Tier Features
+
+Everything in Free, plus:
+
+| Category | Feature |
+|----------|---------|
+| Scoring | Full 8-metric scoring system |
+| Live Grading | Real-time scoring during open positions |
+| Per-Shot Metrics | Detailed breakdown per trade |
+| Monitor Aims | AI-suggested monitor aims |
+| Monitor "What If" | Theoretical P&L for paper positions |
+| Theory Expansion | Related asset suggestions, counterfactuals |
+| Thesis Analysis | Scope analysis (sector-wide vs idiosyncratic) |
+| Aim Aggressiveness | Check if price targets are realistic |
+| Calibration Stats | Conviction vs accuracy analysis |
+| Risk Discipline | Stop loss / exit trigger adherence stats |
+| Benchmarks | Comparison vs S&P NPC |
+| History | Full historical performance tracking |
+
+### Premium Plus Tier Features
+
+Everything in Premium, plus:
+
+| Category | Feature |
+|----------|---------|
+| AI Target Coach | Full lifecycle coaching |
+| "Why/Why Not?" Prompts | Reflective thesis hygiene prompts |
+| Causal Analysis | Deeper thesis pattern analysis |
+| Risk Gap Detection | AI suggests risks you may have missed |
+| Historical Patterns | "Similar theses in 2021 had X% success" |
+| Strength/Weakness ID | AI identifies your trading patterns |
+| Pattern Warnings | Real-time alerts based on your history |
+| Weekly AI Summary | Email digest of insights |
+| Alternative Strategies | Options, DCA, covered call suggestions |
+
+### AI Target Coach Components (Premium Plus)
+
+1. **Theory Analysis (Pre-Trade)**
+   - Risk assessment score
+   - Likelihood rating for projections
+   - Counter-arguments / bear case prompts
+   - Similar historical patterns
+   - Related asset suggestions with correlation data
+
+2. **Active Coaching (During Trade)**
+   - Catalyst reminders ("Earnings in 3 days")
+   - Target price alerts
+   - Thesis validation ("This pullback is within your bounds")
+   - Exit trigger reminders
+
+3. **Post-Trade Review**
+   - Outcome vs thesis analysis (skill vs luck)
+   - Missed signal identification
+   - Theory improvement suggestions
+   - Pattern recognition across trades
+
+4. **Post-Exit Guidance**
+   - Remaining upside alerts
+   - Re-entry opportunity signals
+   - "Took profits appropriately" vs "exited prematurely"
+   - FOMO prevention
+
+### AI Pattern Analysis (Premium Plus)
+
+| Analysis Type | Example Insight |
+|---------------|-----------------|
+| Strength ID | "You excel at tech momentum plays — 78% accuracy" |
+| Weakness ID | "Your earnings timing is poor — wait for post-earnings" |
+| Calibration | "Your 8+ confidence calls underperform 5-6 calls" |
+| Discipline | "The 10% you ignore stop losses cost 40% of losses" |
+| Patterns | "You exit winners early and hold losers too long" |
+| Sector | "Avoid healthcare — 35% accuracy there" |
+
+### Referral Program
+
+- Every user gets a unique referral code at signup
+- Shareable link: `outvestments.com/r/CODE`
+- Referrer rewards: Free months, account credits
+- Referee rewards: Extended trial, discounts
+
+### Promo Code System
+
+| Type | Effect | Example |
+|------|--------|---------|
+| `tier_grant` | Grants tier for X days | "PREMIUMWEEK" |
+| `trial_extension` | Extends trial | "EXTRA7" |
+| `percent_off` | % discount | "LAUNCH20" |
+| `free_months` | X months free | "PODCAST3" |
+
+### Global Override (Promotions)
+
+For "everyone gets Premium this week" scenarios:
+- `GLOBAL_TIER_OVERRIDE` — Force all users to specified tier
+- `GLOBAL_TIER_OVERRIDE_EXPIRES` — Auto-expiration date
+
+*Full monetization details: See [pricing-tiers.md](pricing-tiers.md)*
+
+---
+
+## 10. Background Jobs
 
 ### Nightly EOD Capture (Required)
 
@@ -1090,6 +1436,7 @@ See [messaging-and-positioning.md](messaging-and-positioning.md) for:
 | 1.6-draft | 2025-12-27 | Matt/Claude | Roundtable #2 resolutions    |
 | 1.7-draft | 2025-12-27 | Matt/Claude | Target/Aim/Shot terminology  |
 | 1.8-draft | 2025-12-27 | Matt/Claude | Messaging & educational philosophy |
+| 2.0       | 2025-12-30 | Matt/Claude | Pricing tiers, monetization, conviction levels, monitor aims, risk parameters, AI coaching |
 
 **v1.1 Changes:** Options data model, scoring edge cases, colorblind mode, user roles, orphaned positions, Alpaca optional
 

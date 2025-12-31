@@ -14,6 +14,7 @@ import {
 import { eq, and, isNull, desc, inArray } from "drizzle-orm";
 import { auth } from "@/auth";
 import { logAudit, AuditActions, AuditEntityTypes } from "@/lib/audit";
+import { calculateAndStoreShotScore } from "./scoring";
 import { revalidatePath } from "next/cache";
 import { hasPermission } from "@/lib/auth/rbac";
 import { getAlpacaCredentials } from "./alpaca";
@@ -1299,6 +1300,14 @@ export async function closePartialPosition(
       revalidatePath(`/targets/${target.id}/aims/${aim.id}`);
       revalidatePath("/dashboard");
 
+      // Calculate and store shot score (cascades to target and user scores)
+      try {
+        await calculateAndStoreShotScore(shot.id);
+      } catch (scoreError) {
+        console.error("Error calculating shot score:", scoreError);
+        // Don't fail the close operation if scoring fails
+      }
+
       return {
         success: true,
         closedShot: updatedShot,
@@ -1350,6 +1359,14 @@ export async function closePartialPosition(
       revalidatePath(`/targets/${target.id}`);
       revalidatePath(`/targets/${target.id}/aims/${aim.id}`);
       revalidatePath("/dashboard");
+
+      // Calculate and store shot score (cascades to target and user scores)
+      try {
+        await calculateAndStoreShotScore(shot.id);
+      } catch (scoreError) {
+        console.error("Error calculating shot score:", scoreError);
+        // Don't fail the close operation if scoring fails
+      }
 
       return {
         success: true,

@@ -4,10 +4,10 @@ inputDocuments:
   - paper-trading-api-research.md
   - competitive-analysis.md
 date: 2025-12-26
-updated: 2025-12-27
+updated: 2025-12-30
 author: Matt
 project_name: outvestments
-version: 2.0
+version: 2.1
 ---
 
 # Product Brief: Outvestments
@@ -95,11 +95,30 @@ The thesis and tracking methodology developed here will integrate into DoughFlow
 
 | Term | Definition | Analogy |
 |------|------------|---------|
-| **Target** | A thesis or theme-level prediction. The WHY behind your trades. | "AI will dominate 2025" |
-| **Aim** | A specific prediction: ticker + price + date. The WHAT you're betting on. | "NVDA to $200 by March 2025" |
-| **Shot** | A trade/order. The execution of your prediction. | Buy 10 shares NVDA @ $140 |
+| **Target** | A thesis or theme-level prediction. The WHY behind your trades. Includes conviction level (High/Medium/Low). | "AI will dominate 2025" |
+| **Aim** | A specific prediction: ticker + price + date. Can be **Playable** (execute trades) or **Monitor** (paper-track only). | "NVDA to $200 by March 2025" |
+| **Shot** | A trade/order. The execution of your prediction. Includes risk parameters (stop loss, exit triggers). | Buy 10 shares NVDA @ $140 |
 
 **Flow:** Target (thesis) → Aim (prediction) → Shot (trade)
+
+### Conviction Levels (Target)
+
+| Level | Description | Scoring Impact |
+|-------|-------------|----------------|
+| **High** | Would allocate significant capital | Metadata only - no scoring impact |
+| **Medium** | Leaning, considering entry | Used for filtering, analytics |
+| **Low** | Exploratory hypothesis | Coaching tone adjusts accordingly |
+
+### Aim Types
+
+| Type | Description | Shots | Scoring | Leaderboard |
+|------|-------------|:-----:|:-------:|:-----------:|
+| **Playable** | Full execution eligible | ✅ | ✅ | ✅ |
+| **Monitor** | Paper tracking only | ❌ | ❌ | ❌ |
+
+**Monitor Aims** let users track related assets without capital commitment. They contribute to learning insights and thesis validity analysis but don't affect leaderboards.
+
+See: [target-theory-system-v2.md](./target-theory-system-v2.md) for details.
 
 ### Shot States
 
@@ -136,13 +155,14 @@ Benchmark comparisons are framed as "NPC Opponents" - computer-controlled enemie
 
 ## Scoring System
 
-### Three-Tier Scoring
+### Four-Level Hierarchical Scoring
 
 | Level | What's Scored | Key Metrics |
 |-------|---------------|-------------|
-| **Target** | Thesis quality | % of Aims that hit, overall thesis grade |
-| **Aim** | Prediction accuracy | Hit target? How close? |
-| **Shot** | Trade execution | PPD, alpha generated, opportunity cost |
+| **User** | Career performance | Prediction Quality Score, Performance Score (FFF→AAA grades) |
+| **Target** | Thesis quality | Prediction Score, Performance Score, P&L summary, win ratio |
+| **Aim** | Prediction accuracy (PRIMARY) | Directional, Magnitude, Forecast Edge, Thesis Validity + Difficulty |
+| **Shot** | Trade execution | Performance, Forecast Edge, PSC + Risk multiplier, Adaptability bonus |
 
 ### Performance Per Day (PPD)
 
@@ -217,6 +237,38 @@ Trades during these periods get a unicorn icon 🦄 and separate performance tra
 - **Windows 95 Modals** - Distinctive, nostalgic feel for detail views
 - **Toast Notifications** - Achievement unlocks, milestone celebrations
 - **Dark Theme** - Professional trading aesthetic
+
+---
+
+## Pricing & Monetization
+
+### Three-Tier Model
+
+| Tier | Price | Target User | Core Value |
+|------|-------|-------------|------------|
+| **Free** | $0 | New users, casual traders | Hook with core workflow, limited metrics |
+| **Premium** | TBD | Active traders | Full 4-level scoring (User/Target/Aim/Shot), live grading, benchmarks |
+| **Premium Plus** | TBD | Serious traders | AI coaching, pattern analysis, personalized insights |
+
+### Tier Philosophy
+
+**Free Tier** demonstrates value with the core Target → Aim → Shot workflow, basic P&L, and limited scoring. Upgrade drivers include hitting usage limits and seeing locked premium features (Adaptability bonus, detailed scorecards).
+
+**Premium** unlocks the full analytical toolkit: 4-level hierarchical scoring (User → Target → Aim → Shot), per-shot risk assessment, live grading during open positions, benchmark comparisons, and historical tracking.
+
+**Premium Plus** adds AI-powered coaching: thesis risk analysis, pattern recognition ("You excel at tech momentum plays"), calibration insights, and personalized trading improvement suggestions.
+
+### Key Monetization Features
+
+| Feature | Purpose |
+|---------|---------|
+| **Referral Program** | Unique codes, reward both parties |
+| **Promo Codes** | Time-limited discounts, trial extensions |
+| **Affiliate Program** | Revenue share for partners |
+| **Global Overrides** | "Everyone gets Premium this week" promotions |
+| **Upgrade Triggers** | Contextual upsells when users hit limits |
+
+See: [pricing-tiers.md](./pricing-tiers.md) for full tier breakdown.
 
 ---
 
@@ -307,9 +359,13 @@ User can:
 
 | Feature | Phase | Notes |
 |---------|-------|-------|
+| **Monetization & Tiers** | 2A | User tiers, feature flags, global overrides |
+| **Promo & Referral System** | 2B-C | Promo codes, trials, referral tracking |
+| **Stripe Integration** | 2D | Payment processing when ready to charge |
 | Sharing (public/private profiles) | 2 | Toggle profile visibility |
 | Pattern/sector analysis | 2 | Performance breakdown by sector/thesis type |
 | Following/discovery | 2 | Browse and follow proven performers |
+| **AI Coaching (Premium Plus)** | 3 | Thesis analysis, pattern recognition, coaching |
 | Competition (heats/volleys) | 3 | Gamification layer |
 | Leaderboards | 3 | Ranked user performance |
 | Rookie Season | 3 | Protected first 90 days |
@@ -377,9 +433,11 @@ See: [competitive-analysis.md](../../competitive-analysis.md)
 - [Epics](epics.md) - User stories (95 total)
 - [UX Design Specification](ux-design-specification.md) - UI/UX details
 - [Messaging & Positioning](messaging-and-positioning.md) - Core messaging strategy
-- [Future Enhancements - Phase 3](future-enhancements-phase3.md) - Engagement features
+- [Pricing Tiers](pricing-tiers.md) - Full tier breakdown with limits and features
+- [Target Theory System v2](target-theory-system-v2.md) - Conviction levels, monitor aims
+- [Future Enhancements - Phase 3](future-enhancements-phase3.md) - Engagement & AI features
 - [Achievement Ideas](achievement-ideas.md) - 100 achievements across 10 categories
 
 ---
 
-*Last Updated: 2025-12-27 | Version 2.0*
+*Last Updated: 2025-12-30 | Version 2.1*
