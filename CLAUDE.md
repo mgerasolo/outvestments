@@ -169,7 +169,7 @@ When operating as a BMAD persona (PM, UX Designer, etc.):
 | Target VM | stark |
 | Port | 3155 |
 | Status | Deployed |
-| URL | https://outvestments.dev.nextlevelfoundry.com |
+| URL | <https://dev.outvestments.com> |
 | Direct | http://10.0.0.31:3155 |
 | Portainer Stack | outvestments (ID: 13) |
 

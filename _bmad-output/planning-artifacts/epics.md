@@ -1,7 +1,7 @@
 ---
 stepsCompleted: [1, 2, 3]
-updatedAt: '2025-12-30'
-version: '1.1'
+updatedAt: '2025-12-31'
+version: '1.2'
 inputDocuments:
   - prd-outvestments-2025-12-27.md
   - architecture.md

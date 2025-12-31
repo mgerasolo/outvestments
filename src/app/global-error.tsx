@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 
 interface GlobalErrorPageProps {
@@ -16,6 +17,9 @@ interface GlobalErrorPageProps {
  */
 export default function GlobalErrorPage({ error, reset }: GlobalErrorPageProps) {
   useEffect(() => {
+    // Send error to Sentry
+    Sentry.captureException(error);
+
     // Log error to console in structured format for Loki
     console.error(
       JSON.stringify({
