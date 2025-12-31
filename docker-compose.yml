@@ -53,6 +53,9 @@ services:
       - ALPACA_API_SECRET=${ALPACA_API_SECRET}
       - ALPACA_BASE_URL=${ALPACA_BASE_URL:-https://paper-api.alpaca.markets}
       - TZ=America/New_York
+      # Sentry error tracking and performance monitoring
+      - SENTRY_DSN=${SENTRY_DSN}
+      - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
       # Memory management - prevent runaway heap
       - NODE_OPTIONS=--max-old-space-size=1536
     healthcheck:

@@ -18,6 +18,8 @@ import { Progress } from "@/components/ui/progress";
 import { TargetActions } from "./target-actions";
 import { TargetProgress } from "@/components/trading/target-progress";
 import { SymbolLogo } from "@/components/ui/symbol-logo";
+import { TrajectoryBadge } from "@/components/trading/trajectory-badge";
+import { getQuotes } from "@/app/actions/quotes";
 import {
   Table,
   TableBody,
@@ -204,6 +206,43 @@ export default async function TargetDetailPage({
         .where(inArray(symbols.symbol, uniqueSymbols))
     : [];
   const symbolMap = new Map(symbolData.map((s) => [s.symbol, s]));
+
+  // Fetch current prices for trajectory calculation
+  const priceMap = new Map<string, number>();
+  if (uniqueSymbols.length > 0) {
+    try {
+      const quotesResult = await getQuotes(uniqueSymbols);
+      if (quotesResult.success && quotesResult.quotes) {
+        for (const quote of quotesResult.quotes) {
+          priceMap.set(quote.symbol, quote.price);
+        }
+      }
+    } catch {
+      // Quotes unavailable - trajectory badges will not show
+    }
+  }
+
+  // Build entry data map for each aim (from first filled shot)
+  const aimEntryDataMap = new Map<string, { entryPrice: number; entryDate: Date }>();
+  for (const aim of targetAims) {
+    const aimShotsFiltered = targetShots.filter(
+      (s) => s.aimId === aim.id && s.state !== "pending" && s.state !== "armed" && s.fillPrice
+    );
+    if (aimShotsFiltered.length > 0) {
+      const sortedShots = [...aimShotsFiltered].sort((a, b) => {
+        const aTime = a.fillTimestamp ? new Date(a.fillTimestamp).getTime() : 0;
+        const bTime = b.fillTimestamp ? new Date(b.fillTimestamp).getTime() : 0;
+        return aTime - bTime;
+      });
+      const firstShot = sortedShots[0];
+      aimEntryDataMap.set(aim.id, {
+        entryPrice: parseFloat(firstShot.fillPrice!),
+        entryDate: firstShot.fillTimestamp
+          ? new Date(firstShot.fillTimestamp)
+          : new Date(firstShot.entryDate),
+      });
+    }
+  }
 
   // Create aim ID to symbol mapping for shot display
   const aimSymbolMap = new Map(targetAims.map((a) => [a.id, a.symbol]));
@@ -537,6 +576,8 @@ export default async function TargetDetailPage({
                     (1000 * 60 * 60 * 24)
                 )
               );
+              const currentPrice = priceMap.get(aim.symbol);
+              const entryData = aimEntryDataMap.get(aim.id);
 
               return (
                 <Link key={aim.id} href={`/targets/${id}/aims/${aim.id}`}>
@@ -598,16 +639,30 @@ export default async function TargetDetailPage({
                           </div>
                         )}
                       </div>
-                      {aimShotCount > 0 && (
-                        <div className="mt-3 pt-3 border-t flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">
-                            {aimShotCount} shot{aimShotCount !== 1 ? "s" : ""}
-                          </span>
-                          <Badge variant="outline" className="text-xs">
-                            {aim.status}
-                          </Badge>
+                      <div className="mt-3 pt-3 border-t flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          {aimShotCount > 0 ? (
+                            <span className="text-muted-foreground">
+                              {aimShotCount} shot{aimShotCount !== 1 ? "s" : ""}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">No shots</span>
+                          )}
+                          {/* Trajectory badge - only shows when we have entry data */}
+                          {entryData && currentPrice && (
+                            <TrajectoryBadge
+                              aim={aim}
+                              currentPrice={currentPrice}
+                              entryPrice={entryData.entryPrice}
+                              entryDate={entryData.entryDate}
+                              variant="compact"
+                            />
+                          )}
                         </div>
-                      )}
+                        <Badge variant="outline" className="text-xs">
+                          {aim.status}
+                        </Badge>
+                      </div>
                     </CardContent>
                   </Card>
                 </Link>

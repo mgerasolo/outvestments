@@ -18,6 +18,8 @@ import { hasPermission } from "@/lib/auth/rbac";
 import { AimActions } from "./aim-actions";
 import { ShotActions } from "./shot-actions";
 import { PaceStatus } from "@/components/trading/pace-status";
+import { TrajectoryStatusCard } from "@/components/trading/trajectory-badge";
+import { getQuote } from "@/app/actions/quotes";
 
 export const metadata = {
   title: "Aim Details - Outvestments",
@@ -93,6 +95,38 @@ export default async function AimDetailPage({
 
   const canCreateShot = hasPermission(session.user.role, "CREATE_SHOT");
 
+  // Fetch current price for the symbol
+  let currentPrice: number | undefined;
+  try {
+    const quoteResult = await getQuote(aim.symbol);
+    if (quoteResult.success && quoteResult.quote) {
+      currentPrice = quoteResult.quote.price;
+    }
+  } catch {
+    // Quote service unavailable - trajectory will show as unavailable
+  }
+
+  // Find entry data from the first filled shot
+  const filledShots = aimShots.filter(
+    (s) => s.state !== "pending" && s.state !== "armed" && s.fillPrice
+  );
+  const firstFilledShot = filledShots.length > 0
+    ? filledShots.sort((a, b) => {
+        const aTime = a.fillTimestamp ? new Date(a.fillTimestamp).getTime() : 0;
+        const bTime = b.fillTimestamp ? new Date(b.fillTimestamp).getTime() : 0;
+        return aTime - bTime;
+      })[0]
+    : null;
+
+  const entryPrice = firstFilledShot?.fillPrice
+    ? parseFloat(firstFilledShot.fillPrice)
+    : undefined;
+  const entryDate = firstFilledShot?.fillTimestamp
+    ? new Date(firstFilledShot.fillTimestamp)
+    : firstFilledShot?.entryDate
+    ? new Date(firstFilledShot.entryDate)
+    : undefined;
+
   return (
     <div className="container max-w-4xl space-y-8">
       {/* Header */}
@@ -111,7 +145,19 @@ export default async function AimDetailPage({
             <span>/</span>
             <span>{aim.symbol}</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">{aim.symbol}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold tracking-tight">{aim.symbol}</h1>
+            <Badge
+              variant="outline"
+              className={
+                aim.aimType === "playable"
+                  ? "bg-green-100 text-green-800 border-green-300 dark:bg-green-900 dark:text-green-200 dark:border-green-700"
+                  : "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700"
+              }
+            >
+              {aim.aimType === "playable" ? "Playable" : "Monitor"}
+            </Badge>
+          </div>
           <p className="text-muted-foreground">
             Target Date:{" "}
             {new Date(aim.targetDate).toLocaleDateString("en-US", {
@@ -171,8 +217,21 @@ export default async function AimDetailPage({
         </CardContent>
       </Card>
 
-      {/* Pace Tracking */}
-      <PaceStatus aim={aim} />
+      {/* Trajectory & Pace Tracking */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <TrajectoryStatusCard
+          aim={aim}
+          currentPrice={currentPrice}
+          entryPrice={entryPrice}
+          entryDate={entryDate}
+        />
+        <PaceStatus
+          aim={aim}
+          currentPrice={currentPrice}
+          entryPrice={entryPrice}
+          entryDate={entryDate}
+        />
+      </div>
 
       <Separator />
 

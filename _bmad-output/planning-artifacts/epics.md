@@ -1,7 +1,7 @@
 ---
 stepsCompleted: [1, 2, 3]
 updatedAt: '2025-12-31'
-version: '1.2'
+version: '1.3'
 inputDocuments:
   - prd-outvestments-2025-12-27.md
   - architecture.md
@@ -14,7 +14,7 @@ terminology:
   - Shot: The trade/order - exists before AND after execution
   - Trigger: The execution event (Market = immediate, Limit = conditional)
   - Pace: Required rate of gain to hit target (%/month)
-  - PPD: Performance Per Day - primary normalized scoring metric
+  - PPD: Profit Per Day - time-normalized return metric
 ---
 
 # Outvestments - Epic Breakdown
@@ -67,18 +67,18 @@ This document provides the complete epic and story breakdown for Outvestments, d
 - FR31: Options shots include: strike price, expiration, premium, contracts, option type (call/put)
 - FR32: "Stray shots" = informal term for incomplete data needing cleanup (not a formal entity)
 
-**Scoring System (Three-Tier)**
-- FR33: Three-tier scoring: Target Score (thesis correctness) + Aim Score (ticker hit target?) + Shot Score (entry timing)
-- FR34: PPD (Performance Per Day) as primary normalized metric for fair comparison across holding periods
-- FR35: Accuracy scoring: (Actual Return / Target Return) x 100
-- FR36: Performance scoring (Raw): (Your Return / Expected Market Return) x 67
-- FR37: Performance scoring (Delta): Uses actual S&P return (SPY proxy) during holding period
-- FR38: Difficulty multiplier: 0.5x (<5%), 1.0x (5-15%), 1.5x (15-30%), 2.0x (30-50%), 2.5x (>50%)
-- FR39: Composite Shot Score = Accuracy x Difficulty Multiplier
-- FR40: Trajectory tracking: visual overlay showing prediction progress vs trend line
-- FR41: Trajectory status indicators: On Track, Drifting, Off Course (based on Pace)
+**Scoring System (Four-Level Hierarchical)**
+- FR33: Four-level hierarchical scoring: User Career Score → Target Score → Aim Score (PRIMARY) → Shot Score
+- FR34: Centered scale: -50 to +50, where 0 = market baseline (C grade), positive = outperformed, negative = underperformed
+- FR35: Letter grades (16-tier): FFF (-50) through AAA (+50), with C grade at 0 = market average
+- FR36: Aim-level scoring (PRIMARY) with 4 weighted metrics: Directional Accuracy (20%), Magnitude Accuracy (30%), Forecast Edge (35%), Thesis Validity (15%)
+- FR37: Shot-level scoring with 3 weighted metrics: Performance Score (45%), Forecast Edge (35%), Perfect Shot Capture (20%) + Risk Multiplier (0.70× to 1.10×)
+- FR38: Difficulty multiplier displayed independently (1.0× to 5.0×), NOT multiplied into final score. Formula: 1.0 + (alpha_target / 2.0), capped at 5.0×
+- FR39: Target-level aggregation: Prediction Score (from Aim scores) + Performance Score (from Shot scores) + P&L summary + Win Ratio + Alpha vs Market
+- FR40: User career scoring: Two distinct scores - Prediction Quality (thesis skill) + Execution Performance (trade skill)
+- FR41: Trajectory tracking: visual overlay showing prediction progress vs trend line with status indicators (On Track, Drifting, Off Course)
 - FR42: Pace status bar: visual indicator showing behind/on-pace/ahead of required %/month
-- FR43: Runway captured percentage calculated for each Shot
+- FR43: Time-normalized returns: PPD (Profit Per Day), PPM (PPD × 30), PPY (PPD × 365) for fair comparison across holding periods
 
 **Views & Visualization**
 - FR44: Dashboard Row 1: Daily Gains (30-day bar chart), Account Chart (candlestick/line), Account Stats

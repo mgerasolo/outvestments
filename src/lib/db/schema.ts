@@ -70,6 +70,11 @@ export const aimStatusEnum = pgEnum("aim_status", [
   "rolled_over", // Extended to a new target date
 ]);
 
+export const aimTypeEnum = pgEnum("aim_type", [
+  "playable", // User intends to trade this (fire shots)
+  "monitor",  // User is just tracking the prediction (no trades)
+]);
+
 // Scoring system enums
 export const riskGradeEnum = pgEnum("risk_grade", ["A", "B", "C", "D", "F"]);
 
@@ -178,6 +183,7 @@ export const aims = pgTable(
     }),
     targetDate: timestamp("target_date", { withTimezone: true }).notNull(),
     status: aimStatusEnum("status").default("active").notNull(),
+    aimType: aimTypeEnum("aim_type").default("playable").notNull(),
     // Trading discipline fields
     stopLossPrice: decimal("stop_loss_price", { precision: 12, scale: 4 }), // Stop loss price level
     takeProfitPrice: decimal("take_profit_price", { precision: 12, scale: 4 }), // Take profit target
@@ -827,6 +833,7 @@ export type ShotType = (typeof shotTypeEnum.enumValues)[number];
 export type ShotState = (typeof shotStateEnum.enumValues)[number];
 export type MarketType = (typeof marketTypeEnum.enumValues)[number];
 export type AimStatus = (typeof aimStatusEnum.enumValues)[number];
+export type AimType = (typeof aimTypeEnum.enumValues)[number];
 
 // Scoring system enum exports
 export type RiskGrade = (typeof riskGradeEnum.enumValues)[number];

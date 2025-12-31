@@ -16,8 +16,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { SymbolSearchInput } from "@/components/ui/symbol-search-input";
 import { createAim, updateAim, type AimFormData } from "@/app/actions/aims";
-import type { Aim } from "@/lib/db/schema";
+import type { Aim, AimType } from "@/lib/db/schema";
 import type { SymbolSearchResult } from "@/app/actions/symbols";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface AimFormProps {
   targetId: string;
@@ -42,6 +49,8 @@ export function AimForm({ targetId, aim, onSuccess }: AimFormProps) {
       ? new Date(aim.targetDate).toISOString().split("T")[0]
       : ""
   );
+  // Aim type
+  const [aimType, setAimType] = useState<AimType>(aim?.aimType || "playable");
   // Trading discipline fields
   const [stopLossPrice, setStopLossPrice] = useState(
     aim?.stopLossPrice ? Number(aim.stopLossPrice) : ""
@@ -62,6 +71,8 @@ export function AimForm({ targetId, aim, onSuccess }: AimFormProps) {
       targetPriceRealistic: Number(targetPriceRealistic),
       targetPriceReach: targetPriceReach ? Number(targetPriceReach) : undefined,
       targetDate: new Date(targetDate),
+      // Aim type
+      aimType,
       // Trading discipline fields
       stopLossPrice: stopLossPrice ? Number(stopLossPrice) : undefined,
       takeProfitPrice: takeProfitPrice ? Number(takeProfitPrice) : undefined,
@@ -75,6 +86,7 @@ export function AimForm({ targetId, aim, onSuccess }: AimFormProps) {
             targetPriceRealistic: formData.targetPriceRealistic,
             targetPriceReach: formData.targetPriceReach,
             targetDate: formData.targetDate,
+            aimType: formData.aimType,
             stopLossPrice: formData.stopLossPrice,
             takeProfitPrice: formData.takeProfitPrice,
             exitConditions: formData.exitConditions,
@@ -193,6 +205,43 @@ export function AimForm({ targetId, aim, onSuccess }: AimFormProps) {
             />
             <p className="text-sm text-muted-foreground">
               When do you expect this target to be reached?
+            </p>
+          </div>
+
+          {/* Aim Type */}
+          <div className="space-y-2">
+            <Label htmlFor="aimType">Aim Type *</Label>
+            <Select
+              value={aimType}
+              onValueChange={(value: AimType) => setAimType(value)}
+              disabled={isPending}
+            >
+              <SelectTrigger id="aimType">
+                <SelectValue placeholder="Select aim type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="playable">
+                  <div className="flex flex-col">
+                    <span className="font-medium">Playable</span>
+                    <span className="text-xs text-muted-foreground">
+                      Intend to trade this (fire shots)
+                    </span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="monitor">
+                  <div className="flex flex-col">
+                    <span className="font-medium">Monitor</span>
+                    <span className="text-xs text-muted-foreground">
+                      Just tracking the prediction (no trades)
+                    </span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground">
+              {aimType === "playable"
+                ? "You plan to execute trades for this aim."
+                : "Track this prediction without placing trades."}
             </p>
           </div>
 
