@@ -1,10 +1,45 @@
 # Conversation conv-20251227-223019 - TLDR
 
-**Title:** Epic Completion Sprint
-**Status:** Completed
+**Title:** Epic Completion Sprint + Scoring System Deployment
+**Status:** DEPLOYMENT IN PROGRESS
 **Started:** 2025-12-27 22:30
-**Duration:** ~24h
-**Compactions:** 4
+**Last Updated:** 2025-12-31
+**Compactions:** 5
+
+---
+
+## ACTIVE TASK: Deploy Scoring System
+
+**Deployment Plan:** `_bmad-output/planning-artifacts/deployment-scoring-system.md`
+
+### Deployment Progress
+- [x] Code complete (3,938 lines scoring + 6 UI components)
+- [x] Build passes (111 tests)
+- [x] Git committed (4d19096)
+- [ ] Git push to remote
+- [ ] Database migration (drizzle-kit push)
+- [ ] Docker build and push
+- [ ] Portainer redeploy
+- [ ] Verify deployment
+
+### Quick Resume Commands
+```bash
+# 1. Push to remote
+git push origin main
+
+# 2. Database migration (run on stark or via Portainer console)
+ssh stark
+docker exec -it outvestments-app-1 npx drizzle-kit push --force
+
+# 3. Build and push Docker
+docker build -t mgerasolo/outvestments:latest . && docker push mgerasolo/outvestments:latest
+
+# 4. Redeploy via Portainer API
+source ~/Infrastructure/scripts/secrets.sh
+curl -X POST "http://10.0.0.28:9000/api/stacks/13/git/redeploy" -H "X-API-Key: $PORTAINER_TOKEN" -d '{"pullImage": true}'
+```
+
+---
 
 ## Context in 3 Lines
 Executed comprehensive PM orchestration model with multi-agent execution. Completed 13 epics, deployed full feature set, ran tests and build pipeline. Implemented trading discipline fields, dashboard charts, history page, settings, watchlist, background jobs, monitoring, and infrastructure deployment to production.
@@ -152,4 +187,178 @@ Executed comprehensive PM orchestration model with multi-agent execution. Comple
 - Phase 4 feature development
 - Performance optimization
 - User testing and feedback
+
+
+---
+
+## Pre-Compaction Checkpoint
+
+**Timestamp:** 2025-12-30 01:56:13
+**Reason:** Approaching token limit (70% usage, 10% buffer before 80% auto-compact)
+**Action:** Auto-save triggered before compaction
+
+**State at checkpoint:**
+- Working directory: /home/mgerasolo/Dev/outvestments
+- Last modified files:
+  - ./_bmad-output/planning-artifacts/target-theory-system-v2.md
+  - ./_bmad-output/planning-artifacts/prd-outvestments-2025-12-27.md
+  - ./_bmad-output/planning-artifacts/pricing-tiers.md
+
+**Recovery instructions:**
+After compaction, the post-compaction hook will automatically
+restore context from this file and related context files.
+
+
+---
+
+## Pre-Compaction Checkpoint
+
+**Timestamp:** 2025-12-30 02:15:36
+**Reason:** Approaching token limit (70% usage, 10% buffer before 80% auto-compact)
+**Action:** Auto-save triggered before compaction
+
+**State at checkpoint:**
+- Working directory: /home/mgerasolo/Dev/outvestments
+- Last modified files:
+  - ./_bmad-output/planning-artifacts/future-enhancements-phase3.md
+  - ./_bmad-output/planning-artifacts/target-theory-system-v2.md
+  - ./_bmad-output/planning-artifacts/architecture.md
+  - ./_bmad-output/planning-artifacts/prd-outvestments-2025-12-27.md
+  - ./_bmad-output/planning-artifacts/epics.md
+  - ./_bmad-output/planning-artifacts/pricing-tiers.md
+  - ./_bmad-output/planning-artifacts/product-brief-outvestments-2025-12-26.md
+
+**Recovery instructions:**
+After compaction, the post-compaction hook will automatically
+restore context from this file and related context files.
+
+
+---
+
+## 4-Level Scoring System Implementation (2025-12-30)
+
+**Completed:** Full implementation of hierarchical scoring system
+
+### Files Created
+
+**Scoring Module (`src/lib/scoring/`):**
+- `types.ts` — TypeScript interfaces for all scoring structures
+- `constants.ts` — Weights (20/30/35/15), grade mappings (FFF→AAA), interpolation points
+- `grade-mapper.ts` — Score to letter grade (16-tier centered scale)
+- `interpolators.ts` — Smooth interpolation for magnitude/forecast
+- `risk-assessor.ts` — Risk plan + execution discipline scoring
+- `aim-scorer.ts` — 4 metrics + difficulty (displayed independently)
+- `shot-scorer.ts` — 4 metrics + risk multiplier + adaptability
+- `target-scorer.ts` — Aggregation with P&L metrics
+- `user-scorer.ts` — Career-level aggregation
+- `index.ts` — Module exports
+
+**Server Actions (`src/app/actions/scoring.ts`):**
+- `calculateAndStoreAimScore()`
+- `calculateAndStoreShotScore()`
+- `recalculateTargetScore()`
+- `recalculateUserCareerScores()`
+- Scorecard retrieval functions
+
+**UI Components (`src/components/scoring/`):**
+- `ScoreBadge.tsx` — Letter grade badge (FFF→AAA)
+- `DifficultyBadge.tsx` — Video game-style difficulty (Easy→Legendary)
+- `MetricBar.tsx` — Centered horizontal bar (-50 to +50)
+- `AimScorecard.tsx` — Full aim scorecard with metrics
+- `ShotScorecard.tsx` — Shot scorecard with risk/adaptability
+- `TargetScorecard.tsx` — Dual scores + P&L summary
+- `UserScorecard.tsx` — Career stats with experience progress
+- `index.ts` — Component exports
+
+**Database Schema (`src/lib/db/schema.ts`):**
+- Added tables: `aim_scores`, `shot_scores`, `target_scores`, `user_career_scores`
+- Added enums: `riskGradeEnum`, `letterGradeEnum`, `riskPlanQualityEnum`, `executionDisciplineEnum`
+- Added relations and type exports
+
+### Key Decisions
+
+- **Centered Scale:** -50 to +50 where 0 = market baseline (C grade)
+- **Aim Weights:** 20% Directional, 30% Magnitude, 35% Forecast Edge, 15% Thesis Validity
+- **Shot Weights:** 45% Performance, 35% Forecast Edge, 20% PSC
+- **Difficulty:** Displayed independently, NOT multiplied into final score (TBD based on real data)
+- **Grade Scale:** FFF → AAA (16 tiers), 0 = C
+- **Risk Multiplier:** 0.70× (F) to 1.10× (A)
+- **Thesis Validity:** Capped at 0 if risks not documented
+
+### Build Status
+
+- ✅ All files compile successfully
+- ✅ Build passes
+- ✅ Ready for database migration (`npx drizzle-kit push`)
+
+### Next Actions
+
+1. ✅ Run database migration to create new tables - DONE
+2. ✅ Integrate scoring triggers into aim/shot close flows - DONE
+3. Add scorecards to aim/shot detail pages - PENDING
+4. Test scoring calculations with real data - PENDING
+
+---
+
+## Database Migration & Integration Complete (2025-12-30)
+
+**Completed:**
+- Ran `npx drizzle-kit push` to create 4 scoring tables:
+  - `aim_scores`, `shot_scores`, `target_scores`, `user_career_scores`
+- Created 4 new enums:
+  - `letter_grade` (AAA to FFF), `risk_grade`, `risk_plan_quality`, `execution_discipline`
+- Integrated scoring triggers into:
+  - `src/app/actions/aims.ts` - `closeAimAction()` now calls `calculateAndStoreAimScore()`
+  - `src/app/actions/shots.ts` - `closePartialPosition()` now calls `calculateAndStoreShotScore()`
+- Build passes, ready for production
+
+**Scoring Cascade:**
+- Shot close → Calculate shot score → Recalculate target score → Recalculate user career scores
+- Aim close → Calculate aim score → Recalculate target score → Recalculate user career scores
+
+
+---
+
+## Pre-Compaction Checkpoint
+
+**Timestamp:** 2025-12-30 22:59:25
+**Reason:** Approaching token limit (70% usage, 10% buffer before 80% auto-compact)
+**Action:** Auto-save triggered before compaction
+
+**State at checkpoint:**
+- Working directory: /home/mgerasolo/Dev/outvestments
+- Last modified files:
+  - ./src/components/scoring/index.ts
+  - ./src/components/scoring/ShotScorecard.tsx
+  - ./src/components/scoring/MetricBar.tsx
+  - ./src/components/scoring/ScoreBadge.tsx
+  - ./src/components/scoring/UserScorecard.tsx
+  - ./src/components/scoring/TargetScorecard.tsx
+  - ./src/components/scoring/AimScorecard.tsx
+  - ./src/app/actions/scoring.ts
+  - ./src/lib/scoring/interpolators.ts
+  - ./src/lib/scoring/grade-mapper.ts
+
+**Recovery instructions:**
+After compaction, the post-compaction hook will automatically
+restore context from this file and related context files.
+
+
+---
+
+## Pre-Compaction Checkpoint
+
+**Timestamp:** 2025-12-31 00:00:10
+**Reason:** Approaching token limit (70% usage, 10% buffer before 80% auto-compact)
+**Action:** Auto-save triggered before compaction
+
+**State at checkpoint:**
+- Working directory: /home/mgerasolo/Dev/outvestments
+- Last modified files:
+  - ./_bmad-output/planning-artifacts/prd-outvestments-2025-12-27.md
+  - ./_bmad-output/planning-artifacts/epics.md
+
+**Recovery instructions:**
+After compaction, the post-compaction hook will automatically
+restore context from this file and related context files.
 
