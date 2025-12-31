@@ -54,7 +54,6 @@ const navigationItems = [
         title: "Portfolio",
         href: "/portfolio",
         icon: <TrendingUp className="w-4 h-4" />,
-        badge: "Soon",
       },
       {
         title: "Watchlist",
@@ -70,7 +69,6 @@ const navigationItems = [
         title: "Leaderboard",
         href: "/leaderboard",
         icon: <Trophy className="w-4 h-4" />,
-        badge: "Soon",
       },
     ],
   },
@@ -128,14 +126,6 @@ export function AppSidebar({ user }: AppSidebarProps) {
                       <Link href={item.href}>
                         {item.icon}
                         <span>{item.title}</span>
-                        {item.badge && (
-                          <Badge
-                            variant="secondary"
-                            className="ml-auto text-xs"
-                          >
-                            {item.badge}
-                          </Badge>
-                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
