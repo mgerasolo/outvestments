@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { SymbolSearchInput } from "@/components/ui/symbol-search-input";
 import { createAim, updateAim, type AimFormData } from "@/app/actions/aims";
-import type { Aim, AimType } from "@/lib/db/schema";
+import type { Aim, AimType, InvestmentDirection } from "@/lib/db/schema";
 import type { SymbolSearchResult } from "@/app/actions/symbols";
 import {
   Select,
@@ -51,6 +51,10 @@ export function AimForm({ targetId, aim, onSuccess }: AimFormProps) {
   );
   // Aim type
   const [aimType, setAimType] = useState<AimType>(aim?.aimType || "playable");
+  // Investment direction - long (betting price goes up) or short (betting price goes down)
+  const [investmentDirection, setInvestmentDirection] = useState<InvestmentDirection>(
+    aim?.investmentDirection || "long"
+  );
   // Trading discipline fields
   const [stopLossPrice, setStopLossPrice] = useState(
     aim?.stopLossPrice ? Number(aim.stopLossPrice) : ""
@@ -73,6 +77,8 @@ export function AimForm({ targetId, aim, onSuccess }: AimFormProps) {
       targetDate: new Date(targetDate),
       // Aim type
       aimType,
+      // Investment direction
+      investmentDirection,
       // Trading discipline fields
       stopLossPrice: stopLossPrice ? Number(stopLossPrice) : undefined,
       takeProfitPrice: takeProfitPrice ? Number(takeProfitPrice) : undefined,
@@ -87,6 +93,7 @@ export function AimForm({ targetId, aim, onSuccess }: AimFormProps) {
             targetPriceReach: formData.targetPriceReach,
             targetDate: formData.targetDate,
             aimType: formData.aimType,
+            investmentDirection: formData.investmentDirection,
             stopLossPrice: formData.stopLossPrice,
             takeProfitPrice: formData.takeProfitPrice,
             exitConditions: formData.exitConditions,
@@ -245,6 +252,43 @@ export function AimForm({ targetId, aim, onSuccess }: AimFormProps) {
             </p>
           </div>
 
+          {/* Investment Direction */}
+          <div className="space-y-2">
+            <Label htmlFor="investmentDirection">Direction *</Label>
+            <Select
+              value={investmentDirection}
+              onValueChange={(value: InvestmentDirection) => setInvestmentDirection(value)}
+              disabled={isPending}
+            >
+              <SelectTrigger id="investmentDirection">
+                <SelectValue placeholder="Select direction" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="long">
+                  <div className="flex flex-col">
+                    <span className="font-medium">📈 Long (Up)</span>
+                    <span className="text-xs text-muted-foreground">
+                      Betting price will increase
+                    </span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="short">
+                  <div className="flex flex-col">
+                    <span className="font-medium">📉 Short (Down)</span>
+                    <span className="text-xs text-muted-foreground">
+                      Betting price will decrease (puts, short sales)
+                    </span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground">
+              {investmentDirection === "long"
+                ? "Target price should be ABOVE current price. Profit when price goes UP."
+                : "Target price should be BELOW current price. Profit when price goes DOWN."}
+            </p>
+          </div>
+
           {/* Trading Discipline Section */}
           <div className="border-t pt-6 mt-6">
             <h3 className="text-lg font-medium mb-4">Risk Management</h3>
@@ -265,14 +309,16 @@ export function AimForm({ targetId, aim, onSuccess }: AimFormProps) {
                     type="number"
                     step="0.01"
                     min="0.01"
-                    placeholder="140.00"
+                    placeholder={investmentDirection === "long" ? "140.00" : "160.00"}
                     value={stopLossPrice}
                     onChange={(e) => setStopLossPrice(e.target.value)}
                     className="pl-7"
                   />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  At what price would you cut your losses?
+                  {investmentDirection === "long"
+                    ? "Price BELOW entry where you'd exit to limit losses."
+                    : "Price ABOVE entry where you'd exit to limit losses (shorts lose when price rises)."}
                 </p>
               </div>
 
@@ -287,14 +333,16 @@ export function AimForm({ targetId, aim, onSuccess }: AimFormProps) {
                     type="number"
                     step="0.01"
                     min="0.01"
-                    placeholder="175.00"
+                    placeholder={investmentDirection === "long" ? "175.00" : "125.00"}
                     value={takeProfitPrice}
                     onChange={(e) => setTakeProfitPrice(e.target.value)}
                     className="pl-7"
                   />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  At what price would you lock in profits?
+                  {investmentDirection === "long"
+                    ? "Price ABOVE entry where you'd lock in profits."
+                    : "Price BELOW entry where you'd lock in profits (shorts profit when price falls)."}
                 </p>
               </div>
             </div>

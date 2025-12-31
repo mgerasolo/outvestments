@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { aims, targets, shots, type NewAim, type Aim, type AimType } from "@/lib/db/schema";
+import { aims, targets, shots, type NewAim, type Aim, type AimType, type InvestmentDirection } from "@/lib/db/schema";
 import { eq, and, isNull, desc, inArray } from "drizzle-orm";
 import { auth } from "@/auth";
 import { logAudit, AuditActions, AuditEntityTypes } from "@/lib/audit";
@@ -24,6 +24,8 @@ export interface AimFormData {
   targetDate: Date;
   // Aim type
   aimType?: AimType;
+  // Investment direction - long (price up = profit) or short (price down = profit)
+  investmentDirection?: InvestmentDirection;
   // Trading discipline fields
   stopLossPrice?: number;
   takeProfitPrice?: number;
@@ -101,6 +103,8 @@ export async function createAim(data: AimFormData): Promise<AimResult> {
         targetDate: data.targetDate,
         // Aim type
         aimType: data.aimType || "playable",
+        // Investment direction
+        investmentDirection: data.investmentDirection || "long",
         // Trading discipline fields
         stopLossPrice: data.stopLossPrice?.toString() || null,
         takeProfitPrice: data.takeProfitPrice?.toString() || null,
@@ -119,6 +123,7 @@ export async function createAim(data: AimFormData): Promise<AimResult> {
         targetDate: newAim.targetDate.toISOString(),
         parentTargetId: data.targetId,
         aimType: newAim.aimType,
+        investmentDirection: newAim.investmentDirection,
         stopLossPrice: newAim.stopLossPrice,
         takeProfitPrice: newAim.takeProfitPrice,
       }
@@ -204,6 +209,11 @@ export async function updateAim(
     // Aim type
     if (data.aimType !== undefined) {
       updateData.aimType = data.aimType;
+    }
+
+    // Investment direction
+    if (data.investmentDirection !== undefined) {
+      updateData.investmentDirection = data.investmentDirection;
     }
 
     // Trading discipline fields
