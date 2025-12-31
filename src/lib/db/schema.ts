@@ -40,6 +40,11 @@ export const targetStatusEnum = pgEnum("target_status", [
 
 export const directionEnum = pgEnum("direction", ["buy", "sell"]);
 
+// Investment direction - whether betting the asset goes UP (long) or DOWN (short)
+// Long: Buy low, sell high. Profit when price increases.
+// Short: Sell high, buy low (or puts). Profit when price decreases.
+export const investmentDirectionEnum = pgEnum("investment_direction", ["long", "short"]);
+
 export const triggerTypeEnum = pgEnum("trigger_type", ["market", "limit"]);
 
 export const shotTypeEnum = pgEnum("shot_type", ["stock", "option"]);
@@ -184,6 +189,8 @@ export const aims = pgTable(
     targetDate: timestamp("target_date", { withTimezone: true }).notNull(),
     status: aimStatusEnum("status").default("active").notNull(),
     aimType: aimTypeEnum("aim_type").default("playable").notNull(),
+    // Investment direction - long (price goes up = profit) or short (price goes down = profit)
+    investmentDirection: investmentDirectionEnum("investment_direction").default("long").notNull(),
     // Trading discipline fields
     stopLossPrice: decimal("stop_loss_price", { precision: 12, scale: 4 }), // Stop loss price level
     takeProfitPrice: decimal("take_profit_price", { precision: 12, scale: 4 }), // Take profit target
@@ -834,6 +841,7 @@ export type ShotState = (typeof shotStateEnum.enumValues)[number];
 export type MarketType = (typeof marketTypeEnum.enumValues)[number];
 export type AimStatus = (typeof aimStatusEnum.enumValues)[number];
 export type AimType = (typeof aimTypeEnum.enumValues)[number];
+export type InvestmentDirection = (typeof investmentDirectionEnum.enumValues)[number];
 
 // Scoring system enum exports
 export type RiskGrade = (typeof riskGradeEnum.enumValues)[number];
